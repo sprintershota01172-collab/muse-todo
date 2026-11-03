@@ -11,7 +11,7 @@
   --done:#A3A19A; --done-soft:#E3E0D9;
   --priv:#4F5E6E; --priv-soft:#D6DCE3;
   --master:#2B2F2D; --master-soft:#D9D6CF;
-  --off:rgba(30,33,31,.045); --wkend:rgba(30,33,31,.055); --today:rgba(31,75,61,.085);
+  --off:rgba(30,33,31,.045); --wkend:rgba(30,33,31,.055); --today:rgba(31,75,61,.085); --grp-tint:rgba(30,33,31,.04);
   --scrim:rgba(16,18,17,.40); --shadow:0 22px 60px rgba(16,20,18,.28),0 2px 8px rgba(16,20,18,.10);
   --font:-apple-system,BlinkMacSystemFont,"SF Pro Text","SF Pro Display","Hiragino Sans","Hiragino Kaku Gothic ProN","Noto Sans JP",system-ui,sans-serif;
   --row:46px; --axis:32px; --nw:120px; --kb:0px;
@@ -24,7 +24,7 @@
   --brass:#D9A954; --brass-soft:#45391F; --late:#EA6E55; --late-soft:#4D261F;
   --done:#62655F; --done-soft:#2B2E2C; --priv:#9AAABB; --priv-soft:#2C3642;
   --master:#DDDAD3; --master-soft:#3A3D3B;
-  --off:rgba(0,0,0,.26); --wkend:rgba(255,255,255,.03); --today:rgba(93,170,140,.11);
+  --off:rgba(0,0,0,.26); --wkend:rgba(255,255,255,.03); --today:rgba(93,170,140,.11); --grp-tint:rgba(255,255,255,.035);
   --scrim:rgba(0,0,0,.6); --shadow:0 22px 60px rgba(0,0,0,.6); color-scheme:dark}}
 :root[data-theme="dark"]{
   --bg:#101211; --surface:#181B1A; --surface-2:#202423; --surface-3:#2A2F2D;
@@ -34,7 +34,7 @@
   --brass:#D9A954; --brass-soft:#45391F; --late:#EA6E55; --late-soft:#4D261F;
   --done:#62655F; --done-soft:#2B2E2C; --priv:#9AAABB; --priv-soft:#2C3642;
   --master:#DDDAD3; --master-soft:#3A3D3B;
-  --off:rgba(0,0,0,.26); --wkend:rgba(255,255,255,.03); --today:rgba(93,170,140,.11);
+  --off:rgba(0,0,0,.26); --wkend:rgba(255,255,255,.03); --today:rgba(93,170,140,.11); --grp-tint:rgba(255,255,255,.035);
   --scrim:rgba(0,0,0,.6); --shadow:0 22px 60px rgba(0,0,0,.6); color-scheme:dark}
 
 html{box-sizing:border-box;height:100%;height:100dvh;overflow:hidden;overscroll-behavior:none}
@@ -75,11 +75,18 @@ input,textarea,select{font:inherit;font-size:16px;color:var(--ink);-webkit-user-
 .corner{position:sticky;left:0;z-index:7;width:var(--nw);flex:none;background:var(--surface);border-right:1px solid var(--line-3);display:flex;align-items:center;gap:4px;padding-left:max(6px,env(safe-area-inset-left,0px))}
 .chip-s{height:24px;padding:0 8px;border-radius:12px;background:var(--surface-2);box-shadow:inset 0 0 0 1px var(--line-2);font-size:10.5px;font-weight:700;color:var(--ink-2);display:flex;align-items:center;gap:3px;position:relative;white-space:nowrap}
 .chip-s::before{content:"";position:absolute;inset:-8px -3px}
+.chip-s[aria-pressed=true]{background:var(--ink);color:var(--surface);box-shadow:none}
+.mseg{display:flex;height:24px;border-radius:12px;background:var(--surface-2);box-shadow:inset 0 0 0 1px var(--line-2);padding:2px;position:relative}
+.mseg::before{content:"";position:absolute;inset:-8px -2px}
+.mseg button{position:relative;min-width:24px;padding:0 6px;border-radius:10px;font-size:10.5px;font-weight:800;color:var(--ink-2)}
+.mseg button[aria-pressed=true]{background:var(--ink);color:var(--surface)}
 .ticks{position:relative;flex:none;height:100%;overflow:hidden}
 .tk{position:absolute;top:0;height:100%;transform:translateX(-50%);display:flex;flex-direction:column;align-items:center;justify-content:center;font-size:11px;font-weight:600;color:var(--ink-2);white-space:nowrap;line-height:1.05}
 .tk i{display:block;font-style:normal;font-size:9px;font-weight:600;color:var(--ink-3);margin-top:1px}
 .tk.sun,.tk.hol,.tk.sun i,.tk.hol i{color:var(--late)} .tk.sat,.tk.sat i{color:var(--priv)}
 .tk.tdy{color:var(--on-green)} .tk.tdy::before{content:"";position:absolute;z-index:-1;inset:4px -3px;border-radius:7px;background:var(--green)} .tk.tdy i{color:var(--on-green)}
+.tl{position:absolute;top:0;bottom:0;width:0;border-left:1px solid var(--line-2)} .tl.w{border-left-color:var(--line-3)}
+.tk.hr{transform:none;align-items:flex-start;padding-left:4px}
 .tk.mo{transform:none;align-items:flex-start;justify-content:flex-start;padding:3px 0 0 4px;font-size:9.5px;font-weight:700;color:var(--ink)}
 .tk.wk{justify-content:flex-end;padding-bottom:5px}
 .tk.wk.tdy::before{inset:auto -5px 2px;height:17px}
@@ -136,14 +143,15 @@ input,textarea,select{font:inherit;font-size:16px;color:var(--ink);-webkit-user-
 .act.live{background:var(--green);opacity:1}
 .dl{position:absolute;top:5px;bottom:5px;width:0;border-left:2px solid var(--late);z-index:3}
 .dl::before{content:"";position:absolute;top:0;left:0;border-left:8px solid var(--late);border-bottom:6px solid transparent}
-.grp{display:flex;height:30px;position:relative;background:var(--surface-2);border-bottom:1px solid var(--line-2)}
+/* group rows stay see-through over the track so the day/week lines run unbroken from top to bottom */
+.grp{display:flex;height:30px;position:relative;border-bottom:1px solid var(--line-2)}
 .gn{position:sticky;left:0;z-index:4;min-width:var(--nw);max-width:calc(100vw - 16px);flex:none;background:var(--surface-2);display:flex;align-items:center;gap:5px;padding:0 10px 0 max(6px,env(safe-area-inset-left,0px));white-space:nowrap}
 .grp.col .gn{width:var(--nw);max-width:var(--nw);border-right:1px solid var(--line-3)}
 .gn b{font-size:11.5px;font-weight:750;letter-spacing:.02em;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;color:var(--ink)}
 .gn small{font-size:10.5px;color:var(--ink-2);white-space:nowrap;font-weight:600}
 .gn .ic{width:14px;height:14px;stroke-width:2.4;color:var(--ink-2);transition:transform .2s}
 .grp.col .gn .ic{transform:rotate(-90deg)}
-.gt{position:absolute;top:0;bottom:0;left:var(--nw)}
+.gt{position:absolute;top:0;bottom:0;left:var(--nw);background:var(--grp-tint)}
 .span{position:absolute;top:11px;height:8px;border-radius:4px;background:var(--line-3)}
 .deps{position:absolute;top:0;left:var(--nw);pointer-events:none;overflow:visible;z-index:2}
 .deps path{fill:none;stroke:var(--ink);stroke-width:1.5;stroke-dasharray:3 3}
@@ -368,7 +376,7 @@ const KINDS={
   desk:{label:'通常業務'}, line:{label:'工程調整・改造'}, stop:{label:'設備停止'},
   witness:{label:'工程立ち会い'}, holiday:{label:'休日作業'}, private:{label:'プライベート'}
 };
-const DEFAULT_SETTINGS={workStart:'08:30',workEnd:'17:30',breaks:[{s:'10:15',e:'11:00',label:'製造部門休憩'}],holidays:[],lineRule:true};
+const DEFAULT_SETTINGS={workStart:'08:30',workEnd:'17:30',breaks:[{s:'10:15',e:'11:00',label:'製造部門休憩'}],holidays:[],lineRule:true,yearStart:4};
 const TRACKED=['name','project','kind','scale','start','end','deadline','important','priority','status','progress','deps','memo','assignee','milestone'];
 const $=(s,el=document)=>el.querySelector(s);
 const pad=n=>String(n).padStart(2,'0');
@@ -416,7 +424,7 @@ const LS={
 /* ============ state ============ */
 const S={
   tasks:new Map(), proposals:new Map(), settings:clone(DEFAULT_SETTINGS), attendance:{},
-  view:'day', anchor:sod(Date.now()), zoom:1, selected:null, scope:'all',
+  view:'day', anchor:sod(Date.now()), zoom:1, selected:null, scope:'all', mscale:LS.get('mscale','week')==='month'?'month':'week', showDaily:!!LS.get('showDaily',false),
   collapsed:new Set(LS.get('collapsed',[])), dirty:new Map(), undo:null, nw:112, sync:'local', mode:'local'
 };
 function normTask(o){
@@ -734,12 +742,19 @@ async function applyTimeChange(id,start,end,how='日時変更',by='user'){
 /* ============ axis & coordinates ============ */
 let AX=null;
 const scroller=$('#scroller'), grid=$('#grid'), touchHold=$('#touchHold');
+function yearStartOf(t){const ys=clamp(+S.settings.yearStart||4,1,12),d=new Date(t);let y=d.getFullYear();if(d.getMonth()+1<ys)y--;return new Date(y,ys-1,1).getTime()}
 function rangeOfView(){
   const v=S.view;let days=[];
   if(v==='day')days=[S.anchor];
   else if(v==='week'){const m=monday(S.anchor);for(let i=0;i<7;i++)days.push(addDays(m,i))}
   else if(v==='month'){const d=new Date(S.anchor);const f=new Date(d.getFullYear(),d.getMonth(),1).getTime();const n=new Date(d.getFullYear(),d.getMonth()+1,0).getDate();for(let i=0;i<n;i++)days.push(addDays(f,i))}
-  else{const d=new Date(S.anchor);const f=monday(new Date(d.getFullYear(),d.getMonth(),1).getTime());for(let i=0;i<MASTER_WEEKS;i++)days.push(addDays(f,7*i));return {days,from:days[0],to:addDays(days[days.length-1],7)}}
+  else{
+    // 大日程: one year from the configured start month (年度 = April by default), by week or by month
+    const ys=yearStartOf(S.anchor),ye=new Date(new Date(ys).getFullYear()+1,new Date(ys).getMonth(),1).getTime();
+    if(S.mscale==='month'){for(let i=0;i<12;i++){const d=new Date(ys);days.push(new Date(d.getFullYear(),d.getMonth()+i,1).getTime())}return {days,from:ys,to:ye}}
+    for(let w=monday(ys);w<ye;w=addDays(w,7))days.push(w);
+    return {days,from:days[0],to:addDays(days[days.length-1],7)};
+  }
   return {days,from:days[0],to:addDays(days[days.length-1],1)};
 }
 function computeAxis(tasks){
@@ -752,13 +767,15 @@ function computeAxis(tasks){
     for(const t of tasks){if(!singleDay(t.start,t.end)||t.start<from||t.end>to)continue;const ds=sod(t.start);lo=Math.min(lo,(t.start-ds)/MIN);hi=Math.max(hi,(t.end-ds)/MIN)}
     lo=Math.max(0,Math.floor(lo/30)*30);hi=Math.min(1440,Math.ceil(hi/30)*30);if(hi<=lo)hi=lo+60;
     segs=[{d:days[0],s:atMin(days[0],lo),e:atMin(days[0],hi)}];
-  }else if(v==='master')segs=days.map(d=>({d,s:d,e:addDays(d,7)}));   // one column = one week
+  }else if(v==='master')segs=S.mscale==='month'?days.map((d,i)=>({d,s:d,e:days[i+1]||to})):days.map(d=>({d,s:d,e:addDays(d,7)}));  // one column = one month / one week
   else segs=days.map(d=>({d,s:d,e:addDays(d,1)}));                     // one column = one day
   const avail=Math.max(160,scroller.clientWidth-S.nw);
-  const trackW=Math.floor(avail*S.zoom), segW=trackW/segs.length, pxH=v==='day'?segW/((hi-lo)/60):0;
+  // a month by day and a year by week get a readable column width and scroll sideways inside the chart (names stay put)
+  const minCol=v==='month'?32:v==='master'&&S.mscale==='week'?30:0;
+  const trackW=Math.floor(Math.max(avail,segs.length*minCol)*S.zoom), segW=trackW/segs.length, pxH=v==='day'?segW/((hi-lo)/60):0;
   const unit=v==='day'?(pxH>=100?15:pxH>=50?30:60):0;
   const snap=v==='day'?(pxH>=240?5:pxH>=20?15:30):0;
-  AX={v,days,segs,from,to,lo,hi,trackW,segW,pxH,unit,snap,ws,we,cell:v!=='day',step:v==='master'?7:1};
+  AX={v,days,segs,from,to,lo,hi,trackW,segW,pxH,unit,snap,ws,we,cell:v!=='day',ms:S.mscale,ppd:v==='master'?(S.mscale==='week'?segW/7:segW/30.44):segW};
   return AX;
 }
 function X(t){
@@ -776,16 +793,13 @@ function inSeg(t){return AX.segs.some(g=>t>=g.s&&t<=g.e)}
 // pixel span of a task: exact times in DAY, whole day / whole week cells otherwise
 function spanOf(t){
   const a0=AX.segs[0].s,z=AX.segs[AX.segs.length-1].e;
-  let a=t.start,b=t.end;
-  if(AX.v==='master'){a=monday(t.start);b=addDays(monday(t.end-1),7)}
-  else if(AX.cell){a=sod(t.start);b=addDays(sod(t.end-1),1)}
-  let l=X(Math.max(a,a0)),r=X(Math.min(b,z));
-  if(AX.cell){l+=2;r-=2}
-  return {l,r};
+  let a=t.start,b=t.end,inset=0;
+  if(AX.v==='master'){if(AX.ms==='week'&&isMaster(t)){a=monday(t.start);b=addDays(monday(t.end-1),7);inset=2}}
+  else if(AX.cell){a=sod(t.start);b=addDays(sod(t.end-1),1);inset=2}
+  return {l:X(Math.max(a,a0))+inset,r:X(Math.min(b,z))-inset};
 }
-
 /* ============ render chart ============ */
-const viewOk=t=>S.view==='master'?(isMaster(t)||t.milestone):S.view==='day'?!isMaster(t):true;
+const viewOk=t=>S.view==='master'?(isMaster(t)||t.milestone||S.showDaily):S.view==='day'?!isMaster(t):true;
 function visibleTasks(){
   const {from,to}=rangeOfView();
   return [...S.tasks.values()].filter(t=>scopeOk(t)&&viewOk(t)&&t.end>from&&t.start<to);
@@ -836,15 +850,23 @@ function render(){
     else{if(g.s<ws)bg+=rect(0,X(ws),'off');if(g.e>we)bg+=rect(X(we),W,'off')}
     for(let m=Math.ceil(AX.lo/AX.unit)*AX.unit;m<AX.hi;m+=AX.unit){if(m===AX.lo)continue;bg+=`<i class="gl${m%60?'':' h'}" style="left:${X(atMin(d,m)).toFixed(1)}px"></i>`}
     const stepH=AX.pxH<24?2:1;
-    for(let h=Math.ceil(AX.lo/60);h*60<=AX.hi;h+=stepH){const x=X(atMin(d,h*60));if(x<9||W-x<9)continue;ticks+=`<span class="tk" style="left:${x.toFixed(1)}px">${h}${AX.pxH>=48?':00':''}</span>`}
-    if(AX.pxH>=90)for(let m=Math.ceil(AX.lo/30)*30;m<AX.hi;m+=30){if(m%60===0)continue;const x=X(atMin(d,m));if(x<14||W-x<14)continue;ticks+=`<span class="tk" style="left:${x.toFixed(1)}px;color:var(--ink-3);font-size:10px">${Math.floor(m/60)}:30</span>`}
+    for(let h=Math.ceil(AX.lo/60);h*60<AX.hi;h++){const x=X(atMin(d,h*60));if(x<1)continue;ticks+=`<i class="tl" data-h="${h}" style="left:${x.toFixed(1)}px"></i>`;if((h-Math.ceil(AX.lo/60))%stepH||W-x<16)continue;ticks+=`<span class="tk hr" style="left:${x.toFixed(1)}px">${h}${AX.pxH>=48?':00':''}</span>`}
+    if(AX.pxH>=90)for(let m=Math.ceil(AX.lo/30)*30;m<AX.hi;m+=30){if(m%60===0)continue;const x=X(atMin(d,m));if(x<14||W-x<20)continue;ticks+=`<span class="tk hr" style="left:${x.toFixed(1)}px;color:var(--ink-3);font-size:10px">${Math.floor(m/60)}:30</span>`}
+  }else if(AX.v==='master'&&AX.ms==='month'){
+    const sw=AX.segW,tm=new Date(new Date(now).getFullYear(),new Date(now).getMonth(),1).getTime();
+    AX.segs.forEach((g,i)=>{
+      const x=i*sw,dt=new Date(g.d);
+      if(g.d===tm)bg+=rect(x,x+sw,'td');
+      if(i>0){bg+=`<i class="gl w" style="left:${x.toFixed(1)}px"></i>`;ticks+=`<i class="tl w" style="left:${x.toFixed(1)}px"></i>`}
+      ticks+=`<span class="tk${g.d===tm?' tdy':''}" style="left:${(x+sw/2).toFixed(1)}px">${dt.getMonth()+1}${sw>=30?'月':''}${dt.getMonth()===0||i===0?`<i>${String(dt.getFullYear()).slice(2)}年</i>`:''}</span>`;
+    });
   }else if(AX.v==='master'){
     const sw=AX.segW,tw=monday(now);
     const firstIdx=AX.segs.findIndex(g=>new Date(g.d).getDate()<=7);
     AX.segs.forEach((g,i)=>{
       const x=i*sw,d=g.d,dt=new Date(d),first=dt.getDate()<=7;
       if(d===tw)bg+=rect(x,x+sw,'td');
-      if(i>0)bg+=`<i class="gl ${first?'w':'h'}" style="left:${x.toFixed(1)}px"></i>`;
+      if(i>0){bg+=`<i class="gl ${first?'w':'h'}" style="left:${x.toFixed(1)}px"></i>`;ticks+=`<i class="tl ${first?'w':''}" style="left:${x.toFixed(1)}px"></i>`}
       if(first||(i===0&&(firstIdx<0||firstIdx>2)))ticks+=`<span class="tk mo" style="left:${x.toFixed(1)}px">${dt.getMonth()+1}月</span>`;
       ticks+=`<span class="tk wk${d===tw?' tdy':''}" style="left:${(x+sw/2).toFixed(1)}px">${dt.getDate()}</span>`;
     });
@@ -855,7 +877,7 @@ function render(){
       const x=i*sw,d=g.d,dow=new Date(d).getDay();
       if(isHoliday(d))bg+=rect(x,x+sw,'wk');
       if(d===today)bg+=rect(x,x+sw,'td');
-      if(i>0&&(AX.v==='week'||dow===1||sw>=14))bg+=`<i class="gl ${AX.v==='week'||dow===1?'w':'h'}" style="left:${x.toFixed(1)}px"></i>`;
+      if(i>0&&(AX.v==='week'||dow===1||sw>=14)){const c=AX.v==='week'||dow===1?'w':'h';bg+=`<i class="gl ${c}" style="left:${x.toFixed(1)}px"></i>`;ticks+=`<i class="tl ${c==='w'?'w':''}" style="left:${x.toFixed(1)}px"></i>`}
       const cls=(d===today?' tdy':'')+(S.settings.holidays.includes(ymd(d))?' hol':dow===0?' sun':dow===6?' sat':'');
       if(AX.v==='week')ticks+=`<span class="tk${cls}" style="left:${(x+sw/2).toFixed(1)}px">${new Date(d).getDate()}<i>${DOW[dow]}</i></span>`;
       else if(!few||d===today||(dow===1&&(ti<0||Math.abs(i-ti)>=3))||(i===0&&dow!==1&&(ti<0||ti>=3)&&sw*((8-dow)%7)>=22))ticks+=`<span class="tk${cls}" style="left:${(x+sw/2).toFixed(1)}px">${new Date(d).getDate()}${few?'':`<i>${DOW[dow]}</i>`}</span>`;
@@ -869,7 +891,9 @@ function render(){
   const scrollTop=scroller.scrollTop, scrollLeft=scroller.scrollLeft;
   grid.style.width=(S.nw+W)+'px';
   const held=[...G.touchEls].filter(el=>grid.contains(el));
-  grid.innerHTML=`<div class="axis"><div class="corner"><button class="chip-s" data-scope="1" aria-label="表示する予定（仕事・私用）を切り替え">${scopeLbl}</button>${S.zoom>1.01?`<button class="chip-s" data-zoomreset="1" aria-label="拡大を戻す">×${S.zoom.toFixed(1)}</button>`:''}</div><div class="ticks" style="width:${W}px">${ticks}</div></div>
+  const corner=AX.v==='master'?`<div class="mseg" role="group" aria-label="大日程の単位"><button data-mscale="week" aria-pressed="${AX.ms==='week'}">週</button><button data-mscale="month" aria-pressed="${AX.ms==='month'}">月</button></div><button class="chip-s" data-daily="1" aria-pressed="${S.showDaily}" aria-label="日ごとの予定も表示">日予定</button>`
+    :`<button class="chip-s" data-scope="1" aria-label="表示する予定（仕事・私用）を切り替え">${scopeLbl}</button>`;
+  grid.innerHTML=`<div class="axis"><div class="corner">${corner}${S.zoom>1.01?`<button class="chip-s" data-zoomreset="1" aria-label="拡大を戻す">×${S.zoom.toFixed(1)}</button>`:''}</div><div class="ticks" style="width:${W}px">${ticks}</div></div>
 <div class="body" id="cbody"><div class="nfill" aria-hidden="true"></div><div class="bg" style="width:${W}px">${bg}</div>${rows}<svg class="deps" id="deps" width="${W}" height="10"></svg>${empty}</div>`;
   // A touch keeps targeting the element it started on. If a re-render (pinch zoom, timer, sync) removed that element,
   // its touchmove/touchend would no longer reach the scroller, so park it in a hidden holder inside the scroller.
@@ -887,7 +911,7 @@ function rowHTML(t,now,conflicts,ghostMove){
   if(!t.ghost){
     if(AX.v==='day')for(const s of t.segs){const a=Math.max(s.s,AX.segs[0].s),b=Math.min(s.e||now,AX.segs[AX.segs.length-1].e);if(b<=a)continue;const l=X(a),r=X(b);inner+=`<i class="act${s.e?'':' live'}" style="left:${l.toFixed(1)}px;width:${Math.max(3,r-l).toFixed(1)}px"></i>`}
     if(t.deadline&&t.deadline>=AX.segs[0].s&&t.deadline<=AX.segs[AX.segs.length-1].e){
-      const x=AX.v==='master'?X(addDays(monday(t.deadline),7))-1:AX.cell?X(addDays(sod(t.deadline),1))-1:X(t.deadline);
+      const x=AX.v==='master'?(AX.ms==='week'?X(addDays(monday(t.deadline),7))-1:X(t.deadline)):AX.cell?X(addDays(sod(t.deadline),1))-1:X(t.deadline);
       inner+=`<i class="dl" style="left:${x.toFixed(1)}px"></i>`;
     }
   }
@@ -943,7 +967,7 @@ function updateTop(){
   if(S.view==='day'){main=fMDW(S.anchor);const df=Math.round((S.anchor-today)/DAY);sub=df===0?'今日':df===1?'明日':df===-1?'昨日':new Date(S.anchor).getFullYear()+'年'}
   else if(S.view==='week'){const m=monday(S.anchor);main=`${fMD(m)}–${fMD(addDays(m,6))}`;sub=today>=m&&today<addDays(m,7)?'今週':new Date(m).getFullYear()+'年'}
   else if(S.view==='month'){const d=new Date(S.anchor);main=`${d.getMonth()+1}月`;sub=d.getFullYear()+'年'}
-  else{const r=rangeOfView(),a=new Date(S.anchor),z=new Date(r.to-DAY);main=`${a.getMonth()+1}月〜${z.getMonth()+1}月`;sub=`大日程 · ${a.getFullYear()}年`}
+  else{const ys=new Date(yearStartOf(S.anchor)),fy=ys.getMonth()===0;main=fy?`${ys.getFullYear()}年`:`${ys.getFullYear()}年度`;sub=`大日程・${S.mscale==='week'?'週':'月'}ごと`+(fy?'':`（${ys.getMonth()+1}月〜）`)}
   $('#dateLabel').textContent=main;$('#dateSub').textContent=sub;$('#datePick').value=ymd(S.anchor);
   document.querySelectorAll('.seg button').forEach(b=>b.setAttribute('aria-selected',String(b.dataset.view===S.view)));
   const n=[...S.proposals.values()].filter(p=>p.status==='pending').length;
@@ -980,7 +1004,8 @@ function moveDrag(x,y){
   let s=start,e=end;
   if(AX.cell){
     // week / month / 大日程: move and stretch by whole days (or whole weeks), keeping the time of day
-    const k=Math.round(dx/AX.segW)*AX.step, min=isMaster(d.task)?7*DAY:15*MIN;
+    // 大日程 items always move by whole weeks; everything else by whole days
+    let k=Math.round(dx/AX.ppd);if(isMaster(d.task))k=Math.round(k/7)*7;const min=isMaster(d.task)?7*DAY:15*MIN;
     if(d.type==='move'){s=addDays(start,k);e=addDays(end,k)}
     else if(d.type==='l'){s=addDays(start,k);if(e-s<min)s=d.cur.start}
     else{e=addDays(end,k);if(e-s<min)e=d.cur.end}
@@ -1027,6 +1052,8 @@ function tap(target){
   const grp=target.closest('[data-grp]');if(grp){const n=grp.dataset.grp;S.collapsed.has(n)?S.collapsed.delete(n):S.collapsed.add(n);LS.set('collapsed',[...S.collapsed]);render();return}
   if(target.closest('[data-scope]')){S.scope={all:'work',work:'private',private:'all'}[S.scope];render();toast({all:'仕事と私用の予定をすべて表示',work:'仕事の予定だけを表示',private:'私用の予定だけを表示'}[S.scope]);return}
   if(target.closest('[data-zoomreset]')){S.zoom=1;render();return}
+  const ms=target.closest('[data-mscale]');if(ms){if(S.mscale!==ms.dataset.mscale){S.mscale=ms.dataset.mscale;LS.set('mscale',S.mscale);S.zoom=1;render();scrollToFocus()}return}
+  if(target.closest('[data-daily]')){S.showDaily=!S.showDaily;LS.set('showDaily',S.showDaily);render();toast(S.showDaily?'大日程に日ごとの予定も表示':'大日程は大日程の項目だけを表示');return}
   const gh=target.closest('[data-pid]');if(gh){openMuse();return}
   const el=target.closest('[data-id]');if(el&&S.tasks.has(el.dataset.id)){select(el.dataset.id);return}
   if(S.selected){S.selected=null;render()}
@@ -1084,7 +1111,7 @@ window.addEventListener('mouseup',()=>{if(G.ptr!=='mouse')return;G.ptr=null;up()
 scroller.addEventListener('wheel',e=>{if(!e.ctrlKey)return;e.preventDefault();const z=clamp(S.zoom*Math.exp(-e.deltaY/120),1,AX.v==='day'?8:6);zoomTo(z,T(clamp(trackX(e.clientX),0,AX.trackW)),e.clientX)},{passive:false});
 document.addEventListener('gesturestart',e=>e.preventDefault());
 scroller.addEventListener('contextmenu',e=>e.preventDefault());
-scroller.addEventListener('keydown',e=>{if(e.key==='Enter'||e.key===' '){const el=e.target.closest('[data-ck],[data-id],[data-grp],[data-scope],[data-zoomreset],[data-sample]');if(el){e.preventDefault();tap(el)}}});
+scroller.addEventListener('keydown',e=>{if(e.key==='Enter'||e.key===' '){const el=e.target.closest('[data-mscale],[data-daily],[data-ck],[data-id],[data-grp],[data-scope],[data-zoomreset],[data-sample]');if(el){e.preventDefault();tap(el)}}});
 
 /* ============ selection / jumping ============ */
 function select(id){S.selected=id;render();openDetail(id);ensureVisible(id)}
@@ -1417,6 +1444,8 @@ function openSettings(refresh){
 <div class="f"><button class="btn sm" data-addbreak="1">時間帯を追加</button></div>
 <label class="f"><span style="width:auto;flex:1">工程調整・改造・設備停止は、この時間帯か休日にだけ自動で入れる</span><input type="checkbox" id="s-line" ${st.lineRule?'checked':''}></label></div>
 <p class="hint">チャートには表示しません。タスクの自動配置とMUSEの提案だけに使います。</p>
+<div class="sect">大日程</div>
+<div class="fg"><label class="f"><span class="wide">1年の始まり</span><select id="s-ys" style="flex:none;width:118px">${Array.from({length:12},(_,i)=>`<option value="${i+1}"${(+st.yearStart||4)===i+1?' selected':''}>${i+1}月${i+1===4?'（年度）':''}</option>`).join('')}</select></label></div>
 <div class="sect">休日（土日以外）</div>
 <div class="fg"><div class="chips">${st.holidays.slice().sort().map(d=>`<button class="chip x" data-rmhol="${d}">${fMDW(parseDT(d))}</button>`).join('')||'<span class="hint" style="margin:0">工場カレンダーの休日を追加できます</span>'}</div>
 <label class="f"><span>追加</span><input type="date" id="s-hol"></label></div>
@@ -1479,6 +1508,7 @@ function otherChange(e){
   if(t.id==='s-ws'||t.id==='s-we'){if(t.value){S.settings[t.id==='s-ws'?'workStart':'workEnd']=t.value;Store.saveSettings();render()}return}
   if(t.dataset.bs!=null||t.dataset.be!=null){const i=+(t.dataset.bs??t.dataset.be);if(t.value){S.settings.breaks[i][t.dataset.bs!=null?'s':'e']=t.value;Store.saveSettings();render()}return}
   if(t.id==='s-line'){S.settings.lineRule=t.checked;Store.saveSettings();render();return}
+  if(t.id==='s-ys'){S.settings.yearStart=+t.value;Store.saveSettings();render();return}
   if(t.id==='s-hol'&&t.value){if(!S.settings.holidays.includes(t.value))S.settings.holidays.push(t.value);Store.saveSettings();render();openSettings(true)}
 }
 popBody.addEventListener('keydown',e=>{if(e.key==='Enter'&&e.target.id==='qa'&&!e.isComposing){e.preventDefault();quickAdd()}});
@@ -1805,18 +1835,28 @@ window.MUSE=Object.freeze({
 });
 
 /* ============ top bar / nav ============ */
+function scrollToFocus(){
+  requestAnimationFrame(()=>{
+    if(!AX||scroller.scrollWidth<=scroller.clientWidth+1){scroller.scrollLeft=0;return}
+    const now=Date.now();
+    if(!(now>=AX.from&&now<AX.to)){scroller.scrollLeft=0;return}
+    const back=AX.v==='day'?scroller.clientWidth/3-S.nw:2*AX.segW;
+    scroller.scrollLeft=Math.max(0,X(now)-back);
+  });
+}
 function shift(n){
   if(S.view==='day')S.anchor=addDays(S.anchor,n);
   else if(S.view==='week')S.anchor=addDays(S.anchor,7*n);
+  else if(S.view==='master'){const ys=new Date(yearStartOf(S.anchor));S.anchor=new Date(ys.getFullYear()+n,ys.getMonth(),1).getTime()}
   else{const d=new Date(S.anchor);S.anchor=new Date(d.getFullYear(),d.getMonth()+n,1).getTime()}
-  S.selected=null;S.zoom=1;scroller.scrollLeft=0;render();
+  S.selected=null;S.zoom=1;scroller.scrollLeft=0;render();scrollToFocus();
 }
 $('#prevBtn').onclick=()=>shift(-1);$('#nextBtn').onclick=()=>shift(1);
-$('#datePick').addEventListener('change',e=>{const d=parseDT(e.target.value);if(d){S.anchor=sod(d);render()}});
-document.querySelectorAll('.seg button').forEach(b=>b.onclick=()=>{S.view=b.dataset.view;S.zoom=1;scroller.scrollLeft=0;render();LS.set('view',S.view)});
+$('#datePick').addEventListener('change',e=>{const d=parseDT(e.target.value);if(d){S.anchor=sod(d);scroller.scrollLeft=0;render();scrollToFocus()}});
+document.querySelectorAll('.seg button').forEach(b=>b.onclick=()=>{S.view=b.dataset.view;S.zoom=1;scroller.scrollLeft=0;render();scrollToFocus();LS.set('view',S.view)});
 $('#museBtn').onclick=()=>Pop.kind==='muse'?closePop():openMuse();
 $('#moreBtn').onclick=()=>openMore();
-$('#todayBtn').onclick=()=>{S.anchor=sod(Date.now());S.zoom=1;render();requestAnimationFrame(()=>{if(AX.v==='day'&&inSeg(Date.now())){scroller.scrollLeft=Math.max(0,X(Date.now())-scroller.clientWidth/3)}const first=grid.querySelector('.row');if(first)scroller.scrollTop=0})};
+$('#todayBtn').onclick=()=>{S.anchor=sod(Date.now());S.zoom=1;render();scroller.scrollTop=0;scrollToFocus()};
 $('#listBtn').onclick=()=>openList();
 $('#addBtn').onclick=()=>openAdd();
 let rz=0;window.addEventListener('resize',()=>{cancelAnimationFrame(rz);rz=requestAnimationFrame(render)});
@@ -1883,6 +1923,6 @@ function insertSamples(){
   const now=new Date();
   // evening: open on the next day so the plan you need next is what you see first
   if(now.getHours()>=20)S.anchor=addDays(sod(now.getTime()),1);
-  Store.init();initMuse();
+  Store.init();initMuse();scrollToFocus();
 })();
 </script>
