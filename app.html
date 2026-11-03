@@ -1,0 +1,1607 @@
+<title>MUSE GANTT</title>
+<style>
+/* Layout: chart-first single screen — slim top bar, full-bleed gantt (~80% of height), thin nav; detail/MUSE/list slide up as sheets */
+:root{
+  --bg:#E8E4DC; --surface:#F8F6F2; --surface-2:#EFECE6; --ink:#242725; --ink-2:#676964; --ink-3:#9E9D96;
+  --line:rgba(36,39,37,.07); --line-2:rgba(36,39,37,.15);
+  --green:#1F4B3D; --green-mid:#3D7562; --green-soft:#CFDDD5; --on-green:#F6F4EE;
+  --brass:#A8761F; --brass-soft:#EFE1C4;
+  --late:#B63F2A; --late-soft:#F2D8D0;
+  --done:#B9B7B0; --done-soft:#E3E0D9;
+  --priv:#5E6B78; --priv-soft:#D6DBE0;
+  --hatch:rgba(168,118,31,.17); --off:rgba(36,39,37,.05); --wkend:rgba(36,39,37,.04); --today:rgba(31,75,61,.07);
+  --scrim:rgba(18,20,19,.32); --shadow:0 10px 28px rgba(20,24,22,.16);
+  --font:-apple-system,BlinkMacSystemFont,"SF Pro Text","SF Pro Display","Hiragino Sans","Hiragino Kaku Gothic ProN","Noto Sans JP",system-ui,sans-serif;
+  --row:44px; --axis:30px; --nw:112px; --kb:0px; --padb:0px;
+}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]){
+  --bg:#111312; --surface:#181B1A; --surface-2:#202423; --ink:#E9E7E1; --ink-2:#A2A39D; --ink-3:#6C6E69;
+  --line:rgba(233,231,225,.06); --line-2:rgba(233,231,225,.13);
+  --green:#56A386; --green-mid:#3E7D66; --green-soft:#26453A; --on-green:#0E1513;
+  --brass:#D6A64E; --brass-soft:#4A3C22; --late:#E46A51; --late-soft:#4F2A23;
+  --done:#5C5F5B; --done-soft:#2D302E; --priv:#97A7B7; --priv-soft:#2F3944;
+  --hatch:rgba(214,166,78,.15); --off:rgba(0,0,0,.28); --wkend:rgba(255,255,255,.025); --today:rgba(86,163,134,.10);
+  --scrim:rgba(0,0,0,.55); --shadow:0 10px 28px rgba(0,0,0,.55); color-scheme:dark}}
+:root[data-theme="dark"]{
+  --bg:#111312; --surface:#181B1A; --surface-2:#202423; --ink:#E9E7E1; --ink-2:#A2A39D; --ink-3:#6C6E69;
+  --line:rgba(233,231,225,.06); --line-2:rgba(233,231,225,.13);
+  --green:#56A386; --green-mid:#3E7D66; --green-soft:#26453A; --on-green:#0E1513;
+  --brass:#D6A64E; --brass-soft:#4A3C22; --late:#E46A51; --late-soft:#4F2A23;
+  --done:#5C5F5B; --done-soft:#2D302E; --priv:#97A7B7; --priv-soft:#2F3944;
+  --hatch:rgba(214,166,78,.15); --off:rgba(0,0,0,.28); --wkend:rgba(255,255,255,.025); --today:rgba(86,163,134,.10);
+  --scrim:rgba(0,0,0,.55); --shadow:0 10px 28px rgba(0,0,0,.55); color-scheme:dark}
+
+html{box-sizing:border-box;height:100%;overflow:hidden;overscroll-behavior:none}
+*,*::before,*::after{box-sizing:inherit}
+body{height:100%;overflow:hidden;background:var(--bg);color:var(--ink);font:13px/1.35 var(--font);
+  -webkit-tap-highlight-color:transparent;-webkit-text-size-adjust:100%;-webkit-user-select:none;user-select:none;-webkit-touch-callout:none;
+  font-variant-numeric:tabular-nums;overscroll-behavior:none}
+button{font:inherit;color:inherit;background:none;border:0;padding:0;margin:0;cursor:pointer}
+button:focus-visible,input:focus-visible,textarea:focus-visible,select:focus-visible,[role=button]:focus-visible{outline:2px solid var(--green);outline-offset:2px}
+input,textarea,select{font:inherit;font-size:16px;color:var(--ink);-webkit-user-select:text;user-select:text}
+.ic{width:22px;height:22px;stroke:currentColor;fill:none;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round;flex:none}
+
+#app{height:100%;display:grid;grid-template-rows:auto minmax(0,1fr) auto}
+
+/* top bar */
+.top{display:flex;align-items:center;gap:4px;height:50px;padding-left:max(8px,env(safe-area-inset-left,0px));padding-right:max(10px,env(safe-area-inset-right,0px))}
+.nav-arrow{width:30px;height:44px;flex:none;display:grid;place-items:center;color:var(--ink-2);border-radius:10px}
+.nav-arrow .ic{width:20px;height:20px}
+.datebox{position:relative;display:flex;flex-direction:column;justify-content:center;flex:1;min-width:0;height:44px;padding:0 2px}
+.datebox b{font-size:15.5px;font-weight:650;letter-spacing:-.01em;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.datebox small{font-size:10.5px;color:var(--ink-2);white-space:nowrap;display:flex;align-items:center;gap:5px}
+.datebox input{position:absolute;inset:0;opacity:0;width:100%;height:100%;font-size:16px}
+.sync{width:6px;height:6px;border-radius:50%;background:var(--ink-3);flex:none}
+.sync.saved{background:var(--green)} .sync.saving{background:var(--brass);animation:pulse 1s infinite} .sync.error{background:var(--late)}
+.sync.local{background:transparent;box-shadow:inset 0 0 0 1.2px var(--ink-3)}
+@keyframes pulse{50%{opacity:.35}}
+.seg{display:flex;flex:none;background:var(--surface-2);border-radius:9px;padding:2px;height:32px}
+.seg button{min-width:40px;padding:0 6px;font-size:13px;font-weight:650;color:var(--ink-2);border-radius:7px;height:28px;position:relative}
+.seg button::before{content:"";position:absolute;inset:-8px 0}
+.seg button[aria-selected=true]{background:var(--surface);color:var(--ink);box-shadow:0 1px 2px rgba(0,0,0,.08)}
+.musebtn{position:relative;flex:none;height:32px;padding:0 9px 0 8px;margin-left:4px;border-radius:9px;background:var(--green);color:var(--on-green);display:flex;align-items:center;gap:5px;font-weight:700;font-size:11.5px;letter-spacing:.08em}
+.musebtn::before{content:"";position:absolute;inset:-6px -2px}
+.musebtn svg{width:12px;height:12px;fill:currentColor;stroke:none}
+.badge{position:absolute;top:-5px;right:-5px;min-width:17px;height:17px;padding:0 4px;border-radius:9px;background:var(--brass);color:#fff;font-size:10px;font-weight:700;display:grid;place-items:center;letter-spacing:0}
+
+/* chart */
+.chart{position:relative;min-height:0;background:var(--surface);border-top:1px solid var(--line-2);border-bottom:1px solid var(--line-2)}
+.scroller{position:absolute;inset:0;overflow:auto;overscroll-behavior:contain;-webkit-overflow-scrolling:touch;scrollbar-width:none}
+.scroller::-webkit-scrollbar{display:none}
+.g{position:relative}
+.axis{position:sticky;top:0;z-index:6;display:flex;height:var(--axis);background:var(--surface);border-bottom:1px solid var(--line-2)}
+.corner{position:sticky;left:0;z-index:7;width:var(--nw);flex:none;background:var(--surface);border-right:1px solid var(--line-2);display:flex;align-items:center;gap:4px;padding-left:max(6px,env(safe-area-inset-left,0px))}
+.chip-s{height:22px;padding:0 8px;border-radius:11px;background:var(--surface-2);font-size:10.5px;font-weight:600;color:var(--ink-2);display:flex;align-items:center;gap:3px;position:relative}
+.chip-s::before{content:"";position:absolute;inset:-8px -3px}
+.ticks{position:relative;flex:none;height:100%;overflow:hidden}
+.tk{position:absolute;top:0;height:100%;padding:3px 0 0 3px;font-size:10px;color:var(--ink-2);white-space:nowrap;border-left:1px solid var(--line-2)}
+.tk.c{border:0;transform:translateX(-50%);padding:5px 0 0;text-align:center;line-height:1.05}
+.tk.c i{display:block;font-style:normal;font-size:8.5px;color:var(--ink-3)}
+.tk.sun,.tk.hol{color:var(--late)} .tk.sat{color:var(--priv)}
+.tk.tdy{color:var(--green);font-weight:700}
+.tb{position:absolute;bottom:0;height:3px;background:var(--brass);opacity:.55;border-radius:2px 2px 0 0}
+.tbl{position:absolute;bottom:4px;font-size:8.5px;color:var(--brass);white-space:nowrap;transform:translateX(-50%);font-weight:600}
+.nowp{position:absolute;top:2px;transform:translateX(-50%);background:var(--ink);color:var(--surface);font-size:9.5px;font-weight:700;padding:1px 5px;border-radius:6px;z-index:2}
+.body{position:relative;padding-bottom:var(--padb)}
+.bg{position:absolute;top:0;bottom:0;left:var(--nw);pointer-events:none;overflow:hidden}
+.bg i{position:absolute;top:0;bottom:0;display:block}
+.bg .gl{width:0;border-left:1px solid var(--line)} .bg .gl.h{border-left-color:var(--line-2)} .bg .gl.w{border-left:1.5px solid var(--line-2)}
+.bg .off{background:var(--off)} .bg .wk{background:var(--wkend)} .bg .td{background:var(--today)}
+.bg .brk{background:repeating-linear-gradient(135deg,var(--hatch) 0 3px,transparent 3px 7px)}
+.bg .now{width:0;border-left:1.5px solid var(--ink);z-index:1}
+.bg .now::before{content:"";position:absolute;top:-1px;left:-4.5px;width:8px;height:8px;border-radius:50%;background:var(--ink)}
+.row{display:flex;height:var(--row);position:relative}
+.nm{position:sticky;left:0;z-index:4;width:var(--nw);flex:none;background:var(--surface);border-right:1px solid var(--line-2);border-bottom:1px solid var(--line);
+  display:flex;align-items:center;gap:5px;padding:0 6px 0 max(4px,env(safe-area-inset-left,0px));min-width:0}
+.row.sel .nm{background:var(--surface-2)}
+.row.sel .nm::before{content:"";position:absolute;left:0;top:8px;bottom:8px;width:3px;border-radius:0 2px 2px 0;background:var(--ink)}
+.nt{display:flex;flex-direction:column;min-width:0;flex:1}
+.nt b{font-size:12.5px;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;letter-spacing:-.005em}
+.nt small{font-size:10px;color:var(--ink-2);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.nt small.late{color:var(--late);font-weight:600} .nt small.run{color:var(--green);font-weight:600} .nt small.warn{color:var(--brass);font-weight:600} .nt small.gh{color:var(--green)}
+.ck{width:28px;height:var(--row);display:grid;place-items:center;flex:none;margin-left:-2px}
+.ck::after{content:"";width:18px;height:18px;border-radius:50%;box-shadow:inset 0 0 0 1.5px var(--ink-3);grid-area:1/1}
+.ck svg{grid-area:1/1;width:12px;height:12px;stroke:var(--on-green);stroke-width:2.6;fill:none;opacity:0;z-index:1}
+.ck.s-doing::after{box-shadow:inset 0 0 0 1.5px var(--green);background:radial-gradient(circle,var(--green) 0 3.5px,transparent 4px)}
+.ck.s-paused::after{box-shadow:inset 0 0 0 1.5px var(--brass)}
+.ck.late::after{box-shadow:inset 0 0 0 1.5px var(--late)}
+.ck.s-done::after{background:var(--done);box-shadow:none}
+.ck.s-done svg{opacity:1}
+.ck.gh{color:var(--green);font-size:13px}
+.ck.gh::after{display:none}
+.trk{position:relative;flex:none;border-bottom:1px solid var(--line)}
+.bar{position:absolute;top:8px;height:24px;border-radius:6px;background:var(--green-soft);color:var(--green);overflow:visible;z-index:2;transition:box-shadow .15s,transform .15s}
+.bar::before{content:"";position:absolute;inset:0;border-radius:6px;box-shadow:inset 0 0 0 1px currentColor;opacity:.3;pointer-events:none}
+.bar .pg{position:absolute;left:0;top:0;bottom:0;border-radius:6px;background:var(--green);display:block;max-width:100%}
+.bar .bl{position:absolute;top:0;line-height:24px;font-size:10.5px;font-weight:650;color:var(--ink);white-space:nowrap;pointer-events:none}
+.bar .bl.on{color:var(--on-green)}
+.b-imp{background:var(--brass-soft);color:var(--brass)} .b-imp .pg{background:var(--brass)}
+.b-late{background:var(--late-soft);color:var(--late)} .b-late .pg{background:var(--late)}
+.b-done{background:var(--done-soft);color:var(--done)} .b-done .pg{background:var(--done)} .b-done .bl.on{color:var(--surface)}
+.b-priv{background:var(--priv-soft);color:var(--priv)} .b-priv .pg{background:var(--priv)}
+.b-ghost::before{display:none}
+.b-ghost{color:var(--green);background:transparent;box-shadow:inset 0 0 0 1.5px var(--green);background-image:repeating-linear-gradient(135deg,var(--green-soft) 0 4px,transparent 4px 8px);opacity:.95;border-radius:6px}
+.b-ghost .bl{color:var(--green)}
+.bar.sel{box-shadow:0 0 0 2px var(--surface),0 0 0 3.5px var(--ink)}
+.bar.lift{box-shadow:var(--shadow),0 0 0 2px var(--ink);transform:scaleY(1.12);z-index:8;transition:none}
+.bar.run::after{content:"";position:absolute;right:-3px;top:8px;width:8px;height:8px;border-radius:50%;background:var(--green);box-shadow:0 0 0 2px var(--surface);animation:pulse 1.4s infinite}
+.hd{position:absolute;top:-8px;bottom:-8px;width:26px;touch-action:none;z-index:3;display:grid;place-items:center}
+.hd.l{left:-14px} .hd.r{right:-14px}
+.hd::after{content:"";width:6px;height:18px;border-radius:3px;background:var(--surface);box-shadow:0 0 0 1.5px var(--ink)}
+.ms{position:absolute;top:15px;width:13px;height:13px;margin-left:-6.5px;transform:rotate(45deg);background:var(--green);border-radius:2px;z-index:2}
+.ms.b-imp{background:var(--brass)} .ms.b-late{background:var(--late)} .ms.b-done{background:var(--done)} .ms.sel{box-shadow:0 0 0 2px var(--surface),0 0 0 3.5px var(--ink)}
+.act{position:absolute;bottom:5px;height:4px;border-radius:2px;background:var(--ink);opacity:.75;z-index:1}
+.act.live{background:var(--green);opacity:1}
+.dl{position:absolute;top:5px;bottom:5px;width:0;border-left:2px solid var(--late);z-index:1}
+.dl::before{content:"";position:absolute;top:0;left:0;border-left:7px solid var(--late);border-bottom:5px solid transparent}
+.grp{display:flex;height:30px;position:relative;background:var(--surface-2)}
+.gn{position:sticky;left:0;z-index:4;min-width:var(--nw);max-width:calc(100vw - 16px);flex:none;background:var(--surface-2);display:flex;align-items:center;gap:5px;padding:0 10px 0 max(6px,env(safe-area-inset-left,0px));white-space:nowrap}
+.grp.col .gn{width:var(--nw);max-width:var(--nw);border-right:1px solid var(--line-2)}
+.gn b{font-size:11px;font-weight:700;letter-spacing:.02em;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;color:var(--ink-2)}
+.gn small{font-size:10px;color:var(--ink-3);white-space:nowrap}
+.gn .ic{width:13px;height:13px;stroke-width:2.2;color:var(--ink-3);transition:transform .2s}
+.grp.col .gn .ic{transform:rotate(-90deg)}
+.gt{position:absolute;top:0;bottom:0;left:var(--nw)}
+.span{position:absolute;top:12px;height:6px;border-radius:3px;background:var(--line-2)}
+.deps{position:absolute;top:0;left:var(--nw);pointer-events:none;overflow:visible;z-index:2}
+.nfill{position:sticky;left:0;top:0;width:var(--nw);height:0;z-index:3}
+.nfill::before{content:"";position:absolute;left:0;top:0;width:100%;height:var(--bodyh,100%);background:var(--surface);border-right:1px solid var(--line-2)}
+.deps path{fill:none;stroke:var(--ink);stroke-width:1.4;stroke-dasharray:3 3}
+.empty{position:absolute;left:var(--nw);right:0;top:28%;text-align:center;color:var(--ink-2);font-size:12.5px;line-height:1.7;pointer-events:none;padding:0 16px}
+.empty b{display:block;font-size:14px;color:var(--ink);font-weight:600}
+.empty .btn{pointer-events:auto;margin-top:10px}
+.tip{position:fixed;z-index:50;transform:translate(-50%,-100%);background:var(--ink);color:var(--surface);font-size:12px;font-weight:650;padding:5px 9px;border-radius:8px;pointer-events:none;white-space:nowrap;display:none}
+.tip.warn{background:var(--late);color:#fff}
+
+/* bottom nav */
+.nav{display:grid;grid-template-columns:repeat(5,1fr);height:54px;align-items:center;padding-left:max(6px,env(safe-area-inset-left,0px));padding-right:max(6px,env(safe-area-inset-right,0px))}
+.nav button{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px;height:48px;font-size:10px;font-weight:600;color:var(--ink-2)}
+.nav button .ic{width:21px;height:21px}
+.nav .add{display:grid;place-items:center;width:54px;height:40px;border-radius:12px;background:var(--ink);color:var(--surface)}
+.nav .add .ic{width:22px;height:22px;stroke-width:2.2}
+
+/* sheet */
+.scrim{position:fixed;inset:0;z-index:40;background:var(--scrim);opacity:0;pointer-events:none;transition:opacity .22s}
+.scrim.on{opacity:1;pointer-events:auto}
+.sheet{position:fixed;left:0;right:0;bottom:var(--kb);z-index:41;background:var(--surface);border-radius:16px 16px 0 0;
+  box-shadow:0 -1px 0 var(--line-2),0 -12px 32px rgba(0,0,0,.08);transform:translateY(110%);transition:transform .3s cubic-bezier(.2,.85,.25,1),height .25s ease;
+  display:flex;flex-direction:column;max-height:calc(100% - 56px);padding-bottom:env(safe-area-inset-bottom,0px)}
+.sheet.open{transform:none}
+.sheet[data-size=peek]{height:46%}
+.sheet[data-size=full]{height:calc(100% - 56px)}
+.grab{height:22px;flex:none;display:grid;place-items:center;touch-action:none;cursor:grab}
+.grab::before{content:"";width:38px;height:5px;border-radius:3px;background:var(--line-2)}
+.sc{flex:1;min-height:0;overflow:auto;overscroll-behavior:contain;padding:0 max(16px,env(safe-area-inset-right,0px)) 18px max(16px,env(safe-area-inset-left,0px))}
+.sc.chat{display:flex;flex-direction:column;overflow:hidden;padding:0}
+.btn{height:40px;padding:0 14px;border-radius:10px;background:var(--surface-2);font-weight:650;font-size:13.5px;display:inline-flex;align-items:center;justify-content:center;gap:6px;white-space:nowrap}
+.btn.pri{background:var(--green);color:var(--on-green)}
+.btn.ink{background:var(--ink);color:var(--surface)}
+.btn.ghost{background:transparent;box-shadow:inset 0 0 0 1px var(--line-2)}
+.btn.danger{color:var(--late);background:transparent;box-shadow:inset 0 0 0 1px var(--late-soft)}
+.btn.wide{width:100%}
+.btn[disabled]{opacity:.4;pointer-events:none}
+.iconbtn{min-width:44px;height:36px;display:grid;place-items:center;color:var(--ink-2);font-size:12px;font-weight:600;border-radius:9px}
+.dh{display:flex;align-items:center;gap:6px;min-height:36px}
+.dh .proj{font-size:12px;color:var(--ink-2);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;flex:1;min-width:0}
+.kchip{font-size:10.5px;font-weight:700;padding:3px 7px;border-radius:6px;background:var(--surface-2);color:var(--ink-2);white-space:nowrap}
+.kchip.k-line,.kchip.k-stop{background:var(--brass-soft);color:var(--brass)} .kchip.k-private{background:var(--priv-soft);color:var(--priv)} .kchip.k-holiday{background:var(--late-soft);color:var(--late)}
+.tag{font-size:10px;font-weight:700;color:var(--ink-3);border:1px solid var(--line-2);border-radius:5px;padding:1px 5px}
+.title-in{width:100%;border:0;background:transparent;font-size:19px;font-weight:700;padding:4px 0;letter-spacing:-.01em;outline:none}
+.title-in:focus{box-shadow:0 1.5px 0 var(--green)}
+.when{display:flex;align-items:center;gap:8px;flex-wrap:wrap;font-size:13.5px;margin:2px 0 10px}
+.when span{color:var(--ink-2)}
+.pill{font-size:10.5px;font-weight:700;padding:2px 7px;border-radius:10px}
+.pill.late{background:var(--late-soft);color:var(--late)} .pill.imp{background:var(--brass-soft);color:var(--brass)} .pill.run{background:var(--green-soft);color:var(--green)}
+.acts{display:flex;gap:8px;flex-wrap:wrap}
+.acts .btn{flex:1;min-width:84px}
+.prog{display:flex;align-items:center;gap:12px;margin:14px 0 4px}
+.prog input{flex:1;accent-color:var(--green);height:28px}
+.prog output{width:44px;text-align:right;font-weight:700;font-size:15px}
+.actual{font-size:12px;color:var(--ink-2);min-height:18px}
+.sect{font-size:11px;font-weight:700;letter-spacing:.08em;color:var(--ink-3);margin:20px 0 6px;text-transform:uppercase}
+.f{display:flex;align-items:center;gap:10px;min-height:46px;border-bottom:1px solid var(--line)}
+.f>span:first-child{width:76px;flex:none;font-size:12.5px;color:var(--ink-2)}
+.f input:not([type=checkbox]):not([type=range]),.f select{flex:1;min-width:0;height:36px;border:0;background:var(--surface-2);border-radius:8px;padding:0 10px}
+.f input[type=checkbox]{width:22px;height:22px;accent-color:var(--green)}
+.f.col{flex-direction:column;align-items:stretch;gap:6px;padding:8px 0}
+.f textarea{width:100%;border:0;background:var(--surface-2);border-radius:8px;padding:8px 10px;resize:vertical;min-height:72px}
+.chips{display:flex;flex-wrap:wrap;gap:6px;align-items:center;flex:1;padding:6px 0}
+.chip{height:32px;padding:0 11px;border-radius:16px;background:var(--surface-2);font-size:12.5px;font-weight:600;color:var(--ink-2);display:inline-flex;align-items:center;gap:4px}
+.chip[aria-pressed=true]{background:var(--ink);color:var(--surface)}
+.chip.x::after{content:"×";margin-left:2px;opacity:.6}
+.segm{display:flex;background:var(--surface-2);border-radius:8px;padding:2px}
+.segm button{width:44px;height:32px;border-radius:6px;font-weight:650;color:var(--ink-2)}
+.segm button[aria-pressed=true]{background:var(--surface);color:var(--ink);box-shadow:0 1px 2px rgba(0,0,0,.08)}
+.hist{list-style:none;padding:0;margin:0}
+.hist li{font-size:12px;padding:7px 0;border-bottom:1px solid var(--line);color:var(--ink);line-height:1.45}
+.hist time{color:var(--ink-3);margin-right:6px}
+.hist em{display:block;font-style:normal;color:var(--ink-2);font-size:11.5px}
+.by{font-size:10px;font-weight:700;padding:1px 5px;border-radius:4px;background:var(--surface-2);color:var(--ink-2);margin-right:4px}
+.by.muse{background:var(--green-soft);color:var(--green)}
+.hint{font-size:11.5px;color:var(--ink-2);line-height:1.6;margin:8px 0 0}
+.addrow{display:flex;gap:8px;margin:2px 0 6px}
+.addrow input{flex:1;min-width:0;height:46px;border:0;border-radius:12px;background:var(--surface-2);padding:0 12px}
+.addrow .btn{height:46px}
+.qprev{font-size:12.5px;color:var(--green);font-weight:600;min-height:20px;margin:2px 0 4px}
+.qprev.warn{color:var(--late)}
+.list-h{display:flex;align-items:baseline;justify-content:space-between;margin:14px 0 2px}
+.list-h b{font-size:12px;font-weight:700;color:var(--ink-2);letter-spacing:.04em}
+.list-h small{color:var(--ink-3)}
+.li{display:flex;align-items:center;gap:8px;min-height:52px;border-bottom:1px solid var(--line)}
+.li .nt b{font-size:14px;white-space:normal}
+.li .nt small{font-size:11.5px}
+.li .ck{height:44px}
+.stat{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px;margin:8px 0}
+.stat div{background:var(--surface-2);border-radius:12px;padding:10px 12px}
+.stat small{display:block;font-size:11px;color:var(--ink-2)}
+.stat b{font-size:20px;font-weight:700;letter-spacing:-.02em}
+.stat b span{font-size:12px;font-weight:600;color:var(--ink-2);margin-left:2px}
+.att{display:grid;grid-template-columns:minmax(0,1fr) auto minmax(0,1fr) auto;gap:6px;align-items:end}
+.att label{min-width:0;display:flex;flex-direction:column;gap:3px;font-size:11px;color:var(--ink-2)}
+.att .btn{padding:0 10px}
+.att input{height:40px;border:0;border-radius:9px;background:var(--surface-2);padding:0 6px;width:100%;min-width:0}
+table.mini{width:100%;border-collapse:collapse;font-size:12px}
+table.mini th{font-weight:600;color:var(--ink-3);text-align:right;padding:5px 4px;font-size:10.5px}
+table.mini th:first-child,table.mini td:first-child{text-align:left}
+table.mini td{text-align:right;padding:7px 4px;border-top:1px solid var(--line)}
+.ratio.hi{color:var(--late);font-weight:700} .ratio.ok{color:var(--green);font-weight:700}
+.tbl-wrap{overflow-x:auto}
+
+/* MUSE */
+.mh{display:flex;align-items:center;gap:4px;padding:0 max(10px,env(safe-area-inset-right,0px)) 6px max(16px,env(safe-area-inset-left,0px));border-bottom:1px solid var(--line)}
+.mh .t{flex:1;display:flex;flex-direction:column}
+.mh .t b{font-size:16px;letter-spacing:.1em}
+.mh .t small{font-size:11px;color:var(--ink-2)}
+.msgs{flex:1;min-height:0;overflow:auto;overscroll-behavior:contain;padding:12px max(14px,env(safe-area-inset-right,0px)) 12px max(14px,env(safe-area-inset-left,0px));display:flex;flex-direction:column;gap:10px;-webkit-user-select:text;user-select:text}
+.msg{max-width:88%;font-size:14px;line-height:1.6;white-space:pre-wrap;word-break:break-word}
+.msg.u{align-self:flex-end;background:var(--ink);color:var(--surface);padding:8px 12px;border-radius:14px 14px 4px 14px}
+.msg.a{align-self:flex-start;color:var(--ink)}
+.msg.a .err{display:block;color:var(--late);font-size:12px;margin-top:4px}
+.msg.a .think{color:var(--ink-3)}
+.acts-log{font-size:11.5px;color:var(--ink-3);display:flex;flex-direction:column;gap:2px;margin-bottom:4px}
+.intro{color:var(--ink-2);font-size:13px;line-height:1.7;padding:4px 2px}
+.intro b{color:var(--ink)}
+.prop{border-radius:12px;background:var(--surface-2);padding:10px 12px;align-self:stretch;-webkit-user-select:none;user-select:none}
+.prop .ph{display:flex;align-items:baseline;gap:8px}
+.prop .ph b{font-size:11px;letter-spacing:.08em;color:var(--green)}
+.prop .ph span{flex:1;font-weight:650;font-size:13.5px}
+.prop .ph em{font-style:normal;font-size:11px;font-weight:700;color:var(--ink-3)}
+.prop.approved .ph em{color:var(--green)} .prop.rejected{opacity:.6}
+.prop ul{list-style:none;margin:8px 0 0;padding:0;font-size:12.5px;line-height:1.5}
+.prop li{padding:4px 0;border-top:1px solid var(--line)}
+.prop li i{font-style:normal;color:var(--ink-2)}
+.prop .why{font-size:12px;color:var(--ink-2);margin:6px 0 0}
+.prop .wn{font-size:12px;color:var(--brass);margin:6px 0 0}
+.prop .pa{display:flex;gap:8px;margin-top:10px}
+.prop .pa .btn{flex:1}
+.mchips{display:flex;gap:6px;overflow-x:auto;padding:8px max(14px,env(safe-area-inset-right,0px)) 2px max(14px,env(safe-area-inset-left,0px));scrollbar-width:none;flex:none}
+.mchips::-webkit-scrollbar{display:none}
+.mchips .chip{flex:none}
+.composer{display:flex;gap:8px;align-items:flex-end;padding:8px max(12px,env(safe-area-inset-right,0px)) 10px max(12px,env(safe-area-inset-left,0px));flex:none}
+.composer textarea{flex:1;min-width:0;border:0;border-radius:14px;background:var(--surface-2);padding:10px 12px;resize:none;max-height:120px;line-height:1.4}
+.composer .btn{height:42px}
+.toast{position:fixed;left:12px;right:12px;margin:0 auto;width:fit-content;bottom:calc(64px + env(safe-area-inset-bottom,0px) + var(--kb));z-index:60;transform:translateY(20px);opacity:0;pointer-events:none;transition:all .22s;
+  background:var(--ink);color:var(--surface);border-radius:12px;padding:0 6px 0 14px;min-height:44px;display:flex;align-items:center;gap:8px;font-size:13px;font-weight:600;max-width:440px;box-shadow:var(--shadow)}
+.toast.on{opacity:1;transform:none;pointer-events:auto}
+.toast span{padding:10px 0}
+.toast button{height:36px;padding:0 10px;color:var(--brass-soft);font-weight:700;white-space:nowrap}
+.toast.noact{padding-right:14px}
+.dlg{position:fixed;inset:0;z-index:70;display:grid;place-items:center;background:var(--scrim);padding:24px}
+.dlg>div{background:var(--surface);border-radius:16px;padding:18px;max-width:340px;width:100%;box-shadow:var(--shadow)}
+.dlg p{margin:0 0 14px;font-size:14px;line-height:1.6;white-space:pre-wrap}
+.dlg .row2{display:flex;gap:8px}
+.dlg .row2 .btn{flex:1}
+@media (prefers-reduced-motion: reduce){*{transition:none!important;animation:none!important}}
+</style>
+
+<div id="app">
+  <header class="top">
+    <button class="nav-arrow" id="prevBtn" aria-label="前へ"><svg class="ic" viewBox="0 0 24 24"><path d="M15 5l-7 7 7 7"/></svg></button>
+    <div class="datebox"><b id="dateLabel">—</b><small><i class="sync local" id="syncDot"></i><span id="dateSub"></span></small><input type="date" id="datePick" aria-label="日付を選ぶ"></div>
+    <button class="nav-arrow" id="nextBtn" aria-label="次へ"><svg class="ic" viewBox="0 0 24 24"><path d="M9 5l7 7-7 7"/></svg></button>
+    <div class="seg" role="tablist" aria-label="表示期間">
+      <button role="tab" data-view="day" aria-selected="true" aria-label="DAY 1日">日</button>
+      <button role="tab" data-view="week" aria-selected="false" aria-label="WEEK 1週間">週</button>
+      <button role="tab" data-view="month" aria-selected="false" aria-label="MONTH 1か月">月</button>
+    </div>
+    <button class="musebtn" id="museBtn" aria-label="MUSEを開く"><svg viewBox="0 0 24 24"><path d="M12 2l1.9 6.1L20 10l-6.1 1.9L12 18l-1.9-6.1L4 10l6.1-1.9z"/></svg>MUSE<span class="badge" id="museBadge" hidden>0</span></button>
+  </header>
+  <main class="chart" id="chart">
+    <div class="scroller" id="scroller"><div class="g" id="grid"></div></div>
+  </main>
+  <nav class="nav" aria-label="メニュー">
+    <button id="todayBtn"><svg class="ic" viewBox="0 0 24 24"><rect x="4" y="5" width="16" height="15" rx="3"/><path d="M4 10h16M9 3v4M15 3v4"/><circle cx="12" cy="15" r="1.6" fill="currentColor" stroke="none"/></svg>今日</button>
+    <button id="listBtn"><svg class="ic" viewBox="0 0 24 24"><path d="M9 6h11M9 12h11M9 18h11"/><circle cx="4.5" cy="6" r="1" fill="currentColor"/><circle cx="4.5" cy="12" r="1" fill="currentColor"/><circle cx="4.5" cy="18" r="1" fill="currentColor"/></svg>一覧</button>
+    <button id="addBtn" aria-label="タスクを追加"><span class="add"><svg class="ic" viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></svg></span></button>
+    <button id="statsBtn"><svg class="ic" viewBox="0 0 24 24"><path d="M5 20V11M12 20V5M19 20v-6"/></svg>実績</button>
+    <button id="setBtn"><svg class="ic" viewBox="0 0 24 24"><path d="M4 7h10M18 7h2M4 17h4M12 17h8"/><circle cx="16" cy="7" r="2"/><circle cx="10" cy="17" r="2"/></svg>設定</button>
+  </nav>
+</div>
+<div class="scrim" id="scrim"></div>
+<section class="sheet" id="sheet" role="dialog" aria-modal="false"><div class="grab" id="grab"></div><div class="sc" id="sheetBody"></div></section>
+<div class="toast" id="toast"><span id="toastMsg"></span><button id="toastAct"></button></div>
+<div class="tip" id="tip"></div>
+
+<script>
+'use strict';
+/* ============ basics ============ */
+const MIN=60000, HOUR=3600000, DAY=86400000;
+const DOW=['日','月','火','水','木','金','土'];
+const KINDS={
+  desk:{label:'通常業務'}, line:{label:'工程調整・改造'}, stop:{label:'設備停止'},
+  witness:{label:'工程立ち会い'}, holiday:{label:'休日作業'}, private:{label:'プライベート'}
+};
+const DEFAULT_SETTINGS={workStart:'08:30',workEnd:'17:30',breaks:[{s:'10:15',e:'11:00',label:'製造部門休憩'}],holidays:[],lineRule:true};
+const TRACKED=['name','project','kind','start','end','deadline','important','priority','status','progress','deps','memo','assignee','milestone'];
+const $=(s,el=document)=>el.querySelector(s);
+const pad=n=>String(n).padStart(2,'0');
+const clamp=(v,a,b)=>Math.min(b,Math.max(a,v));
+const hm2min=s=>{const [h,m]=String(s||'0:0').split(':').map(Number);return (h||0)*60+(m||0)};
+const sod=t=>{const d=new Date(t);d.setHours(0,0,0,0);return d.getTime()};
+const addDays=(t,n)=>{const d=new Date(t);d.setDate(d.getDate()+n);return d.getTime()};
+const atMin=(day,min)=>{const d=new Date(day);d.setHours(0,min,0,0);return d.getTime()};
+const ymd=t=>{const d=new Date(t);return `${d.getFullYear()}-${pad(d.getMonth()+1)}-${pad(d.getDate())}`};
+const fHM=t=>{const d=new Date(t);return `${d.getHours()}:${pad(d.getMinutes())}`};
+const fMD=t=>{const d=new Date(t);return `${d.getMonth()+1}/${d.getDate()}`};
+const fMDW=t=>`${fMD(t)}(${DOW[new Date(t).getDay()]})`;
+const fISO=t=>{const d=new Date(t);return `${ymd(t)} ${pad(d.getHours())}:${pad(d.getMinutes())}`};
+const dtl=t=>{const d=new Date(t);return `${ymd(t)}T${pad(d.getHours())}:${pad(d.getMinutes())}`};
+const fDur=ms=>{const m=Math.round(ms/MIN);if(m<60)return m+'分';const h=Math.floor(m/60),r=m%60;return r?`${h}時間${r}分`:`${h}時間`};
+const monday=t=>{const d=new Date(sod(t));return addDays(d.getTime(),-((d.getDay()+6)%7))};
+const uid=()=>Date.now().toString(36)+Math.random().toString(36).slice(2,7);
+const esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const ceilTo=(t,u)=>Math.ceil(t/u)*u;
+const clone=o=>JSON.parse(JSON.stringify(o));
+const sleep=ms=>new Promise(r=>setTimeout(r,ms));
+const ICON={
+  check:'<svg viewBox="0 0 24 24"><path d="M5 12.5l4.5 4.5L19 7.5"/></svg>',
+  chev:'<svg class="ic" viewBox="0 0 24 24"><path d="M6 9l6 6 6-6"/></svg>',
+  x:'<svg class="ic" viewBox="0 0 24 24" style="width:20px;height:20px"><path d="M6 6l12 12M18 6L6 18"/></svg>'
+};
+function parseDT(s){
+  if(s==null||s==='')return null;
+  if(typeof s==='number')return s;
+  const m=String(s).trim().match(/^(\d{4})-(\d{1,2})-(\d{1,2})(?:[ T](\d{1,2}):(\d{2}))?/);
+  if(m)return new Date(+m[1],+m[2]-1,+m[3],m[4]!=null?+m[4]:0,m[5]!=null?+m[5]:0).getTime();
+  const t=Date.parse(s);return isNaN(t)?null:t;
+}
+const LS={
+  get(k,d){try{const v=localStorage.getItem('muse.'+k);return v?JSON.parse(v):d}catch{return d}},
+  set(k,v){try{localStorage.setItem('muse.'+k,JSON.stringify(v))}catch{}}
+};
+
+/* ============ state ============ */
+const S={
+  tasks:new Map(), proposals:new Map(), settings:clone(DEFAULT_SETTINGS), attendance:{},
+  view:'day', anchor:sod(Date.now()), zoom:1, selected:null, scope:'all',
+  collapsed:new Set(LS.get('collapsed',[])), dirty:new Map(), undo:null, nw:112, sync:'local', mode:'local'
+};
+function normTask(o){
+  const t={
+    id:String(o.id||uid()), name:String(o.name||'無題').slice(0,80), project:String(o.project||'未分類').slice(0,40),
+    kind:KINDS[o.kind]?o.kind:'desk', start:+o.start, end:+o.end,
+    deadline:o.deadline?+o.deadline:null, milestone:!!o.milestone, important:!!o.important,
+    priority:['high','mid','low'].includes(o.priority)?o.priority:'mid',
+    status:['todo','doing','paused','done'].includes(o.status)?o.status:'todo',
+    progress:clamp(Math.round(+o.progress||0),0,100),
+    segs:Array.isArray(o.segs)?o.segs.filter(s=>s&&s.s).map(s=>({s:+s.s,e:s.e?+s.e:null})):[],
+    deps:Array.isArray(o.deps)?o.deps.map(String):[], memo:String(o.memo||''), assignee:String(o.assignee||''),
+    sample:!!o.sample, history:Array.isArray(o.history)?o.history.slice(-40):[],
+    createdAt:+o.createdAt||Date.now(), updatedAt:+o.updatedAt||Date.now(), rev:+o.rev||0, pendingSync:!!o.pendingSync
+  };
+  if(!isFinite(t.start))t.start=ceilTo(Date.now(),15*MIN);
+  if(!(t.end>t.start))t.end=t.start+HOUR;
+  return t;
+}
+const isHoliday=t=>{const g=new Date(t).getDay();return g===0||g===6||S.settings.holidays.includes(ymd(t))};
+const isLate=(t,now=Date.now())=>!t.ghost&&t.status!=='done'&&(now>t.end||(!!t.deadline&&t.end>t.deadline));
+const scopeOk=t=>S.scope==='all'||(S.scope==='private')===(t.kind==='private');
+const singleDay=(s,e)=>sod(s)===sod(e-1);
+function barState(t,now){
+  if(t.ghost)return 'ghost';
+  if(t.status==='done')return 'done';
+  if(isLate(t,now))return 'late';
+  if(t.kind==='private')return 'priv';
+  if(t.important||t.priority==='high')return 'imp';
+  return 'norm';
+}
+function workedMs(t,now=Date.now()){return t.segs.reduce((a,s)=>a+((s.e||now)-s.s),0)}
+
+/* ============ constraints & scheduling (pure, shared by chart / quick add / MUSE) ============ */
+function allowedWindows(kind,day){
+  const st=S.settings, ws=hm2min(st.workStart), we=hm2min(st.workEnd), hol=isHoliday(day);
+  const W=(a,b)=>({s:atMin(day,a),e:atMin(day,b)});
+  switch(kind){
+    case 'private':return hol?[W(540,1260)]:[W(Math.max(we,hm2min('18:00')),1320)];
+    case 'line':case 'stop':
+      if(hol)return [W(ws,we)];
+      return st.lineRule?st.breaks.map(b=>W(hm2min(b.s),hm2min(b.e))):[W(ws,we)];
+    case 'holiday':return hol?[W(ws,we)]:[];
+    default:return hol?[]:[W(ws,we)];
+  }
+}
+function windowRuleText(kind){
+  const st=S.settings, br=st.breaks.map(b=>`${b.s}–${b.e}`).join('、')||'なし';
+  if((kind==='line'||kind==='stop')&&st.lineRule)return `${KINDS[kind].label}は製造部門の休憩中（${br}）か休日に行う設定です`;
+  if(kind==='holiday')return '休日作業は休日の勤務時間帯に置く設定です';
+  return `勤務時間（${st.workStart}–${st.workEnd}）の外です`;
+}
+function busyList(excludeIds=new Set(),overrides=new Map(),extra=[],self=null){
+  const out=[];
+  for(const t of S.tasks.values()){
+    if(t.id===self||t.status==='done'||t.milestone)continue;
+    const ov=overrides.get(t.id);
+    if(excludeIds.has(t.id)&&!ov)continue;
+    const o=ov||t;
+    if(o.end-o.start>DAY||!singleDay(o.start,o.end))continue;
+    out.push({s:o.start,e:o.end,id:t.id,name:t.name});
+  }
+  for(const [id,o] of overrides)if(!S.tasks.has(id)&&id!==self)out.push({s:o.start,e:o.end,id,name:o.name});
+  return out.concat(extra);
+}
+function findSlots(durMin,kind,from,to,opt={}){
+  const dur=Math.max(5,durMin)*MIN, count=opt.count||3, step=15*MIN;
+  const busy=busyList(opt.exclude||new Set(),opt.overrides||new Map(),opt.extra||[],opt.self||null);
+  const res=[]; from=Math.max(from,ceilTo(Date.now(),5*MIN)); if(!to||to<=from)to=addDays(from,21);
+  for(let day=sod(from),n=0;day<to&&res.length<count&&n<120;day=addDays(day,1),n++){
+    for(const w of allowedWindows(kind,day)){
+      let s=Math.max(w.s,from); s=ceilTo(s,step); if(s<w.s)s=w.s;
+      const bs=busy.filter(b=>b.e>w.s&&b.s<w.e).sort((a,b)=>a.s-b.s);
+      while(s+dur<=w.e&&res.length<count){
+        const hit=bs.find(b=>b.s<s+dur&&b.e>s);
+        if(!hit){res.push({start:s,end:s+dur});s=s+dur;break}
+        s=ceilTo(hit.e,step);
+      }
+    }
+  }
+  return res;
+}
+function validatePlacement(task,start,end,opt={}){
+  const blocking=[],warnings=[],now=Date.now();
+  if(!(end>start))blocking.push('終了が開始より前です');
+  if(singleDay(start,end)&&task.kind!=='private'){
+    const wins=allowedWindows(task.kind,sod(start));
+    const fits=wins.some(w=>start>=w.s&&end<=w.e);
+    if(!fits){
+      if(['line','stop','holiday'].includes(task.kind))blocking.push(windowRuleText(task.kind));
+      else if(isHoliday(start))warnings.push('休日です');
+      else warnings.push('勤務時間外（残業）にかかります');
+    }
+  }
+  for(const pid of task.deps||[]){
+    const p=(opt.overrides&&opt.overrides.get(pid))||S.tasks.get(pid);
+    if(p&&p.end>start)warnings.push(`前工程「${(S.tasks.get(pid)||p).name}」の終了（${fMD(p.end)} ${fHM(p.end)}）より前です`);
+  }
+  if(task.deadline&&end>task.deadline)warnings.push(`期限 ${fMDW(task.deadline)} ${fHM(task.deadline)} を過ぎます`);
+  if(opt.checkOverlap&&singleDay(start,end)){
+    const hit=busyList(new Set(opt.exclude||[]),opt.overrides||new Map(),opt.extra||[],task.id).find(b=>b.s<end&&b.e>start);
+    if(hit)(opt.overlapIsError?blocking:warnings).push(`「${hit.name||'別の提案'}」（${fHM(hit.s)}–${fHM(hit.e)}）と重なります`);
+  }
+  if(opt.noPast&&start<now-5*MIN)blocking.push('過去の時刻です');
+  return {blocking,warnings};
+}
+function cascade(rootId,root){
+  const overrides=new Map([[rootId,root]]), moves=[], queue=[rootId], seen=new Set([rootId]);
+  let guard=0;
+  while(queue.length&&guard++<300){
+    const pid=queue.shift(), p=overrides.get(pid)||S.tasks.get(pid);
+    const succ=[...S.tasks.values()].filter(t=>t.deps.includes(pid)&&t.status!=='done').sort((a,b)=>a.start-b.start);
+    for(const t of succ){
+      const cur=overrides.get(t.id)||t;
+      if(cur.start>=p.end)continue;
+      const dur=cur.end-cur.start;
+      let nv=null;
+      if(dur<=DAY&&singleDay(cur.start,cur.end)){
+        const sl=findSlots(dur/MIN,t.kind,p.end,addDays(p.end,30),{count:1,self:t.id,overrides})[0];
+        if(sl)nv=sl;
+      }
+      if(!nv)nv={start:p.end,end:p.end+dur};
+      overrides.set(t.id,nv);
+      moves.push({id:t.id,name:t.name,from:{start:cur.start,end:cur.end},to:nv,deadlineMiss:!!(t.deadline&&nv.end>t.deadline),deadline:t.deadline});
+      if(!seen.has(t.id)){seen.add(t.id);queue.push(t.id)}
+    }
+  }
+  return moves;
+}
+function overlapIds(list){
+  const ids=new Set(), xs=list.filter(t=>!t.ghost&&t.status!=='done'&&!t.milestone&&singleDay(t.start,t.end)).sort((a,b)=>a.start-b.start);
+  for(let i=0;i<xs.length;i++)for(let j=i+1;j<xs.length&&xs[j].start<xs[i].end;j++){
+    if((xs[i].kind==='private')!==(xs[j].kind==='private'))continue;
+    ids.add(xs[i].id);ids.add(xs[j].id);
+  }
+  return ids;
+}
+
+/* ============ persistence: local cache + claude.ai shared store ============ */
+let cacheTimer=null;
+function cacheLocal(){clearTimeout(cacheTimer);cacheTimer=setTimeout(()=>{
+  LS.set('tasks',[...S.tasks.values()]);LS.set('proposals',[...S.proposals.values()].slice(-40));
+  LS.set('settings',S.settings);LS.set('attendance',S.attendance);
+},150)}
+function setSync(st){S.sync=st;const d=$('#syncDot');if(d)d.className='sync '+st}
+const Store={
+  db:null, q:new Map(), loaded:false,
+  async init(){
+    for(const o of LS.get('tasks',[])){const t=normTask(o);S.tasks.set(t.id,t)}
+    for(const p of LS.get('proposals',[]))if(p&&p.id)S.proposals.set(p.id,p);
+    S.settings={...clone(DEFAULT_SETTINGS),...LS.get('settings',{})};
+    S.attendance=LS.get('attendance',{});
+    render();
+    if(!window.claude||typeof window.claude.use!=='function'){setSync('local');return}
+    let db=null;try{db=await window.claude.use('db')}catch{}
+    if(!db){setSync('local');return}
+    this.db=db;S.mode='cloud';setSync('saving');
+    const timer=setTimeout(()=>{if(!this.loaded){setSync('error');toast('クラウドにまだ接続できません。この端末の内容を表示しています')}},10000);
+    db.collection('tasks').onSnapshot(snap=>{
+      if(snap.metadata.fromCache&&snap.empty&&!this.loaded)return;
+      const m=new Map();for(const d of snap.docs){const t=normTask(d.data());m.set(t.id,t)}
+      if(!snap.metadata.fromCache){clearTimeout(timer);if(!this.loaded){this.loaded=true;this.migrate(m)}}
+      applyRemoteTasks(m);
+      if(!this.q.size)setSync(snap.metadata.hasPendingWrites?'saving':'saved');
+    },err=>{clearTimeout(timer);this.fail(err)});
+    db.collection('proposals').onSnapshot(snap=>{
+      const m=new Map();for(const d of snap.docs){const p=d.data();if(p&&p.id)m.set(p.id,p)}
+      for(const [id,p] of S.proposals)if(S.dirty.has('p:'+id))m.set(id,p);
+      S.proposals=m;cacheLocal();render();if(Sheet.kind==='muse')renderMuse();
+    },()=>{});
+    db.doc('meta/settings').onSnapshot(snap=>{
+      if(snap.exists&&!S.dirty.has('settings')){S.settings={...clone(DEFAULT_SETTINGS),...snap.data()};cacheLocal();render();if(Sheet.kind==='settings')openSettings(true)}
+    },()=>{});
+    db.collection('attendance').onSnapshot(snap=>{
+      for(const d of snap.docs)if(!S.dirty.has('att:'+d.id))S.attendance[d.id]=d.data().days||{};
+      cacheLocal();if(Sheet.kind==='stats')openStats(true);
+    },()=>{});
+  },
+  migrate(remote){
+    for(const t of S.tasks.values())if(t.pendingSync&&!remote.has(t.id)){remote.set(t.id,t);this.saveTask(t)}
+  },
+  fail(err){
+    setSync('error');
+    if(err&&err.code==='revoked'){this.db=null;S.mode='local'}
+    toast('クラウドに保存できませんでした。この端末には保存されています');
+  },
+  enqueue(key,fn){
+    const e=this.q.get(key)||{busy:false,next:null};e.next=fn;this.q.set(key,e);
+    if(!e.busy)this.pump(key);
+  },
+  async pump(key){
+    const e=this.q.get(key);
+    if(!e||!e.next){this.q.delete(key);S.dirty.delete(key);if(!this.q.size&&S.sync!=='error')setSync('saved');return}
+    const fn=e.next;e.next=null;e.busy=true;setSync('saving');
+    try{await fn()}catch(err){
+      if(err&&err.code==='unavailable'){await sleep(400+Math.random()*700);try{await fn()}catch(e2){this.fail(e2)}}
+      else this.fail(err);
+    }
+    e.busy=false;this.pump(key);
+  },
+  saveTask(t){
+    cacheLocal();
+    if(!this.db){t.pendingSync=true;setSync('local');return}
+    const data=JSON.parse(JSON.stringify({...t,pendingSync:false}));
+    S.dirty.set(t.id,true);this.enqueue(t.id,()=>this.db.doc('tasks/'+t.id).set(data));
+  },
+  deleteTask(id){
+    S.tasks.delete(id);cacheLocal();
+    if(this.db){S.dirty.set(id,'del');this.enqueue(id,()=>this.db.doc('tasks/'+id).delete())}
+  },
+  saveProposal(p){
+    cacheLocal();if(!this.db)return;
+    const k='p:'+p.id;S.dirty.set(k,true);const data=clone(p);
+    this.enqueue(k,()=>this.db.doc('proposals/'+p.id).set(data));
+  },
+  deleteProposal(id){if(this.db){const k='p:'+id;S.dirty.set(k,true);this.enqueue(k,()=>this.db.doc('proposals/'+id).delete())}},
+  saveSettings(){
+    cacheLocal();if(!this.db)return;
+    S.dirty.set('settings',true);const data=clone(S.settings);
+    this.enqueue('settings',()=>this.db.doc('meta/settings').set(data));
+  },
+  saveAttendance(mk){
+    cacheLocal();if(!this.db)return;
+    const k='att:'+mk;S.dirty.set(k,true);const data={days:clone(S.attendance[mk]||{})};
+    this.enqueue(k,()=>this.db.doc('attendance/'+mk).set(data));
+  }
+};
+let pendingRemote=null;
+function applyRemoteTasks(m){
+  if(G.mode==='drag'){pendingRemote=m;return}
+  for(const [id,flag] of S.dirty){
+    if(id.includes(':')||id==='settings')continue;
+    if(flag==='del')m.delete(id);else if(S.tasks.has(id))m.set(id,S.tasks.get(id));
+  }
+  S.tasks=m;cacheLocal();render();
+  if(Sheet.kind==='detail'){if(S.tasks.has(S.selected))refreshDetail();else closeSheet()}
+  else if(Sheet.kind==='list')openList(true);
+}
+
+/* ============ mutations ============ */
+function commit(id,patch,meta={}){
+  const cur=S.tasks.get(id), isNew=!cur;
+  const next=normTask({...(cur||{}),...patch,id});
+  const before={},after={};
+  for(const k of TRACKED)if(JSON.stringify(cur?cur[k]:undefined)!==JSON.stringify(next[k])){before[k]=cur?cur[k]:null;after[k]=next[k]}
+  const segsChanged=JSON.stringify(cur?cur.segs:[])!==JSON.stringify(next.segs);
+  if(!isNew&&!Object.keys(after).length&&!segsChanged)return cur;
+  next.history=[...(cur?cur.history:[]),{at:Date.now(),by:meta.by||'user',action:meta.action||(isNew?'作成':'変更'),reason:meta.reason||'',before:isNew?null:before,after:isNew?null:after}].slice(-40);
+  next.updatedAt=Date.now();next.rev=(cur?cur.rev:0)+1;
+  S.tasks.set(id,next);Store.saveTask(next);
+  return next;
+}
+function removeTask(id,meta={}){
+  const t=S.tasks.get(id);if(!t)return;
+  for(const o of S.tasks.values())if(o.deps.includes(id))commit(o.id,{deps:o.deps.filter(d=>d!==id)},{by:meta.by,action:'前工程の削除に伴い依存を解除'});
+  Store.deleteTask(id);
+  if(S.selected===id)S.selected=null;
+}
+function snapshotFor(ids){return ids.map(id=>({id,prev:S.tasks.has(id)?clone(S.tasks.get(id)):null}))}
+function doUndo(){
+  const u=S.undo;if(!u)return;S.undo=null;
+  for(const it of u.items.slice().reverse()){
+    if(!it.prev){if(S.tasks.has(it.id))Store.deleteTask(it.id)}
+    else{const p=it.prev;const f={};for(const k of [...TRACKED,'segs'])f[k]=p[k];commit(it.id,f,{action:'元に戻す'})}
+  }
+  render();refreshAnySheet();toast('元に戻しました');
+}
+function setStatus(id,action,by='user'){
+  const t=S.tasks.get(id);if(!t)return;
+  const now=Date.now(), segs=t.segs.map(s=>({...s}));
+  const close=()=>{const o=segs[segs.length-1];if(o&&!o.e)o.e=now};
+  let patch={};
+  if(action==='start'||action==='resume'){close();segs.push({s:now,e:null});patch={status:'doing'}}
+  else if(action==='pause'){close();patch={status:'paused'}}
+  else if(action==='done'){close();patch={status:'done',progress:100}}
+  else if(action==='reopen'){patch={status:segs.length?'paused':'todo',progress:Math.min(t.progress,90)}}
+  patch.segs=segs;
+  S.undo={items:snapshotFor([id])};
+  commit(id,patch,{by,action:{start:'開始',resume:'再開',pause:'中断',done:'完了',reopen:'未完了に戻す'}[action]});
+}
+async function applyTimeChange(id,start,end,how='日時変更',by='user'){
+  const t=S.tasks.get(id);if(!t)return;
+  if(start===t.start&&end===t.end){render();return}
+  const v=validatePlacement(t,start,end);
+  if(v.blocking.length){
+    const ok=await ask(v.blocking.join('\n')+'\n\nこのまま変更しますか？','このまま変更','やめる');
+    if(!ok){render();refreshAnySheet();return}
+  }
+  const moves=cascade(id,{start,end});
+  S.undo={items:snapshotFor([id])};
+  commit(id,{start,end},{by,action:how});
+  render();refreshAnySheet();
+  if(moves.length){
+    const miss=moves.filter(m=>m.deadlineMiss).length;
+    toast(`後続${moves.length}件と重なります${miss?`（期限超過${miss}件）`:''}`,'後続を調整',()=>{
+      S.undo={items:snapshotFor([id,...moves.map(m=>m.id)])};
+      for(const m of moves)commit(m.id,{start:m.to.start,end:m.to.end},{by,action:'後続を自動調整',reason:`「${t.name}」の変更に追従`});
+      render();refreshAnySheet();toast(`後続${moves.length}件を作業可能な時間帯へ移しました`,'元に戻す',doUndo);
+    },7000);
+  }else{
+    const w=v.warnings[0];
+    toast(w?`変更しました・${w}`:`${fMDW(start)} ${fHM(start)}–${fHM(end)} に変更`,'元に戻す',doUndo);
+  }
+}
+
+/* ============ axis & coordinates ============ */
+let AX=null;
+const scroller=$('#scroller'), grid=$('#grid');
+function rangeOfView(){
+  const v=S.view;let days=[];
+  if(v==='day')days=[S.anchor];
+  else if(v==='week'){const m=monday(S.anchor);for(let i=0;i<7;i++)days.push(addDays(m,i))}
+  else{const d=new Date(S.anchor);const f=new Date(d.getFullYear(),d.getMonth(),1).getTime();const n=new Date(d.getFullYear(),d.getMonth()+1,0).getDate();for(let i=0;i<n;i++)days.push(addDays(f,i))}
+  return {days,from:days[0],to:addDays(days[days.length-1],1)};
+}
+function computeAxis(tasks){
+  const {days,from,to}=rangeOfView(), v=S.view;
+  const ws=hm2min(S.settings.workStart), we=hm2min(S.settings.workEnd);
+  let lo=ws,hi=we;
+  if(v!=='month')for(const t of tasks){
+    if(!singleDay(t.start,t.end)||t.start<from||t.end>to)continue;
+    const ds=sod(t.start);lo=Math.min(lo,(t.start-ds)/MIN);hi=Math.max(hi,(t.end-ds)/MIN);
+  }
+  lo=Math.max(0,Math.floor(lo/30)*30);hi=Math.min(1440,Math.ceil(hi/30)*30);if(hi<=lo)hi=lo+60;
+  const segs=days.map(d=>({d,s:atMin(d,lo),e:atMin(d,hi)}));
+  const avail=Math.max(160,scroller.clientWidth-S.nw);
+  const trackW=Math.floor(avail*S.zoom), segW=trackW/segs.length, pxH=segW/((hi-lo)/60);
+  const unit=v==='day'?(pxH>=100?15:pxH>=50?30:60):v==='week'?(pxH>=30?30:60):1440;
+  const snap=v==='day'?(pxH>=240?5:pxH>=20?15:30):v==='week'?(pxH>=24?15:pxH>=8?30:60):1440;
+  AX={v,days,segs,from,to,lo,hi,trackW,segW,pxH,unit,snap,ws,we};
+  return AX;
+}
+function X(t){
+  const {segs,segW,trackW}=AX;
+  if(t<=segs[0].s)return 0;
+  for(let i=0;i<segs.length;i++){const g=segs[i];if(t<g.s)return i*segW;if(t<=g.e)return i*segW+(t-g.s)/(g.e-g.s)*segW}
+  return trackW;
+}
+function T(x){
+  const {segs,segW}=AX;const i=clamp(Math.floor(x/segW),0,segs.length-1);
+  const f=clamp((x-i*segW)/segW,0,1),g=segs[i];return g.s+f*(g.e-g.s);
+}
+function snapT(t){if(AX.v==='month')return t;const u=AX.snap*MIN,d=sod(t);return d+Math.round((t-d)/u)*u}
+function inSeg(t){return AX.segs.some(g=>t>=g.s&&t<=g.e)}
+
+/* ============ render chart ============ */
+function visibleTasks(){
+  const {from,to}=rangeOfView();
+  return [...S.tasks.values()].filter(t=>scopeOk(t)&&t.end>from&&t.start<to);
+}
+function ghostData(){
+  const creates=[],moves=new Map();
+  for(const p of S.proposals.values()){
+    if(p.status!=='pending')continue;
+    p.ops.forEach((o,i)=>{
+      if(o.op==='create')creates.push(normTask({...o,id:'g-'+p.id+'-'+i,status:'todo',progress:0,history:[]}));
+      else if(o.op==='move'&&S.tasks.has(o.task_id))moves.set(o.task_id,{start:o.start,end:o.end,pid:p.id});
+    });
+  }
+  creates.forEach(c=>{c.ghost=true;c.pid=c.id.split('-')[1]});
+  return {creates,moves};
+}
+function render(){
+  S.nw=Math.round(clamp(innerWidth*0.33,116,170));
+  document.documentElement.style.setProperty('--nw',S.nw+'px');
+  const now=Date.now(), {from,to}=rangeOfView();
+  const gd=ghostData();
+  const tasks=visibleTasks();
+  for(const id of gd.moves.keys())if(!tasks.find(t=>t.id===id)){const t=S.tasks.get(id),m=gd.moves.get(id);if(scopeOk(t)&&m.end>from&&m.start<to)tasks.push(t)}
+  const ghosts=gd.creates.filter(c=>scopeOk(c)&&c.end>from&&c.start<to);
+  computeAxis(tasks.concat(ghosts));
+  const W=AX.trackW;
+  const conflicts=overlapIds(tasks);
+  // groups
+  const groups=new Map();
+  for(const t of tasks.concat(ghosts).sort((a,b)=>a.start-b.start||a.name.localeCompare(b.name))){
+    if(!groups.has(t.project))groups.set(t.project,[]);groups.get(t.project).push(t);
+  }
+  let rows='';
+  for(const [name,list] of groups){
+    const col=S.collapsed.has(name);
+    let span='';
+    if(col){const s=Math.min(...list.map(t=>t.start)),e=Math.max(...list.map(t=>t.end));const l=X(s),r=X(e);span=`<i class="span" style="left:${l.toFixed(1)}px;width:${Math.max(6,r-l).toFixed(1)}px"></i>`}
+    const late=list.filter(t=>isLate(t,now)).length;
+    rows+=`<div class="grp${col?' col':''}" data-grp="${esc(name)}"><div class="gn">${ICON.chev}<b>${esc(name)}</b><small>${list.length}${late?` · <span style="color:var(--late)">遅延${late}</span>`:''}</small></div><div class="gt" style="width:${W}px">${span}</div></div>`;
+    if(!col)for(const t of list)rows+=rowHTML(t,now,conflicts,gd.moves.get(t.id));
+  }
+  // background
+  let bg='';const rect=(a,b,c)=>`<i class="${c}" style="left:${a.toFixed(1)}px;width:${Math.max(0,b-a).toFixed(1)}px"></i>`;
+  const today=sod(now);
+  let ticks='';
+  if(AX.v==='day'){
+    const g=AX.segs[0],d=g.d,ws=atMin(d,AX.ws),we=atMin(d,AX.we);
+    if(isHoliday(d))bg+=rect(0,W,'wk');
+    else{
+      if(g.s<ws)bg+=rect(0,X(ws),'off');
+      if(g.e>we)bg+=rect(X(we),W,'off');
+      for(const b of S.settings.breaks){const a=X(atMin(d,hm2min(b.s))),z=X(atMin(d,hm2min(b.e)));bg+=rect(a,z,'brk');ticks+=`<i class="tb" style="left:${a.toFixed(1)}px;width:${(z-a).toFixed(1)}px"></i>`;if(z-a>=20)ticks+=`<span class="tbl" style="left:${((a+z)/2).toFixed(1)}px">休憩</span>`}
+    }
+    for(let m=Math.ceil(AX.lo/AX.unit)*AX.unit;m<=AX.hi;m+=AX.unit){if(m===AX.lo)continue;bg+=`<i class="gl${m%60?'':' h'}" style="left:${X(atMin(d,m)).toFixed(1)}px"></i>`}
+    const stepH=AX.pxH<22?2:1;
+    for(let h=Math.ceil(AX.lo/60);h*60<AX.hi;h+=stepH){const x=X(atMin(d,h*60));if(W-x<18)continue;ticks+=`<span class="tk" style="left:${x.toFixed(1)}px${x<1?';border-left:0':''}">${h}</span>`}
+  }else{
+    const sw=AX.segW, few=AX.v==='month'&&sw<20;
+    const ti=AX.segs.findIndex(g=>g.d===today);
+    AX.segs.forEach((g,i)=>{
+      const x=i*sw,d=g.d,dow=new Date(d).getDay();
+      if(isHoliday(d))bg+=rect(x,x+sw,'wk');
+      if(d===today)bg+=rect(x,x+sw,'td');
+      if(i>0&&(dow===1||sw>=14))bg+=`<i class="gl${dow===1?' w':' h'}" style="left:${x.toFixed(1)}px"></i>`;
+      if(AX.v==='week'&&!isHoliday(d)&&sw>=90)for(const b of S.settings.breaks)bg+=rect(X(atMin(d,hm2min(b.s))),X(atMin(d,hm2min(b.e))),'brk');
+      const cls=(d===today?' tdy':'')+(S.settings.holidays.includes(ymd(d))?' hol':dow===0?' sun':dow===6?' sat':'');
+      if(AX.v==='week')ticks+=`<span class="tk c${cls}" style="left:${(x+sw/2).toFixed(1)}px">${new Date(d).getDate()}<i>${DOW[dow]}</i></span>`;
+      else if(!few||d===today||(dow===1&&(ti<0||Math.abs(i-ti)>=3))||(i===0&&dow!==1&&(ti<0||ti>=3)&&sw*((8-dow)%7)>=22))ticks+=`<span class="tk c${cls}" style="left:${(x+sw/2).toFixed(1)}px">${new Date(d).getDate()}${few?'':`<i>${DOW[dow]}</i>`}</span>`;
+    });
+  }
+  if(inSeg(now)){const x=X(now);bg+=`<i class="now" style="left:${x.toFixed(1)}px"></i>`;if(AX.v==='day')ticks+=`<span class="nowp" style="left:${clamp(x,18,W-18).toFixed(1)}px">${fHM(now)}</span>`}
+  const scopeLbl={all:'全て',work:'仕事',private:'私用'}[S.scope];
+  const empty=!groups.size?`<div class="empty"><b>${AX.v==='day'?(S.anchor===today?'今日':fMDW(S.anchor))+'の予定はありません':'この期間の予定はありません'}</b>＋で追加、または空いている所を長押し<br>${S.tasks.size?'':'<button class="btn ghost" data-sample="1">サンプル工程を入れる</button>'}</div>`:'';
+  const scrollTop=scroller.scrollTop, scrollLeft=scroller.scrollLeft;
+  grid.style.width=(S.nw+W)+'px';
+  grid.innerHTML=`<div class="axis"><div class="corner"><button class="chip-s" data-scope="1" aria-label="表示する予定の種類">${scopeLbl}</button>${S.zoom>1.01?`<button class="chip-s" data-zoomreset="1" aria-label="拡大を戻す">×${S.zoom.toFixed(1)}</button>`:''}</div><div class="ticks" style="width:${W}px">${ticks}</div></div>
+<div class="body" id="cbody"><div class="nfill" aria-hidden="true"></div><div class="bg" style="width:${W}px">${bg}</div>${rows}<svg class="deps" id="deps" width="${W}" height="10"></svg>${empty}</div>`;
+  const body=$('#cbody');body.style.minHeight=Math.max(0,scroller.clientHeight-30)+'px';body.style.setProperty('--bodyh',body.scrollHeight+'px');
+  scroller.scrollTop=scrollTop;scroller.scrollLeft=scrollLeft;
+  drawDeps();updateTop();
+}
+function rowHTML(t,now,conflicts,ghostMove){
+  const st=barState(t,now), sel=S.selected===t.id&&!t.ghost;
+  let inner='';
+  const {from,to}=rangeOfView();
+  if(t.end>from&&t.start<to)inner+=barHTML(t,st,sel);
+  if(ghostMove)inner+=barHTML({...t,start:ghostMove.start,end:ghostMove.end,ghost:true,pid:ghostMove.pid},'ghost',false);
+  if(!t.ghost){
+    for(const s of t.segs){const a=Math.max(s.s,AX.segs[0].s),b=Math.min(s.e||now,AX.segs[AX.segs.length-1].e);if(b<=a)continue;const l=X(a),r=X(b);inner+=`<i class="act${s.e?'':' live'}" style="left:${l.toFixed(1)}px;width:${Math.max(3,r-l).toFixed(1)}px"></i>`}
+    if(t.deadline&&t.deadline>=AX.segs[0].s&&t.deadline<=AX.segs[AX.segs.length-1].e)inner+=`<i class="dl" style="left:${X(t.deadline).toFixed(1)}px"></i>`;
+  }
+  let meta=rangeText(t),mc='';
+  if(t.ghost){meta='提案 · '+meta;mc='gh'}
+  else if(t.status==='done')meta='完了 · '+meta;
+  else if(isLate(t,now)){meta=(now>t.end?'遅延 · ':'期限超過 · ')+meta;mc='late'}
+  else if(t.status==='doing'){meta='作業中 · '+meta;mc='run'}
+  else if(conflicts.has(t.id)){meta='重複 · '+meta;mc='warn'}
+  const ck=t.ghost?`<span class="ck gh" aria-hidden="true">✦</span>`:`<span class="ck s-${t.status}${isLate(t,now)?' late':''}" data-ck="${t.id}" role="button" tabindex="0" aria-label="${t.status==='done'?'未完了に戻す':'完了にする'}">${ICON.check}</span>`;
+  return `<div class="row${sel?' sel':''}" data-row="${t.id}"><div class="nm" ${t.ghost?`data-pid="${t.pid}"`:`data-id="${t.id}"`}>${ck}<span class="nt"><b>${esc(t.name)}</b><small class="${mc}">${esc(meta)}</small></span></div><div class="trk" style="width:${AX.trackW}px">${inner}</div></div>`;
+}
+function barHTML(t,st,sel){
+  const attr=t.ghost?`data-pid="${t.pid}"`:`data-id="${t.id}"`;
+  if(t.milestone)return `<i class="ms b-${st}${sel?' sel':''}" ${attr} style="left:${X(t.end).toFixed(1)}px"></i>`;
+  let l=X(Math.max(t.start,AX.segs[0].s)),r=X(Math.min(t.end,AX.segs[AX.segs.length-1].e));
+  let w=Math.max(6,r-l);if(l+w>AX.trackW)l=Math.max(0,AX.trackW-w);
+  const p=st==='done'?100:t.progress, solid=w*p/100;
+  let lbl='',lx=6,on=false;
+  if(st==='ghost'){if(w>=34)lbl='提案'}
+  else if(st==='done'){if(w>=34){lbl='完了';on=true}}
+  else if(p>0){lbl=p+'%';const tw=lbl.length*6.5;if(solid>=tw+10){on=true}else if(solid+4+tw<=w-3){lx=solid+4}else lbl=''}
+  return `<div class="bar b-${st}${sel?' sel':''}${t.status==='doing'&&!t.ghost?' run':''}" ${attr} style="left:${l.toFixed(1)}px;width:${w.toFixed(1)}px">${st!=='ghost'?`<i class="pg" style="width:${p}%"></i>`:''}${lbl?`<span class="bl${on?' on':''}" style="left:${lx.toFixed(1)}px">${lbl}</span>`:''}${sel?'<i class="hd l" data-side="l"></i><i class="hd r" data-side="r"></i>':''}</div>`;
+}
+function rangeText(t){
+  const same=singleDay(t.start,t.end);
+  if(t.milestone)return fMD(t.end)+' '+fHM(t.end);
+  if(AX&&AX.v==='day'&&same)return `${fHM(t.start)}–${fHM(t.end)}`;
+  if(same)return `${fMD(t.start)} ${fHM(t.start)}`;
+  return `${fMD(t.start)}–${fMD(t.end-1)}`;
+}
+function drawDeps(){
+  const svg=$('#deps');if(!svg)return;
+  const body=$('#cbody');svg.setAttribute('height',body.scrollHeight);
+  const t=S.tasks.get(S.selected);if(!t){svg.innerHTML='';return}
+  const rowY=id=>{const r=body.querySelector(`[data-row="${CSS.escape(id)}"]`);return r?r.offsetTop+20:null};
+  const pairs=[];
+  for(const p of t.deps)if(S.tasks.has(p))pairs.push([S.tasks.get(p),t]);
+  for(const s of S.tasks.values())if(s.deps.includes(t.id))pairs.push([t,s]);
+  let d='';
+  for(const [a,b] of pairs){
+    const y1=rowY(a.id),y2=rowY(b.id);if(y1==null||y2==null)continue;
+    const x1=X(a.end),x2=X(b.start),mx=Math.max(x1+8,Math.min(x2-8,x1+14));
+    d+=`<path d="M${x1} ${y1}H${mx}V${y2}H${x2}"/>`;
+  }
+  svg.innerHTML=d;
+}
+function updateTop(){
+  const today=sod(Date.now());let main,sub;
+  if(S.view==='day'){main=fMDW(S.anchor);const df=Math.round((S.anchor-today)/DAY);sub=df===0?'今日':df===1?'明日':df===-1?'昨日':new Date(S.anchor).getFullYear()+'年'}
+  else if(S.view==='week'){const m=monday(S.anchor);main=`${fMD(m)}–${fMD(addDays(m,6))}`;sub=today>=m&&today<addDays(m,7)?'今週':new Date(m).getFullYear()+'年'}
+  else{const d=new Date(S.anchor);main=`${d.getMonth()+1}月`;sub=d.getFullYear()+'年'}
+  $('#dateLabel').textContent=main;$('#dateSub').textContent=sub;$('#datePick').value=ymd(S.anchor);
+  document.querySelectorAll('.seg button').forEach(b=>b.setAttribute('aria-selected',String(b.dataset.view===S.view)));
+  const n=[...S.proposals.values()].filter(p=>p.status==='pending').length;
+  const bd=$('#museBadge');bd.hidden=!n;bd.textContent=n;
+}
+
+/* ============ gestures: tap / long-press drag / handle resize / pinch ============ */
+const G={mode:null,lp:null,x0:0,y0:0,target:null,lastTouch:0,moved:false};
+const tip=$('#tip');
+function trackX(clientX){const r=scroller.getBoundingClientRect();return clientX-r.left+scroller.scrollLeft-S.nw}
+function down(x,y,target){
+  G.x0=x;G.y0=y;G.target=target;G.moved=false;G.mode='pending';clearTimeout(G.lp);
+  const hd=target.closest('.hd');
+  if(hd){const bar=hd.closest('.bar');startDrag(hd.dataset.side,bar.dataset.id,bar,x,y);return true}
+  const bar=target.closest('.bar[data-id],.ms[data-id]');
+  if(bar){G.lp=setTimeout(()=>startDrag('move',bar.dataset.id,bar,G.x0,G.y0),300);return false}
+  if(target.closest('.trk')){G.lp=setTimeout(()=>{G.mode=null;const t=T(clamp(trackX(G.x0),0,AX.trackW-1));openAdd({start:AX.v==='month'?atMin(sod(t),hm2min(S.settings.workStart)):snapT(t)})},550)}
+  return false;
+}
+function startDrag(type,id,el,x,y){
+  const t=S.tasks.get(id);if(!t)return;
+  G.mode='drag';G.drag={type,id,el,cx0:trackX(x),t0:{start:t.start,end:t.end},cur:{start:t.start,end:t.end},task:t};
+  if(S.selected!==id){S.selected=id;document.querySelectorAll('.bar.sel,.row.sel').forEach(e=>e.classList.remove('sel'))}
+  el.classList.add('lift');showTip(x,y);
+}
+function moveDrag(x,y){
+  const d=G.drag;if(!d)return;
+  const dx=trackX(x)-d.cx0, {start,end}=d.t0, dur=end-start;
+  let s=start,e=end;
+  if(d.type==='move'){
+    if(AX.v==='month'){const k=Math.round(dx/AX.segW);s=addDays(start,k);e=s+dur}
+    else{s=snapT(T(X(start)+dx));e=s+dur}
+  }else if(d.type==='l'){
+    if(AX.v==='month'){s=Math.min(addDays(start,Math.round(dx/AX.segW)),end-15*MIN)}
+    else s=Math.min(snapT(T(X(start)+dx)),end-AX.snap*MIN);
+  }else{
+    if(AX.v==='month'){e=Math.max(addDays(end,Math.round(dx/AX.segW)),start+15*MIN)}
+    else e=Math.max(snapT(T(X(end)+dx)),start+AX.snap*MIN);
+  }
+  d.cur={start:s,end:e};
+  if(d.el.classList.contains('ms')){d.el.style.left=X(e)+'px'}
+  else{const l=X(s),r=X(e);d.el.style.left=l+'px';d.el.style.width=Math.max(6,r-l)+'px'}
+  showTip(x,y);
+  // edge auto-scroll when zoomed
+  const rc=scroller.getBoundingClientRect();
+  if(scroller.scrollWidth>scroller.clientWidth){if(x>rc.right-28)scroller.scrollLeft+=8;else if(x<rc.left+S.nw+20)scroller.scrollLeft-=8}
+}
+function showTip(x,y){
+  const d=G.drag;if(!d)return;const {start,end}=d.cur;
+  const v=validatePlacement(d.task,start,end);
+  tip.textContent=(singleDay(start,end)?`${fMDW(start)} ${fHM(start)}–${fHM(end)}`:`${fMDW(start)} ${fHM(start)} → ${fMDW(end)} ${fHM(end)}`)+(v.blocking.length?' ・条件外':'');
+  tip.className='tip'+(v.blocking.length?' warn':'');tip.style.display='block';
+  tip.style.left=clamp(x,90,innerWidth-90)+'px';tip.style.top=Math.max(60,y-34)+'px';
+}
+function endDrag(){
+  const d=G.drag;G.drag=null;G.mode=null;tip.style.display='none';
+  if(!d)return;
+  d.el.classList.remove('lift');
+  const done=()=>{if(pendingRemote){const m=pendingRemote;pendingRemote=null;applyRemoteTasks(m)}};
+  if(d.cur.start===d.t0.start&&d.cur.end===d.t0.end){render();openDetail(d.id);done();return}
+  applyTimeChange(d.id,d.cur.start,d.cur.end,d.type==='move'?'日時変更（ドラッグ）':'所要時間変更（ドラッグ）').then(()=>{openDetail(d.id);done()});
+}
+function up(){
+  clearTimeout(G.lp);
+  if(G.mode==='drag')return endDrag();
+  if(G.mode==='pending'&&!G.moved)tap(G.target);
+  G.mode=null;
+}
+function tap(target){
+  if(!target)return;
+  const s=target.closest('[data-sample]');if(s){insertSamples();return}
+  const ck=target.closest('[data-ck]');if(ck){toggleDone(ck.dataset.ck);return}
+  const grp=target.closest('[data-grp]');if(grp){const n=grp.dataset.grp;S.collapsed.has(n)?S.collapsed.delete(n):S.collapsed.add(n);LS.set('collapsed',[...S.collapsed]);render();return}
+  if(target.closest('[data-scope]')){S.scope={all:'work',work:'private',private:'all'}[S.scope];render();toast({all:'全ての予定を表示',work:'仕事の予定だけを表示',private:'プライベートの予定だけを表示'}[S.scope]);return}
+  if(target.closest('[data-zoomreset]')){S.zoom=1;render();return}
+  const gh=target.closest('[data-pid]');if(gh){openMuse();return}
+  const el=target.closest('[data-id]');if(el&&S.tasks.has(el.dataset.id)){select(el.dataset.id);return}
+  if(Sheet.kind==='detail'){closeSheet()}
+}
+// pinch
+function pinchStart(e){
+  clearTimeout(G.lp);if(G.mode==='drag'){endDrag()}
+  const [a,b]=e.touches;G.mode='pinch';
+  G.p={d0:Math.hypot(a.clientX-b.clientX,a.clientY-b.clientY),z0:S.zoom,cx:(a.clientX+b.clientX)/2};
+  G.p.t=T(clamp(trackX(G.p.cx),0,AX.trackW));
+}
+let pinchRAF=0;
+function pinchMove(e){
+  const [a,b]=e.touches;const d=Math.hypot(a.clientX-b.clientX,a.clientY-b.clientY);
+  const z=clamp(G.p.z0*d/G.p.d0,1,AX.v==='day'?8:6);
+  if(pinchRAF)return;
+  pinchRAF=requestAnimationFrame(()=>{pinchRAF=0;zoomTo(z,G.p.t,G.p.cx)});
+}
+function zoomTo(z,anchorT,clientX){
+  if(Math.abs(z-S.zoom)<0.01)return;
+  S.zoom=z;render();
+  const r=scroller.getBoundingClientRect();
+  scroller.scrollLeft=Math.max(0,X(anchorT)+S.nw-(clientX-r.left));
+}
+scroller.addEventListener('touchstart',e=>{
+  G.lastTouch=Date.now();
+  if(e.touches.length===2){pinchStart(e);e.preventDefault();return}
+  if(e.touches.length>2)return;
+  const t=e.touches[0];if(down(t.clientX,t.clientY,e.target))e.preventDefault();
+},{passive:false});
+scroller.addEventListener('touchmove',e=>{
+  if(G.mode==='pinch'&&e.touches.length===2){e.preventDefault();pinchMove(e);return}
+  const t=e.touches[0];if(!t)return;
+  if(G.mode==='drag'){e.preventDefault();moveDrag(t.clientX,t.clientY);return}
+  if(Math.hypot(t.clientX-G.x0,t.clientY-G.y0)>8){G.moved=true;clearTimeout(G.lp);if(G.mode==='pending')G.mode='scroll'}
+},{passive:false});
+scroller.addEventListener('touchend',e=>{
+  G.lastTouch=Date.now();
+  if(G.mode==='pinch'){if(e.touches.length===0)G.mode=null;return}
+  if(G.mode==='drag'||G.mode==='pending')e.preventDefault();
+  up();
+},{passive:false});
+scroller.addEventListener('touchcancel',()=>{clearTimeout(G.lp);if(G.mode==='drag'){endDrag()}G.mode=null});
+scroller.addEventListener('mousedown',e=>{if(Date.now()-G.lastTouch<800||e.button!==0)return;G.ptr='mouse';if(down(e.clientX,e.clientY,e.target))e.preventDefault()});
+window.addEventListener('mousemove',e=>{
+  if(G.ptr!=='mouse')return;
+  if(G.mode==='drag'){moveDrag(e.clientX,e.clientY);return}
+  if(G.mode==='pending'&&Math.hypot(e.clientX-G.x0,e.clientY-G.y0)>6){G.moved=true;clearTimeout(G.lp);G.mode='scroll'}
+});
+window.addEventListener('mouseup',()=>{if(G.ptr!=='mouse')return;G.ptr=null;up()});
+scroller.addEventListener('wheel',e=>{if(!e.ctrlKey)return;e.preventDefault();const z=clamp(S.zoom*Math.exp(-e.deltaY/120),1,AX.v==='day'?8:6);zoomTo(z,T(clamp(trackX(e.clientX),0,AX.trackW)),e.clientX)},{passive:false});
+document.addEventListener('gesturestart',e=>e.preventDefault());
+scroller.addEventListener('contextmenu',e=>e.preventDefault());
+scroller.addEventListener('keydown',e=>{if(e.key==='Enter'||e.key===' '){const el=e.target.closest('[data-ck],[data-id],[data-grp],[data-scope],[data-zoomreset],[data-sample]');if(el){e.preventDefault();tap(el)}}});
+
+/* ============ selection / jumping ============ */
+function select(id){S.selected=id;render();openDetail(id);ensureVisible(id)}
+function ensureVisible(id){
+  requestAnimationFrame(()=>{
+    const row=grid.querySelector(`[data-row="${CSS.escape(id)}"]`);if(!row)return;
+    const r=row.getBoundingClientRect(),sr=scroller.getBoundingClientRect();
+    const kb=parseFloat(getComputedStyle(document.documentElement).getPropertyValue('--kb'))||0;const bottom=Sheet.kind?Math.min(sr.bottom,innerHeight-sheetEl.offsetHeight-kb):sr.bottom;
+    if(r.bottom>bottom-8)scroller.scrollTop+=r.bottom-bottom+16;else if(r.top<sr.top+34)scroller.scrollTop-=sr.top+34-r.top;
+    const t=S.tasks.get(id);if(t&&scroller.scrollWidth>scroller.clientWidth){const x=X(t.start)+S.nw;const vis=scroller.scrollLeft+S.nw;if(x<vis||x>scroller.scrollLeft+scroller.clientWidth-40)scroller.scrollLeft=Math.max(0,x-S.nw-24)}
+  });
+}
+function goToTask(id){
+  const t=S.tasks.get(id);if(!t)return;
+  const day=sod(Math.max(t.start,Math.min(Date.now(),t.end-1)));
+  if(S.view==='day')S.anchor=sod(t.start)<=day&&day<t.end?day:sod(t.start);
+  else S.anchor=sod(t.start);
+  if(!scopeOk(t))S.scope='all';
+  S.collapsed.delete(t.project);
+  select(id);
+}
+function toggleDone(id){
+  const t=S.tasks.get(id);if(!t)return;
+  setStatus(id,t.status==='done'?'reopen':'done');
+  render();refreshAnySheet();
+  toast(t.status==='done'?'未完了に戻しました':`「${t.name}」を完了にしました`,'元に戻す',doUndo);
+}
+
+/* ============ sheets ============ */
+const Sheet={kind:null};
+const sheetEl=$('#sheet'),sheetBody=$('#sheetBody'),scrim=$('#scrim');
+function openSheet(kind,html,size,opts={}){
+  Sheet.kind=kind;sheetBody.className='sc'+(opts.chat?' chat':'');sheetBody.innerHTML=html;
+  sheetEl.dataset.size=size;sheetEl.classList.add('open');sheetEl.setAttribute('aria-label',opts.label||'');
+  scrim.classList.toggle('on',size!=='peek');
+  document.documentElement.style.setProperty('--padb',size==='peek'?Math.round(innerHeight*0.46)+'px':'0px');
+  if(!opts.keepScroll)sheetBody.scrollTop=0;
+}
+function closeSheet(){
+  const wasDetail=Sheet.kind==='detail';
+  Sheet.kind=null;sheetEl.classList.remove('open');scrim.classList.remove('on');
+  document.documentElement.style.setProperty('--padb','0px');
+  if(document.activeElement&&sheetEl.contains(document.activeElement))document.activeElement.blur();
+  if(wasDetail||S.selected){S.selected=null;render()}
+}
+scrim.addEventListener('click',closeSheet);
+function refreshAnySheet(){
+  if(Sheet.kind==='detail')refreshDetail();else if(Sheet.kind==='list')openList(true);else if(Sheet.kind==='stats')openStats(true);else if(Sheet.kind==='muse')renderMuse();
+}
+// grab to resize / dismiss
+(()=>{const g=$('#grab');let y0=null;
+  g.addEventListener('pointerdown',e=>{y0=e.clientY;g.setPointerCapture(e.pointerId)});
+  g.addEventListener('pointerup',e=>{if(y0==null)return;const dy=e.clientY-y0;y0=null;
+    if(Math.abs(dy)<6){if(sheetEl.dataset.size==='peek')growSheet();return}
+    if(dy<-30&&sheetEl.dataset.size==='peek')growSheet();
+    else if(dy>40){if(sheetEl.dataset.size==='full'&&Sheet.kind==='detail'){sheetEl.dataset.size='peek';scrim.classList.remove('on');document.documentElement.style.setProperty('--padb',Math.round(innerHeight*0.46)+'px')}else closeSheet()}
+  });
+})();
+function growSheet(){sheetEl.dataset.size='full';scrim.classList.add('on')}
+
+/* ---- detail ---- */
+function openDetail(id){const t=S.tasks.get(id);if(!t)return;const keep=Sheet.kind==='detail';openSheet('detail',detailHTML(t),keep?sheetEl.dataset.size:'peek',{label:'タスクの詳細',keepScroll:keep})}
+function refreshDetail(){
+  const t=S.tasks.get(S.selected);if(!t){closeSheet();return}
+  const a=document.activeElement;if(a&&sheetBody.contains(a)&&/INPUT|TEXTAREA|SELECT/.test(a.tagName))return;
+  const st=sheetBody.scrollTop;sheetBody.innerHTML=detailHTML(t);sheetBody.scrollTop=st;
+}
+function detailHTML(t){
+  const now=Date.now(),late=isLate(t,now),same=singleDay(t.start,t.end);
+  const sb={todo:`<button class="btn pri" data-act="start">開始</button><button class="btn" data-act="done">完了</button>`,
+    doing:`<button class="btn" data-act="pause">中断</button><button class="btn pri" data-act="done">完了</button>`,
+    paused:`<button class="btn pri" data-act="resume">再開</button><button class="btn" data-act="done">完了</button>`,
+    done:`<button class="btn" data-act="reopen">未完了に戻す</button>`}[t.status];
+  const worked=workedMs(t,now);
+  const actual=t.segs.length?`実績 ${fMD(t.segs[0].s)} ${fHM(t.segs[0].s)}開始${t.status==='done'&&t.segs[t.segs.length-1].e?` → ${fHM(t.segs[t.segs.length-1].e)}終了`:''} ・ 作業 ${fDur(worked)}（予定 ${fDur(t.end-t.start)}）`:'実績はまだありません。開始を押すと記録します';
+  const projects=[...new Set([...S.tasks.values()].map(x=>x.project))];
+  const others=[...S.tasks.values()].filter(x=>x.id!==t.id&&!t.deps.includes(x.id)&&!x.deps.includes(t.id)).sort((a,b)=>a.start-b.start).slice(0,80);
+  return `<div class="dh"><span class="kchip k-${t.kind}">${KINDS[t.kind].label}</span><span class="proj">${esc(t.project)}</span>${t.sample?'<span class="tag">サンプル</span>':''}<button class="iconbtn" data-act="close" aria-label="閉じる">${ICON.x}</button></div>
+<input id="d-name" class="title-in" value="${esc(t.name)}" aria-label="タスク名" enterkeyhint="done" autocomplete="off">
+<div class="when"><b>${fMDW(t.start)} ${fHM(t.start)}–${same?fHM(t.end):fMDW(t.end)+' '+fHM(t.end)}</b><span>${fDur(t.end-t.start)}</span>${late?'<span class="pill late">遅延</span>':''}${t.status==='doing'?'<span class="pill run">作業中</span>':''}${t.important?'<span class="pill imp">重要</span>':''}</div>
+<div class="acts">${sb}${t.status!=='done'?'<button class="btn ghost" data-act="ext" aria-label="終了を30分延ばす">+30分</button>':''}</div>
+<div class="prog"><input type="range" id="d-prog" min="0" max="100" step="5" value="${t.progress}" aria-label="進捗率"><output id="d-progv">${t.progress}%</output></div>
+<div class="actual">${actual}</div>
+<div class="sect">予定</div>
+<label class="f"><span>開始</span><input type="datetime-local" id="d-st" value="${dtl(t.start)}"></label>
+<label class="f"><span>終了</span><input type="datetime-local" id="d-et" value="${dtl(t.end)}"></label>
+<label class="f"><span>期限</span><input type="date" id="d-dl" value="${t.deadline?ymd(t.deadline):''}"></label>
+<div class="f"><span>分類</span><div class="chips">${Object.entries(KINDS).map(([k,v])=>`<button class="chip" data-kind="${k}" aria-pressed="${t.kind===k}">${v.label}</button>`).join('')}</div></div>
+<div class="f"><span>優先度</span><div class="segm">${[['high','高'],['mid','中'],['low','低']].map(([k,l])=>`<button data-pri="${k}" aria-pressed="${t.priority===k}">${l}</button>`).join('')}</div><button class="chip" data-act="imp" aria-pressed="${t.important}" style="margin-left:auto">重要</button></div>
+<label class="f"><span>プロジェクト</span><input id="d-proj" list="projlist" value="${esc(t.project)}" autocomplete="off"><datalist id="projlist">${projects.map(p=>`<option value="${esc(p)}">`).join('')}</datalist></label>
+<label class="f"><span>担当</span><input id="d-asg" value="${esc(t.assignee)}" placeholder="自分" autocomplete="off"></label>
+<div class="f"><span>前工程</span><div class="chips">${t.deps.filter(d=>S.tasks.has(d)).map(d=>`<button class="chip x" data-undep="${d}" aria-label="依存を外す">${esc(S.tasks.get(d).name)}</button>`).join('')}<select id="d-dep" style="flex:1;min-width:120px"><option value="">＋ 追加</option>${others.map(o=>`<option value="${o.id}">${fMD(o.start)} ${esc(o.name)}</option>`).join('')}</select></div></div>
+<label class="f"><span>マイルストーン</span><input type="checkbox" id="d-ms" ${t.milestone?'checked':''}></label>
+<label class="f col"><span>メモ</span><textarea id="d-memo" rows="3" placeholder="段取り、注意点など">${esc(t.memo)}</textarea></label>
+<div class="sect">変更履歴</div><ol class="hist">${histHTML(t)}</ol>
+<div style="margin-top:18px"><button class="btn danger wide" data-act="del">このタスクを削除</button></div>`;
+}
+function histHTML(t){
+  const f=(k,v)=>v==null||v===''?'なし':(k==='start'||k==='end')?`${fMD(v)} ${fHM(v)}`:k==='deadline'?fMD(v):k==='progress'?v+'%':k==='kind'?KINDS[v].label:k==='deps'?(v.length+'件'):typeof v==='boolean'?(v?'あり':'なし'):String(v).slice(0,20);
+  const L={start:'開始',end:'終了',deadline:'期限',progress:'進捗',status:'状態',name:'名称',project:'PJ',kind:'分類',priority:'優先度',important:'重要',assignee:'担当',deps:'前工程',milestone:'MS',memo:'メモ'};
+  return t.history.slice().reverse().slice(0,15).map(h=>{
+    let diff='';if(h.after){const ks=Object.keys(h.after).filter(k=>k!=='status'&&k!=='memo');diff=ks.slice(0,3).map(k=>`${L[k]||k} ${f(k,h.before?.[k])}→${f(k,h.after[k])}`).join(' / ')}
+    return `<li><time>${fMD(h.at)} ${fHM(h.at)}</time><span class="by ${h.by}">${h.by==='muse'?'MUSE':'自分'}</span>${esc(h.action)}${diff?` <span style="color:var(--ink-2)">${esc(diff)}</span>`:''}${h.reason?`<em>${esc(h.reason)}</em>`:''}</li>`;
+  }).join('')||'<li>履歴はありません</li>';
+}
+let nameTimer=null;
+sheetBody.addEventListener('click',async e=>{
+  const b=e.target.closest('button');if(!b)return;
+  if(Sheet.kind==='muse')return museClick(e,b);
+  if(Sheet.kind==='list'||Sheet.kind==='stats'||Sheet.kind==='settings'||Sheet.kind==='add')return otherClick(e,b);
+  const t=S.tasks.get(S.selected);if(!t)return;
+  const act=b.dataset.act;
+  if(act==='close')return closeSheet();
+  if(['start','pause','resume','done','reopen'].includes(act)){setStatus(t.id,act);render();refreshDetail();toast({start:'作業を開始しました',pause:'中断しました',resume:'再開しました',done:'完了にしました',reopen:'未完了に戻しました'}[act],'元に戻す',doUndo);return}
+  if(act==='ext'){applyTimeChange(t.id,t.start,t.end+30*MIN,'延長（+30分）');return}
+  if(act==='imp'){commit(t.id,{important:!t.important});render();refreshDetail();return}
+  if(act==='del'){if(await ask(`「${t.name}」を削除しますか？`,'削除','やめる')){S.undo={items:snapshotFor([t.id])};removeTask(t.id);closeSheet();toast('削除しました','元に戻す',doUndo)}return}
+  if(b.dataset.kind){const k=b.dataset.kind;const v=validatePlacement({...t,kind:k},t.start,t.end);commit(t.id,{kind:k},{action:'分類を変更'});render();refreshDetail();if(v.blocking.length)toast(v.blocking[0]+'。時刻を見直してください');return}
+  if(b.dataset.pri){commit(t.id,{priority:b.dataset.pri},{action:'優先度を変更'});render();refreshDetail();return}
+  if(b.dataset.undep){commit(t.id,{deps:t.deps.filter(d=>d!==b.dataset.undep)},{action:'前工程を外す'});render();refreshDetail();return}
+});
+sheetBody.addEventListener('input',e=>{
+  if(Sheet.kind!=='detail')return otherInput(e);
+  const t=S.tasks.get(S.selected);if(!t)return;
+  if(e.target.id==='d-prog'){$('#d-progv').textContent=e.target.value+'%'}
+  if(e.target.id==='d-name'){clearTimeout(nameTimer);const v=e.target.value.trim();nameTimer=setTimeout(()=>{if(v){commit(t.id,{name:v},{action:'名称を変更'});render()}},500)}
+});
+sheetBody.addEventListener('change',e=>{
+  if(Sheet.kind!=='detail')return otherChange(e);
+  const t=S.tasks.get(S.selected);if(!t)return;const id=e.target.id,val=e.target.value;
+  if(id==='d-prog'){const p=+val;const patch={progress:p};if(p===100&&t.status!=='done'){setStatus(t.id,'done')}else{if(p>0&&t.status==='todo')patch.status='paused';commit(t.id,patch,{action:'進捗を更新'})}render();refreshDetail();return}
+  if(id==='d-st'||id==='d-et'){const s=parseDT($('#d-st').value),en=parseDT($('#d-et').value);if(!s||!en)return;
+    if(id==='d-st'&&s!==t.start){applyTimeChange(t.id,s,s+(t.end-t.start),'開始を変更')}else if(en>s){applyTimeChange(t.id,s,en,'終了を変更')}else toast('終了は開始より後にしてください');return}
+  if(id==='d-dl'){const d=parseDT(val);commit(t.id,{deadline:d?atMin(d,hm2min(S.settings.workEnd)):null},{action:'期限を変更'});render();refreshDetail();return}
+  if(id==='d-proj'){const v=val.trim()||'未分類';commit(t.id,{project:v},{action:'プロジェクトを変更'});render();return}
+  if(id==='d-asg'){commit(t.id,{assignee:val.trim()},{action:'担当を変更'});return}
+  if(id==='d-dep'&&val){commit(t.id,{deps:[...t.deps,val]},{action:'前工程を追加'});render();refreshDetail();const v=validatePlacement(S.tasks.get(t.id),t.start,t.end);if(v.warnings.length)toast(v.warnings[0]);return}
+  if(id==='d-ms'){commit(t.id,{milestone:e.target.checked},{action:'マイルストーン設定'});render();return}
+  if(id==='d-memo'){commit(t.id,{memo:val},{action:'メモを更新'});return}
+  if(id==='d-name'){const v=val.trim();if(v){clearTimeout(nameTimer);commit(t.id,{name:v},{action:'名称を変更'});render()}}
+});
+sheetBody.addEventListener('keydown',e=>{if(e.key==='Enter'&&e.target.id==='d-name'){e.preventDefault();e.target.blur()}});
+sheetBody.addEventListener('focusout',()=>{setTimeout(()=>{if(Sheet.kind==='detail'&&!sheetBody.contains(document.activeElement))refreshDetail()},220)});
+
+/* ---- quick add ---- */
+const QA={kind:null,dur:null,imp:false,start:null};
+function openAdd(o={}){
+  QA.kind=null;QA.dur=null;QA.imp=false;QA.start=o.start||null;S.selected=null;render();
+  openSheet('add',`<div class="dh"><b style="font-size:16px;flex:1">タスクを追加</b><button class="iconbtn" data-act="close" aria-label="閉じる">${ICON.x}</button></div>
+<div class="addrow"><input id="qa" placeholder="例）明日 3号機 治具調整 45分" enterkeyhint="done" autocomplete="off" aria-label="タスクの内容"><button class="btn pri" data-act="qaAdd">追加</button></div>
+<div class="qprev" id="qprev"></div>
+<div class="chips" id="qkind">${Object.entries(KINDS).map(([k,v])=>`<button class="chip" data-qkind="${k}" aria-pressed="false">${v.label}</button>`).join('')}</div>
+<div class="chips" id="qdur">${[15,30,45,60,120,240].map(m=>`<button class="chip" data-qdur="${m}" aria-pressed="false">${fDur(m*MIN)}</button>`).join('')}<button class="chip" data-qimp="1" aria-pressed="false">重要</button></div>
+<div class="chips"><button class="btn ghost" data-act="qaMuse">MUSEに計画してもらう</button></div>
+<p class="hint">日付・時刻・時間・「〜まで」を文章で書けます。時刻を書かなければ、勤務時間・製造部門休憩・既存の予定を見て空いている時間帯へ自動で配置します。音声はキーボードのマイクから入力できます。</p>`,'full',{label:'タスクを追加'});
+  sheetEl.dataset.size='full';
+  updateQuickPreview();
+  setTimeout(()=>{const i=$('#qa');i&&i.focus()},320);
+}
+function parseQuick(raw,base=Date.now()){
+  let s=' '+String(raw||'').normalize('NFKC')+' ';
+  const r={date:null,timeMin:null,dur:null,kind:null,important:false,deadline:null,name:''};
+  const today=sod(base);
+  const dayFrom=(w)=>{
+    if(!w)return null;
+    if(/^今日/.test(w))return today; if(/^明日/.test(w))return addDays(today,1); if(/^(明後日|あさって)/.test(w))return addDays(today,2);
+    let m=w.match(/^来週\s*([月火水木金土日])/);if(m)return addDays(monday(today),7+((DOW.indexOf(m[1])+6)%7));
+    m=w.match(/^(\d{1,2})[\/月](\d{1,2})/);if(m){let d=new Date(new Date(today).getFullYear(),+m[1]-1,+m[2]).getTime();if(d<addDays(today,-60))d=new Date(new Date(today).getFullYear()+1,+m[1]-1,+m[2]).getTime();return d}
+    m=w.match(/^([月火水木金土日])/);if(m){const k=(DOW.indexOf(m[1])-new Date(today).getDay()+7)%7;return addDays(today,k)}
+    return null;
+  };
+  const DW='(今日|明日|明後日|あさって|来週\\s*[月火水木金土日]曜?日?|\\d{1,2}\\/\\d{1,2}|\\d{1,2}月\\d{1,2}日|[月火水木金土日]曜日?)';
+  s=s.replace(new RegExp(DW+'\\s*(まで(に)?|〆切?|締め?切り?)'),(_,w)=>{const d=dayFrom(w);if(d!=null)r.deadline=atMin(d,hm2min(S.settings.workEnd));return ' '});
+  s=s.replace(new RegExp(DW),(_,w)=>{r.date=dayFrom(w);return ' '});
+  s=s.replace(/(午前|午後)?\s*(\d{1,2}):(\d{2})(\s*(から|~|〜))?/,(_,ap,h,m)=>{let H=+h;if(ap==='午後'&&H<12)H+=12;r.timeMin=H*60+(+m);return ' '});
+  if(r.timeMin==null)s=s.replace(/(午前|午後)?\s*(\d{1,2})時(?!間)(半|(\d{1,2})分)?(\s*(から|~|〜))?/,(_,ap,h,hf,_m,mm)=>{let H=+h;if(ap==='午後'&&H<12)H+=12;r.timeMin=H*60+(hf==='半'?30:mm?+mm:0);return ' '});
+  s=s.replace(/(\d+(?:\.\d+)?)\s*(h|H|時間)(半)?/,(_,n,u,h)=>{r.dur=Math.round(+n*60+(h?30:0));return ' '});
+  if(r.dur==null)s=s.replace(/(\d{1,3})\s*(分|min|m)(?![a-z])/,(_,n)=>{r.dur=+n;return ' '});
+  if(/調整|改造|段取|治具|金型交換|据付|改修/.test(s))r.kind='line';
+  else if(/立ち?会い?|立会/.test(s))r.kind='witness';
+  else if(/設備停止|停止/.test(s))r.kind='stop';
+  else if(/休日出勤|休日作業/.test(s))r.kind='holiday';
+  else if(/私用|プライベート|通院|買い物|家族/.test(s))r.kind='private';
+  if(/重要|至急|急ぎ|[!！]/.test(s)){r.important=true;s=s.replace(/重要|至急|急ぎ|[!！]/g,' ')}
+  r.name=s.replace(/\s+/g,' ').replace(/^[\sにをのでへ、。,]+|[\sにをのでへ、。,]+$/g,'').trim();
+  return r;
+}
+function placeQuick(p){
+  const kind=QA.kind||p.kind||'desk';
+  const durMin=QA.dur||p.dur||(kind==='line'||kind==='stop'?45:60);
+  const now=Date.now();let start=null,auto=false,note='';
+  if(p.timeMin!=null){let d=p.date;if(d==null){d=sod(now);if(atMin(d,p.timeMin)<now-30*MIN)d=addDays(d,1)}start=atMin(d,p.timeMin)}
+  else if(QA.start&&p.date==null){start=QA.start}
+  else{
+    const from=p.date!=null?Math.max(p.date,now):now;
+    let sl=findSlots(durMin,kind,from,p.date!=null?addDays(p.date,1):addDays(from,21),{count:1})[0];
+    if(!sl&&p.date!=null){sl=findSlots(durMin,kind,from,addDays(from,21),{count:1})[0];if(sl)note='指定日は空きがないため次の空きへ'}
+    if(sl){start=sl.start;auto=true}else{start=p.date!=null?atMin(p.date,hm2min(S.settings.workStart)):ceilTo(now,15*MIN);note=durMin>45&&(kind==='line'||kind==='stop')?'休憩枠に収まらないため仮に置きます。分割するか休日に配置してください':'条件に合う空き時間がないため仮に置きます'}
+  }
+  return {kind,start,end:start+durMin*MIN,auto,note,durMin};
+}
+function quickState(){
+  const raw=($('#qa')||{}).value||'';const p=parseQuick(raw);const pl=placeQuick(p);
+  const t={id:'_',kind:pl.kind,deps:[],deadline:p.deadline};const v=validatePlacement(t,pl.start,pl.end);
+  return {p,pl,v,raw};
+}
+function updateQuickPreview(){
+  const el=$('#qprev');if(!el)return;const {p,pl,v}=quickState();
+  document.querySelectorAll('[data-qkind]').forEach(b=>b.setAttribute('aria-pressed',String(b.dataset.qkind===pl.kind)));
+  document.querySelectorAll('[data-qdur]').forEach(b=>b.setAttribute('aria-pressed',String(+b.dataset.qdur===pl.durMin)));
+  const q=document.querySelector('[data-qimp]');if(q)q.setAttribute('aria-pressed',String(QA.imp||p.important));
+  const win=pl.auto&&(pl.kind==='line'||pl.kind==='stop')&&!isHoliday(pl.start)?'（製造部門休憩）':'';
+  el.textContent=`→ ${fMDW(pl.start)} ${fHM(pl.start)}–${fHM(pl.end)}${win}${pl.auto?' に自動配置':''}${p.deadline?` ・期限 ${fMDW(p.deadline)}`:''}${pl.note?' ・'+pl.note:''}${v.blocking.length?' ・'+v.blocking[0]:''}`;
+  el.className='qprev'+(!pl.auto||v.blocking.length?' warn':'');
+}
+function quickAdd(){
+  const {p,pl,raw}=quickState();
+  if(!p.name&&!raw.trim()){toast('タスク名を入力してください');$('#qa').focus();return}
+  const id=uid();
+  commit(id,{name:p.name||raw.trim(),kind:pl.kind,start:pl.start,end:pl.end,deadline:p.deadline,important:QA.imp||p.important,project:S.lastProject||'未分類'},{action:'作成'});
+  S.undo={items:[{id,prev:null}]};
+  closeSheet();
+  if(S.view==='day')S.anchor=sod(pl.start);else S.anchor=sod(pl.start);
+  select(id);
+  toast(`${fMDW(pl.start)} ${fHM(pl.start)} に追加しました`,'元に戻す',doUndo);
+}
+
+/* ---- list / stats / settings ---- */
+function openList(refresh){
+  const now=Date.now(),today=sod(now),ts=[...S.tasks.values()].filter(scopeOk),by=(a,b)=>a.start-b.start;
+  const late=ts.filter(t=>isLate(t,now)).sort(by);
+  const doing=ts.filter(t=>!isLate(t,now)&&t.status==='doing').sort(by);
+  const tod=ts.filter(t=>t.status!=='done'&&t.status!=='doing'&&!isLate(t,now)&&t.start<addDays(today,1)).sort(by);
+  const up=ts.filter(t=>t.status!=='done'&&t.status!=='doing'&&!isLate(t,now)&&t.start>=addDays(today,1)).sort(by);
+  const done=ts.filter(t=>t.status==='done').sort((a,b)=>b.updatedAt-a.updatedAt).slice(0,20);
+  const li=t=>`<div class="li"><span class="ck s-${t.status}${isLate(t,now)?' late':''}" data-lck="${t.id}" role="button" aria-label="完了">${ICON.check}</span><button class="nt" data-go="${t.id}" style="text-align:left"><b>${esc(t.name)}</b><small>${fMDW(t.start)} ${fHM(t.start)} · ${esc(t.project)}${t.deadline?` · 期限${fMD(t.deadline)}`:''}</small></button>${t.important?'<span class="pill imp">重要</span>':''}</div>`;
+  const sec=(title,arr,empty)=>arr.length||empty?`<div class="list-h"><b>${title}</b><small>${arr.length}件</small></div>${arr.map(li).join('')||`<p class="hint">${empty}</p>`}`:'';
+  const html=`<div class="dh"><b style="font-size:16px;flex:1">タスク一覧</b><button class="chip" data-lscope="1">${{all:'全て',work:'仕事',private:'私用'}[S.scope]}</button><button class="iconbtn" data-act="close" aria-label="閉じる">${ICON.x}</button></div>
+${sec('遅延',late)}${sec('作業中',doing)}${sec('今日',tod,'今日の残りの予定はありません')}${sec('これから',up.slice(0,60))}${sec('完了（最近）',done)}`;
+  if(refresh&&Sheet.kind==='list'){const st=sheetBody.scrollTop;sheetBody.innerHTML=html;sheetBody.scrollTop=st}else openSheet('list',html,'full',{label:'タスク一覧'});
+}
+const monthKey=t=>ymd(t).slice(0,7);
+function attDay(d){const mk=monthKey(d);return (S.attendance[mk]||{})[ymd(d)]||{}}
+function setAtt(d,field,val){const mk=monthKey(d);S.attendance[mk]={...(S.attendance[mk]||{})};const k=ymd(d);S.attendance[mk][k]={...(S.attendance[mk][k]||{}),[field]:val};Store.saveAttendance(mk)}
+function overtimeOf(dayKey,rec){
+  if(!rec||!rec.in||!rec.out)return {ot:0,hol:0};
+  const d=parseDT(dayKey),ws=atMin(d,hm2min(S.settings.workStart)),we=atMin(d,hm2min(S.settings.workEnd));
+  const work=Math.max(0,rec.out-rec.in);
+  if(isHoliday(d))return {ot:0,hol:work};
+  return {ot:Math.max(0,rec.out-Math.max(we,rec.in))+Math.max(0,Math.min(ws,rec.out)-rec.in),hol:0};
+}
+function openStats(refresh){
+  const now=Date.now(),today=sod(now),mk=monthKey(now),days=S.attendance[mk]||{};
+  let ot=0,hol=0;const rows=[];
+  for(const k of Object.keys(days).sort()){const o=overtimeOf(k,days[k]);ot+=o.ot;hol+=o.hol;rows.push([k,days[k],o])}
+  const ms=new Date(new Date(now).getFullYear(),new Date(now).getMonth(),1).getTime(),me=addDays(new Date(new Date(now).getFullYear(),new Date(now).getMonth()+1,1).getTime(),0);
+  const mt=[...S.tasks.values()].filter(t=>t.start<me&&t.end>ms&&t.kind!=='private');
+  const doneN=mt.filter(t=>t.status==='done').length,lateN=mt.filter(t=>isLate(t,now)).length;
+  let taskOT=0;for(const t of mt)for(const s of t.segs){const e=s.e||now;for(let d=sod(s.s);d<e;d=addDays(d,1)){const a=Math.max(s.s,d),b=Math.min(e,addDays(d,1));if(b<=a)continue;if(isHoliday(d)){taskOT+=b-a;continue}const ws=atMin(d,hm2min(S.settings.workStart)),we=atMin(d,hm2min(S.settings.workEnd));taskOT+=Math.max(0,Math.min(b,ws)-a)+Math.max(0,b-Math.max(a,we))}}
+  const ratio=estimateStats();
+  const r=attDay(today);
+  const tm=v=>v?`${pad(new Date(v).getHours())}:${pad(new Date(v).getMinutes())}`:'';
+  const h=ms=>(ms/HOUR).toFixed(1);
+  const html=`<div class="dh"><b style="font-size:16px;flex:1">実績 ・ ${new Date(now).getMonth()+1}月</b><button class="iconbtn" data-act="close" aria-label="閉じる">${ICON.x}</button></div>
+<div class="sect" style="margin-top:6px">今日の勤務（${fMDW(today)}）</div>
+<div class="att"><label>出勤<input type="time" id="a-in" value="${tm(r.in)}"></label><button class="btn" data-att="in">今</button><label>退勤<input type="time" id="a-out" value="${tm(r.out)}"></label><button class="btn" data-att="out">今</button></div>
+<p class="hint">予定の勤務 ${S.settings.workStart}–${S.settings.workEnd}。実際の出退勤はここに別に記録し、時間外を計算します。</p>
+<div class="stat"><div><small>時間外（平日）</small><b>${h(ot)}<span>時間</span></b></div><div><small>休日出勤</small><b>${h(hol)}<span>時間</span></b></div><div><small>完了 / 遅延</small><b>${doneN}<span>件</span> / <span style="color:var(--late);font-size:20px;margin:0">${lateN}</span><span>件</span></b></div><div><small>時間外の作業（タスク実績）</small><b>${h(taskOT)}<span>時間</span></b></div></div>
+<div class="sect">見積もり精度（完了タスク）</div>
+${ratio.length?`<div class="tbl-wrap"><table class="mini"><tr><th>分類</th><th>件数</th><th>予定</th><th>実績</th><th>実績/予定</th></tr>${ratio.map(x=>`<tr><td>${KINDS[x.kind].label}</td><td>${x.n}</td><td>${h(x.plan)}h</td><td>${h(x.act)}h</td><td class="ratio ${x.r>1.15?'hi':x.r<0.9?'':'ok'}">${x.r.toFixed(2)}</td></tr>`).join('')}</table></div><p class="hint">1.15を超える分類は、MUSEが次の計画で所要時間を長めに見積もります。</p>`:'<p class="hint">開始・完了を記録したタスクが増えると、分類ごとの見積もり精度がここに出ます。</p>'}
+<div class="sect">今月の出退勤</div>
+${rows.length?`<div class="tbl-wrap"><table class="mini"><tr><th>日付</th><th>出勤</th><th>退勤</th><th>時間外</th></tr>${rows.reverse().map(([k,v,o])=>`<tr><td>${fMDW(parseDT(k))}</td><td>${tm(v.in)}</td><td>${tm(v.out)}</td><td>${o.hol?'休日 '+h(o.hol):h(o.ot)}h</td></tr>`).join('')}</table></div>`:'<p class="hint">まだ記録がありません。</p>'}`;
+  if(refresh&&Sheet.kind==='stats'){const a=document.activeElement;if(a&&sheetBody.contains(a)&&a.tagName==='INPUT')return;const st=sheetBody.scrollTop;sheetBody.innerHTML=html;sheetBody.scrollTop=st}else openSheet('stats',html,'full',{label:'実績'});
+}
+function estimateStats(){
+  const by={};
+  for(const t of S.tasks.values()){if(t.status!=='done'||!t.segs.length||t.milestone)continue;const a=workedMs(t);if(a<MIN)continue;(by[t.kind]=by[t.kind]||{kind:t.kind,n:0,plan:0,act:0});by[t.kind].n++;by[t.kind].plan+=t.end-t.start;by[t.kind].act+=a}
+  return Object.values(by).map(x=>({...x,r:x.act/Math.max(1,x.plan)}));
+}
+function openSettings(refresh){
+  const st=S.settings,samples=[...S.tasks.values()].filter(t=>t.sample).length;
+  const syncTxt={saved:'クラウドに保存済み（他の端末と同期）',saving:'保存中…',local:S.mode==='cloud'?'クラウド接続中':'この端末のみに保存（クラウド同期なし）',error:'クラウドに接続できません（この端末には保存）'}[S.sync]||'';
+  const html=`<div class="dh"><b style="font-size:16px;flex:1">設定</b><button class="iconbtn" data-act="close" aria-label="閉じる">${ICON.x}</button></div>
+<div class="sect" style="margin-top:6px">勤務条件</div>
+<div class="f"><span>通常勤務</span><input type="time" id="s-ws" value="${st.workStart}" style="flex:1"><span style="width:auto">–</span><input type="time" id="s-we" value="${st.workEnd}" style="flex:1"></div>
+${st.breaks.map((b,i)=>`<div class="f"><span>${i?'休憩'+(i+1):'製造部門休憩'}</span><input type="time" data-bs="${i}" value="${b.s}" style="flex:1"><span style="width:auto">–</span><input type="time" data-be="${i}" value="${b.e}" style="flex:1"><button class="iconbtn" data-rmbreak="${i}" aria-label="この休憩を削除">${ICON.x}</button></div>`).join('')}
+<div style="padding:8px 0"><button class="btn ghost" data-addbreak="1">休憩時間帯を追加</button></div>
+<label class="f"><span style="width:auto;flex:1">工程調整・改造・設備停止は、製造部門の休憩中か休日だけに配置する</span><input type="checkbox" id="s-line" ${st.lineRule?'checked':''}></label>
+<div class="sect">休日（土日以外）</div>
+<div class="chips">${st.holidays.slice().sort().map(d=>`<button class="chip x" data-rmhol="${d}">${fMDW(parseDT(d))}</button>`).join('')||'<span class="hint" style="margin:0">工場カレンダーの休日を追加できます</span>'}</div>
+<div class="f"><span>追加</span><input type="date" id="s-hol"></div>
+<div class="sect">データ</div>
+<p class="hint" style="margin-top:0">${esc(syncTxt)}</p>
+<div class="chips"><button class="btn ghost" data-copyjson="1">全データをコピー（JSON）</button>${samples?`<button class="btn danger" data-rmsample="1">サンプル${samples}件を削除</button>`:''}</div>
+<p class="hint">ガントチャート・一覧・MUSEは同じデータを読み書きします。変更はすぐ保存され、履歴が各タスクに残ります。</p>`;
+  if(refresh&&Sheet.kind==='settings'){const a=document.activeElement;if(a&&sheetBody.contains(a)&&a.tagName==='INPUT')return;const s=sheetBody.scrollTop;sheetBody.innerHTML=html;sheetBody.scrollTop=s}else openSheet('settings',html,'full',{label:'設定'});
+}
+async function otherClick(e,b){
+  if(b.dataset.act==='close')return closeSheet();
+  if(b.dataset.act==='qaAdd')return quickAdd();
+  if(b.dataset.act==='qaMuse'){const v=($('#qa').value||'').trim();closeSheet();openMuse();if(v)museSend(v+'（作業可能な時間帯に配置して提案して）');return}
+  if(b.dataset.qkind){QA.kind=QA.kind===b.dataset.qkind?null:b.dataset.qkind;updateQuickPreview();return}
+  if(b.dataset.qdur){QA.dur=QA.dur===+b.dataset.qdur?null:+b.dataset.qdur;updateQuickPreview();return}
+  if(b.dataset.qimp){QA.imp=!QA.imp;updateQuickPreview();return}
+  if(b.dataset.go){const id=b.dataset.go;closeSheet();goToTask(id);return}
+  if(b.dataset.lscope){S.scope={all:'work',work:'private',private:'all'}[S.scope];render();openList(true);return}
+  if(b.dataset.att){const now=Date.now();setAtt(now,b.dataset.att,ceilTo(now-4*MIN,5*MIN)-0);openStats(true);toast(b.dataset.att==='in'?'出勤を記録しました':'退勤を記録しました');return}
+  if(b.dataset.addbreak){S.settings.breaks.push({s:'12:00',e:'12:45',label:'休憩'});Store.saveSettings();render();openSettings(true);return}
+  if(b.dataset.rmbreak){S.settings.breaks.splice(+b.dataset.rmbreak,1);Store.saveSettings();render();openSettings(true);return}
+  if(b.dataset.rmhol){S.settings.holidays=S.settings.holidays.filter(d=>d!==b.dataset.rmhol);Store.saveSettings();render();openSettings(true);return}
+  if(b.dataset.rmsample){if(await ask('サンプルのタスクを削除しますか？','削除','やめる')){const ids=[...S.tasks.values()].filter(t=>t.sample).map(t=>t.id);S.undo={items:snapshotFor(ids)};ids.forEach(id=>removeTask(id));render();openSettings(true);toast('サンプルを削除しました','元に戻す',doUndo)}return}
+  if(b.dataset.copyjson){const data=JSON.stringify({tasks:[...S.tasks.values()],settings:S.settings,attendance:S.attendance,proposals:[...S.proposals.values()]},null,1);
+    try{await navigator.clipboard.writeText(data);toast('全データをコピーしました')}catch{const ta=document.createElement('textarea');ta.value=data;ta.style.cssText='width:100%;height:160px;margin-top:8px';b.after(ta);ta.select();toast('選択した内容をコピーしてください')}return}
+}
+function otherInput(e){if(e.target.id==='qa')updateQuickPreview()}
+function otherChange(e){
+  const t=e.target;
+  if(t.id==='a-in'||t.id==='a-out'){const v=t.value;const d=sod(Date.now());setAtt(d,t.id==='a-in'?'in':'out',v?atMin(d,hm2min(v)):null);openStats(true);return}
+  if(t.id==='s-ws'||t.id==='s-we'){if(t.value){S.settings[t.id==='s-ws'?'workStart':'workEnd']=t.value;Store.saveSettings();render()}return}
+  if(t.dataset.bs!=null||t.dataset.be!=null){const i=+(t.dataset.bs??t.dataset.be);if(t.value){S.settings.breaks[i][t.dataset.bs!=null?'s':'e']=t.value;Store.saveSettings();render()}return}
+  if(t.id==='s-line'){S.settings.lineRule=t.checked;Store.saveSettings();render();return}
+  if(t.id==='s-hol'&&t.value){if(!S.settings.holidays.includes(t.value))S.settings.holidays.push(t.value);Store.saveSettings();render();openSettings(true)}
+}
+sheetBody.addEventListener('keydown',e=>{if(e.key==='Enter'&&e.target.id==='qa'&&!e.isComposing){e.preventDefault();quickAdd()}});
+
+/* ============ MUSE agent ============ */
+const Muse={sample:null,tools:false,ready:false,running:null,log:LS.get('chat',[]),cur:null,disabled:''};
+async function initMuse(){
+  if(!window.claude||typeof window.claude.use!=='function'){Muse.ready=true;Muse.disabled='MUSEはClaudeのアプリ内でこのページを開いたときに使えます（連携用インターフェース window.MUSE は用意済みです）';return}
+  try{Muse.sample=await window.claude.use('sample')}catch{}
+  if(Muse.sample){try{const lim=await Muse.sample.limits();Muse.tools=!!(lim&&lim.tools&&lim.tools.maxCount>=4)}catch{Muse.tools=false}}
+  else Muse.disabled='この画面ではMUSEを使えません';
+  Muse.ready=true;if(Sheet.kind==='muse')renderMuse();
+}
+function saveChat(){LS.set('chat',Muse.log.slice(-30))}
+function museContext(){
+  const now=Date.now(),st=S.settings;
+  const from=addDays(sod(now),-14),to=addDays(sod(now),60);
+  const list=[...S.tasks.values()].filter(t=>(t.end>from&&t.start<to)||t.status!=='done').sort((a,b)=>a.start-b.start).slice(0,160);
+  const line=t=>[t.id,t.name,t.project,t.kind,`${fISO(t.start)}~${fISO(t.end)}`,t.segs.length?`実績${fDur(workedMs(t,now))}`:'-',t.progress+'%',t.status+(isLate(t,now)?'(遅延)':''),t.important?'重要':t.priority,t.deadline?ymd(t.deadline):'-',t.deps.join(',')||'-',t.assignee||'-'].join('|');
+  const est=estimateStats().map(x=>`${x.kind} 実績/予定=${x.r.toFixed(2)}(${x.n}件)`).join(', ')||'データなし';
+  const pend=[...S.proposals.values()].filter(p=>p.status==='pending').map(p=>`${p.id}: ${p.summary}`).join(' / ')||'なし';
+  return `あなたは「MUSE」。生産技術者の仕事とプライベートの計画を管理するエージェントです。下のツールでユーザーのガントチャートの実データを読み書きします。
+
+現在: ${fISO(now)}（${DOW[new Date(now).getDay()]}曜、Asia/Tokyo）
+勤務条件: 平日 ${st.workStart}–${st.workEnd}。製造部門の休憩 ${st.breaks.map(b=>`${b.s}–${b.e}`).join('、')||'なし'}。土日${st.holidays.length?'と '+st.holidays.join(','):''}は休日。
+作業可能時間: desk(通常業務)/witness(工程立ち会い)=平日の勤務時間。line(工程調整・改造)/stop(設備停止)=${st.lineRule?'平日は製造部門の休憩中だけ、休日は勤務時間帯':'平日の勤務時間'}。holiday(休日作業)=休日の勤務時間帯。private(プライベート)=勤務時間外（平日18:00–22:00、休日9:00–21:00）。
+見積もり精度: ${est}
+承認待ちの提案: ${pend}
+
+守ること:
+- タスクの作成・削除、日時・期限・担当の変更は必ず propose_plan で提案する。保存はユーザーの承認後。自分で反映したと言わない。
+- 配置する時刻は必ず find_slots の結果から選ぶ。作業可能時間に合わない時刻や、既存の予定と重なる時刻を提案しない。1枠に収まらない作業は分割して提案する。
+- 遅延や延長の影響を聞かれたら simulate_change で後続と期限への影響を計算してから答える。
+- 進捗・状態・メモ・優先度・名称は update_task で直接更新してよい。
+- 見積もり精度が1.15を超える分類は、所要時間をその比率で長めに取る。
+- 優先順位は 遅延 > 期限が近い > 重要 > 後続が多い > 短時間で終わる の順で考え、理由を一言添える。
+- 回答は日本語、スマホ向けに短く。結論を先に、箇条書きは5行まで。タスクIDは書かず名称で呼ぶ。提案した場合は最後に「承認すると反映されます」と書く。
+
+タスク一覧（id|名称|プロジェクト|分類|予定|実績|進捗|状態|優先度|期限|前工程|担当）:
+${list.map(line).join('\n')||'（なし）'}`;
+}
+function museTools(b){
+  const act=s=>{b.acts.push(s);patchMuseCur()};
+  const KIND_ENUM=Object.keys(KINDS);
+  return [
+    {name:'find_slots',description:'作業可能条件（勤務時間・製造部門休憩・休日・既存の予定）を満たす空き時間帯を返す。配置する時刻は必ずこの結果から選ぶ。',
+      inputSchema:{type:'object',properties:{duration_min:{type:'number',description:'所要時間（分）'},kind:{type:'string',enum:KIND_ENUM},from:{type:'string',description:'検索開始 "YYYY-MM-DD HH:MM"（省略時は今）'},to:{type:'string',description:'検索終了 "YYYY-MM-DD HH:MM"'},count:{type:'number',description:'最大件数（既定5）'},exclude_task_id:{type:'string',description:'動かすタスク自身のID'}},required:['duration_min','kind']},
+      execute(i){const k=KINDS[i.kind]?String(i.kind):'desk';const d=Number(i.duration_min)||60;act(`空き時間を検索（${KINDS[k].label}・${fDur(d*MIN)}）`);
+        const sl=findSlots(d,k,parseDT(i.from)||Date.now(),parseDT(i.to)||null,{count:clamp(Number(i.count)||5,1,10),self:i.exclude_task_id?String(i.exclude_task_id):null});
+        return sl.length?sl.map(s=>({start:fISO(s.start),end:fISO(s.end),weekday:DOW[new Date(s.start).getDay()]})):{slots:[],note:'条件を満たす空きがありません。期間を広げるか分割してください'}}},
+    {name:'simulate_change',description:'あるタスクの日時変更または延長（extend_min）を仮定し、前工程に依存する後続タスクのずれと期限超過を計算して返す。保存はしない。',
+      inputSchema:{type:'object',properties:{task_id:{type:'string'},new_start:{type:'string',description:'"YYYY-MM-DD HH:MM"'},new_end:{type:'string'},extend_min:{type:'number',description:'終了を何分延ばすか'}},required:['task_id']},
+      execute(i){const t=S.tasks.get(String(i.task_id));if(!t)throw new Error('そのIDのタスクはありません');act(`影響を計算（${t.name}）`);
+        let s=parseDT(i.new_start)??t.start,e=parseDT(i.new_end)??(t.end+(s-t.start));if(i.extend_min)e=e+Number(i.extend_min)*MIN;
+        const mv=cascade(t.id,{start:s,end:e});
+        return {task:t.name,new:{start:fISO(s),end:fISO(e)},deadline:t.deadline?fISO(t.deadline):null,deadline_miss:!!(t.deadline&&e>t.deadline),
+          affected:mv.map(m=>({task_id:m.id,name:m.name,from:fISO(m.from.start),to_start:fISO(m.to.start),to_end:fISO(m.to.end),deadline:m.deadline?fISO(m.deadline):null,deadline_miss:m.deadlineMiss}))}}},
+    {name:'propose_plan',description:'タスクの作成・日時移動・期限/担当などの変更・削除を1つの提案にまとめる。保存はされず、ユーザーが承認すると反映される。条件違反・重複・前工程との矛盾があると Error を返すので、find_slots で取り直して再提案する。',
+      inputSchema:{type:'object',properties:{summary:{type:'string',description:'提案の要約（20字程度）'},reason:{type:'string',description:'判断理由（1〜2文）'},
+        ops:{type:'array',items:{type:'object',properties:{op:{type:'string',enum:['create','move','update','delete']},task_id:{type:'string'},name:{type:'string'},project:{type:'string'},kind:{type:'string',enum:KIND_ENUM},start:{type:'string',description:'"YYYY-MM-DD HH:MM"'},end:{type:'string'},deadline:{type:'string',description:'"YYYY-MM-DD"'},assignee:{type:'string'},important:{type:'boolean'},priority:{type:'string',enum:['high','mid','low']},deps:{type:'array',items:{type:'string'},description:'前工程のtask_id。同じ提案内の作成は "new:0" のように添字で指定'},memo:{type:'string'},allow_overlap:{type:'boolean'}},required:['op']}}},required:['summary','ops']},
+      execute(i){const p=buildProposal(i);b.props.push(p.id);act(`提案を作成（${p.ops.length}件の変更）`);render();return {proposal_id:p.id,status:'pending',warnings:p.warnings,note:'ユーザーの承認待ち。まだ保存されていません'}}},
+    {name:'update_task',description:'進捗・状態・メモ・優先度・名称・プロジェクトを直接更新する（承認不要）。日時・期限・担当は変えられない（propose_plan を使う）。',
+      inputSchema:{type:'object',properties:{task_id:{type:'string'},progress:{type:'number'},status:{type:'string',enum:['todo','doing','paused','done']},memo:{type:'string'},priority:{type:'string',enum:['high','mid','low']},important:{type:'boolean'},name:{type:'string'},project:{type:'string'}},required:['task_id']},
+      execute(i){const t=S.tasks.get(String(i.task_id));if(!t)throw new Error('そのIDのタスクはありません');act(`更新（${t.name}）`);
+        if(i.status&&i.status!==t.status){const map={doing:t.segs.length?'resume':'start',paused:'pause',done:'done',todo:'reopen'};setStatus(t.id,map[i.status]||'reopen','muse')}
+        const patch={};for(const k of ['progress','memo','priority','important','name','project'])if(i[k]!=null)patch[k]=k==='progress'?clamp(Number(i[k]),0,100):i[k];
+        if(Object.keys(patch).length)commit(t.id,patch,{by:'muse',action:'MUSEが更新'});render();return {ok:true}}}
+  ];
+}
+function buildProposal(input){
+  const ops=Array.isArray(input.ops)?input.ops:[];if(!ops.length)throw new Error('ops が空です');if(ops.length>20)throw new Error('一度に20件までにしてください');
+  const errs=[],warnings=[],out=[],overrides=new Map(),moving=new Set();
+  ops.forEach(o=>{if((o.op==='move'||o.op==='delete')&&o.task_id)moving.add(String(o.task_id))});
+  ops.forEach((o,i)=>{
+    const op=String(o.op);
+    if(op==='create'){
+      const s=parseDT(o.start),e=parseDT(o.end);if(!s||!e){errs.push(`#${i} create: start/end が必要です`);return}
+      const tmp={id:'new:'+i,name:String(o.name||'無題'),kind:KINDS[o.kind]?o.kind:'desk',deps:(o.deps||[]).map(String),deadline:o.deadline?atMin(parseDT(o.deadline),hm2min(S.settings.workEnd)):null};
+      const v=validatePlacement(tmp,s,e,{checkOverlap:!o.allow_overlap,overlapIsError:true,overrides,exclude:moving,noPast:true});
+      v.blocking.forEach(m=>errs.push(`#${i}「${tmp.name}」: ${m}`));v.warnings.forEach(m=>warnings.push(`「${tmp.name}」: ${m}`));
+      overrides.set('new:'+i,{start:s,end:e,name:tmp.name});
+      out.push({op,name:tmp.name,project:String(o.project||'未分類'),kind:tmp.kind,start:s,end:e,deadline:tmp.deadline,important:!!o.important,priority:o.priority||'mid',deps:tmp.deps,memo:String(o.memo||''),assignee:String(o.assignee||'')});
+    }else if(op==='move'){
+      const t=S.tasks.get(String(o.task_id));if(!t){errs.push(`#${i} move: task_id が見つかりません`);return}
+      const s=parseDT(o.start),e=parseDT(o.end)||(s?s+(t.end-t.start):null);if(!s){errs.push(`#${i} move: start が必要です`);return}
+      const v=validatePlacement(t,s,e,{checkOverlap:!o.allow_overlap,overlapIsError:true,overrides,exclude:moving,noPast:true});
+      v.blocking.forEach(m=>errs.push(`#${i}「${t.name}」: ${m}`));v.warnings.forEach(m=>warnings.push(`「${t.name}」: ${m}`));
+      overrides.set(t.id,{start:s,end:e,name:t.name});
+      out.push({op,task_id:t.id,name:t.name,start:s,end:e,before:{start:t.start,end:t.end},rev:t.rev});
+    }else if(op==='update'){
+      const t=S.tasks.get(String(o.task_id));if(!t){errs.push(`#${i} update: task_id が見つかりません`);return}
+      const f={};if(o.deadline!==undefined)f.deadline=o.deadline?atMin(parseDT(o.deadline),hm2min(S.settings.workEnd)):null;
+      for(const k of ['assignee','name','project','kind','important','priority','memo','deps'])if(o[k]!==undefined)f[k]=o[k];
+      if(!Object.keys(f).length){errs.push(`#${i} update: 変更項目がありません`);return}
+      const before={};for(const k of Object.keys(f))before[k]=t[k];
+      out.push({op,task_id:t.id,name:t.name,fields:f,before,rev:t.rev});
+    }else if(op==='delete'){
+      const t=S.tasks.get(String(o.task_id));if(!t){errs.push(`#${i} delete: task_id が見つかりません`);return}
+      out.push({op,task_id:t.id,name:t.name,rev:t.rev});
+    }else errs.push(`#${i}: 不明な op`);
+  });
+  if(errs.length)throw new Error('提案に問題があります。直して再提案してください:\n'+errs.join('\n'));
+  const p={id:uid(),createdAt:Date.now(),status:'pending',summary:String(input.summary||'計画の変更').slice(0,60),reason:String(input.reason||'').slice(0,300),ops:out,warnings};
+  S.proposals.set(p.id,p);Store.saveProposal(p);pruneProposals();updateTop();
+  return p;
+}
+function pruneProposals(){
+  const done=[...S.proposals.values()].filter(p=>p.status!=='pending').sort((a,b)=>b.createdAt-a.createdAt);
+  for(const p of done.slice(30)){S.proposals.delete(p.id);Store.deleteProposal(p.id)}
+}
+async function approveProposal(pid){
+  const p=S.proposals.get(pid);if(!p||p.status!=='pending')return;
+  const stale=p.ops.filter(o=>o.task_id&&(!S.tasks.has(o.task_id)||S.tasks.get(o.task_id).rev!==o.rev));
+  if(stale.length&&!(await ask(`提案のあとに「${stale.map(o=>o.name).join('」「')}」が変更・削除されています。このまま反映しますか？`,'反映する','やめる')))return;
+  const newIds=p.ops.map(o=>o.op==='create'?uid():null);
+  const resolveDep=d=>{const m=String(d).match(/^new:(\d+)$/);return m?newIds[+m[1]]:d};
+  const touched=p.ops.map((o,i)=>o.op==='create'?newIds[i]:o.task_id).filter(Boolean);
+  S.undo={items:snapshotFor(touched)};
+  const meta={by:'muse',reason:p.reason||p.summary};
+  p.ops.forEach((o,i)=>{
+    if(o.op==='create')commit(newIds[i],{name:o.name,project:o.project,kind:o.kind,start:o.start,end:o.end,deadline:o.deadline,important:o.important,priority:o.priority,deps:o.deps.map(resolveDep).filter(d=>d&&S.tasks.has(d)||newIds.includes(d)),memo:o.memo,assignee:o.assignee},{...meta,action:'作成（MUSE提案を承認）'});
+    else if(o.op==='move'&&S.tasks.has(o.task_id))commit(o.task_id,{start:o.start,end:o.end},{...meta,action:'日時変更（MUSE提案を承認）'});
+    else if(o.op==='update'&&S.tasks.has(o.task_id)){const f={...o.fields};if(f.deps)f.deps=f.deps.map(resolveDep);commit(o.task_id,f,{...meta,action:'変更（MUSE提案を承認）'})}
+    else if(o.op==='delete'&&S.tasks.has(o.task_id))removeTask(o.task_id,meta);
+  });
+  p.status='approved';p.decidedAt=Date.now();Store.saveProposal(p);
+  render();renderMuse();toast('提案を反映しました','元に戻す',doUndo);
+}
+function rejectProposal(pid){const p=S.proposals.get(pid);if(!p||p.status!=='pending')return;p.status='rejected';p.decidedAt=Date.now();Store.saveProposal(p);render();renderMuse()}
+function opLine(o){
+  const r=(s,e)=>singleDay(s,e)?`${fMDW(s)} ${fHM(s)}–${fHM(e)}`:`${fMDW(s)} ${fHM(s)} → ${fMDW(e)} ${fHM(e)}`;
+  if(o.op==='create')return `<li>＋ <b>${esc(o.name)}</b><br><i>${r(o.start,o.end)} ・ ${KINDS[o.kind].label}${o.deadline?` ・ 期限${fMD(o.deadline)}`:''}</i></li>`;
+  if(o.op==='move')return `<li>⇢ <b>${esc(o.name)}</b><br><i>${r(o.before.start,o.before.end)}</i><br>→ ${r(o.start,o.end)}</li>`;
+  if(o.op==='update')return `<li>✎ <b>${esc(o.name)}</b><br><i>${Object.keys(o.fields).map(k=>k==='deadline'?`期限 ${o.before.deadline?fMD(o.before.deadline):'なし'}→${o.fields.deadline?fMD(o.fields.deadline):'なし'}`:k==='assignee'?`担当 ${esc(o.before.assignee||'自分')}→${esc(o.fields.assignee||'自分')}`:esc(k)).join(' ・ ')}</i></li>`;
+  return `<li>− <b>${esc(o.name)}</b> を削除</li>`;
+}
+function propHTML(p){
+  if(!p)return '';
+  const lbl={pending:'承認待ち',approved:'反映済み',rejected:'却下'}[p.status];
+  return `<div class="prop ${p.status}"><div class="ph"><b>提案</b><span>${esc(p.summary)}</span><em>${lbl}</em></div><ul>${p.ops.map(opLine).join('')}</ul>${p.warnings&&p.warnings.length?`<p class="wn">${p.warnings.map(esc).join('<br>')}</p>`:''}${p.reason?`<p class="why">${esc(p.reason)}</p>`:''}${p.status==='pending'?`<div class="pa"><button class="btn" data-rej="${p.id}">却下</button><button class="btn pri" data-apr="${p.id}">承認して反映</button></div>`:''}</div>`;
+}
+function fmtMsg(s){return esc(s).replace(/\*\*(.+?)\*\*/g,'<b>$1</b>').replace(/^#+\s*/gm,'')}
+function msgHTML(m){
+  if(m.role==='user')return `<div class="msg u">${esc(m.content)}</div>`;
+  const acts=m.acts&&m.acts.length?`<div class="acts-log">${m.acts.map(a=>'・'+esc(a)).join('<br>')}</div>`:'';
+  const body=m.pending&&!m.content?'<span class="think">考えています…</span>':fmtMsg(m.content||'');
+  return `<div class="msg a">${acts}${body}${m.err?`<span class="err">${esc(m.err)}</span>`:''}</div>${(m.props||[]).map(id=>propHTML(S.proposals.get(id))).join('')}`;
+}
+function openMuse(){
+  openSheet('muse',`<div class="mh"><div class="t"><b>MUSE</b><small id="mstate">計画エージェント</small></div><button class="iconbtn" data-mclear="1">履歴を消す</button><button class="iconbtn" data-act="close" aria-label="閉じる">${ICON.x}</button></div>
+<div class="msgs" id="msgs"></div>
+<div class="mchips" id="mchips">${['今日何を優先すべき？','遅れているタスクの影響は？','空き時間にできることは？','明日の計画を立てて','今週の重複と矛盾をチェック'].map(q=>`<button class="chip" data-mq="${q}">${q}</button>`).join('')}</div>
+<form class="composer" id="mform"><textarea id="min" rows="1" placeholder="例）この作業が2時間延びた" aria-label="MUSEへのメッセージ"></textarea><button class="btn pri" id="msend" type="submit">送信</button></form>`,'full',{chat:true,label:'MUSE'});
+  renderMuse();
+}
+function renderMuse(){
+  const box=$('#msgs');if(!box||Sheet.kind!=='muse')return;
+  const pend=[...S.proposals.values()].filter(p=>p.status==='pending');
+  const inLog=new Set(Muse.log.flatMap(m=>m.props||[]).concat(Muse.cur?Muse.cur.props:[]));
+  const orphan=pend.filter(p=>!inLog.has(p.id));
+  let h='';
+  if(!Muse.log.length&&!Muse.cur)h+=`<div class="intro"><b>MUSEは実際のタスクを読んで計画を手伝います。</b><br>空き時間の検索、遅延したときの後続への影響、優先順位の提案ができます。日時・期限・担当の変更は提案としてチャートに破線で表示され、あなたが承認したときに保存されます。</div>`;
+  if(Muse.disabled)h+=`<div class="intro" style="color:var(--late)">${esc(Muse.disabled)}</div>`;
+  if(orphan.length)h+=`<div class="intro"><b>承認待ちの提案</b></div>`+orphan.map(propHTML).join('');
+  h+=Muse.log.map(msgHTML).join('');
+  if(Muse.cur)h+=`<div id="mcur">${msgHTML(Muse.cur)}</div>`;
+  const atBottom=box.scrollHeight-box.scrollTop-box.clientHeight<40;
+  box.innerHTML=h;if(atBottom||Muse.cur)box.scrollTop=box.scrollHeight;
+  const send=$('#msend');if(send){send.textContent=Muse.running?'停止':'送信';send.classList.toggle('pri',!Muse.running);send.classList.toggle('ink',!!Muse.running);send.disabled=!Muse.running&&(!Muse.sample||!!Muse.disabled)}
+  const stt=$('#mstate');if(stt)stt.textContent=Muse.running?'作業中…':Muse.sample?(Muse.tools?'計画エージェント・実データに接続':'計画エージェント（会話のみ）'):Muse.ready?'未接続':'接続中…';
+  $('#mchips').hidden=!!Muse.running;
+}
+function patchMuseCur(){const el=$('#mcur');if(!el){renderMuse();return}el.innerHTML=msgHTML(Muse.cur);const box=$('#msgs');box.scrollTop=box.scrollHeight}
+const ERR={not_granted:'MUSEの利用が許可されませんでした',sampling_disabled:'このアカウントではMUSEを使えません',rate_limited:'混み合っています。少し待ってからもう一度送ってください',session_expired:'サインインし直してください',refused:'この内容にはお答えできません。言い方を変えてください',empty_completion:'応答がありませんでした。短くして送り直してください',prompt_too_large:'データが多すぎます。期間を絞って聞いてください',upstream_error:'通信が途切れました。もう一度送ってください',tools_unavailable:'この画面ではMUSEがデータを操作できません'};
+async function museSend(text){
+  text=String(text||'').trim();if(!text||Muse.running)return;
+  if(!Muse.sample){toast(Muse.disabled||'MUSEに接続しています');return}
+  Muse.log.push({role:'user',content:text});
+  const b={role:'assistant',content:'',pending:true,props:[],acts:[]};Muse.cur=b;
+  const ctl=new AbortController();Muse.running=ctl;renderMuse();
+  const turns=[{role:'user',content:museContext()}];
+  for(const m of Muse.log.slice(-12)){if(m.content)turns.push({role:m.role,content:m.role==='assistant'?m.content+(m.props&&m.props.length?`\n[提案ID: ${m.props.join(', ')}]`:''):m.content})}
+  try{
+    const opts={signal:ctl.signal,cache:false,onText:({text})=>{b.content=text;patchMuseCur()}};
+    if(Muse.tools)opts.tools=museTools(b);
+    const res=await Muse.sample(turns,opts);
+    b.content=res.text;if(res.truncated)b.err='回答が途中で切れました。範囲を絞ってもう一度聞いてください';
+  }catch(e){
+    b.content=(e&&e.text)||'';
+    if(e&&e.code!=='cancelled')b.err=ERR[e&&e.code]||'うまく応答できませんでした。もう一度送ってください';
+    if(e&&['not_granted','sampling_disabled','not_declared','capability_disabled','capability_removed'].includes(e.code))Muse.disabled=ERR[e.code]||'MUSEを使えません';
+    if(e&&e.code==='tools_unavailable')Muse.tools=false;
+  }
+  b.pending=false;Muse.log.push({role:'assistant',content:b.content||(b.props.length?'提案を作成しました。':''),props:b.props,acts:b.acts,err:b.err});
+  Muse.cur=null;Muse.running=null;saveChat();renderMuse();render();
+}
+async function museClick(e,b){
+  if(b.dataset.act==='close')return closeSheet();
+  if(b.dataset.apr)return approveProposal(b.dataset.apr);
+  if(b.dataset.rej)return rejectProposal(b.dataset.rej);
+  if(b.dataset.mq)return museSend(b.dataset.mq);
+  if(b.dataset.mclear){if(await ask('MUSEとの会話を消しますか？（提案と変更履歴は残ります）','消す','やめる')){Muse.log=[];saveChat();renderMuse()}return}
+}
+sheetBody.addEventListener('submit',e=>{
+  if(e.target.id!=='mform')return;e.preventDefault();
+  if(Muse.running){Muse.running.abort();return}
+  const i=$('#min');const v=i.value;i.value='';i.style.height='';museSend(v);
+});
+sheetBody.addEventListener('input',e=>{if(e.target.id==='min'){e.target.style.height='auto';e.target.style.height=Math.min(120,e.target.scrollHeight)+'px'}});
+sheetBody.addEventListener('keydown',e=>{if(e.target.id==='min'&&e.key==='Enter'&&(e.metaKey||e.ctrlKey)){e.preventDefault();$('#mform').requestSubmit()}});
+
+/* integration interface for external agents (same functions MUSE uses) */
+window.MUSE=Object.freeze({
+  version:'1.0',
+  listTasks:()=>[...S.tasks.values()].map(clone),
+  getSettings:()=>clone(S.settings),
+  findSlots:(durationMin,kind,from,to,count=5)=>findSlots(durationMin,kind,parseDT(from)||Date.now(),parseDT(to),{count}).map(s=>({start:fISO(s.start),end:fISO(s.end)})),
+  simulateChange:(taskId,patch={})=>{const t=S.tasks.get(taskId);if(!t)throw new Error('not found');const s=parseDT(patch.start)??t.start;const e=(parseDT(patch.end)??(t.end+(s-t.start)))+(patch.extendMin||0)*MIN;return cascade(taskId,{start:s,end:e})},
+  proposePlan:input=>clone(buildProposal(input)),
+  approve:pid=>approveProposal(pid), reject:pid=>rejectProposal(pid),
+  updateTask:(taskId,fields)=>{const f={};for(const k of ['progress','memo','priority','important','name','project'])if(fields[k]!=null)f[k]=fields[k];const t=commit(taskId,f,{by:'muse',action:'外部エージェントが更新'});render();return clone(t)}
+});
+
+/* ============ top bar / nav ============ */
+function shift(n){
+  if(S.view==='day')S.anchor=addDays(S.anchor,n);
+  else if(S.view==='week')S.anchor=addDays(S.anchor,7*n);
+  else{const d=new Date(S.anchor);S.anchor=new Date(d.getFullYear(),d.getMonth()+n,1).getTime()}
+  S.zoom=1;scroller.scrollLeft=0;render();
+}
+$('#prevBtn').onclick=()=>shift(-1);$('#nextBtn').onclick=()=>shift(1);
+$('#datePick').addEventListener('change',e=>{const d=parseDT(e.target.value);if(d){S.anchor=sod(d);render()}});
+document.querySelectorAll('.seg button').forEach(b=>b.onclick=()=>{S.view=b.dataset.view;S.zoom=1;scroller.scrollLeft=0;render();LS.set('view',S.view)});
+$('#museBtn').onclick=()=>Sheet.kind==='muse'?closeSheet():openMuse();
+$('#todayBtn').onclick=()=>{S.anchor=sod(Date.now());S.zoom=1;render();requestAnimationFrame(()=>{if(AX.v==='day'&&inSeg(Date.now())){scroller.scrollLeft=Math.max(0,X(Date.now())-scroller.clientWidth/3)}const first=grid.querySelector('.row');if(first)scroller.scrollTop=0})};
+$('#listBtn').onclick=()=>openList();
+$('#addBtn').onclick=()=>openAdd();
+$('#statsBtn').onclick=()=>openStats();
+$('#setBtn').onclick=()=>openSettings();
+let rz=0;window.addEventListener('resize',()=>{cancelAnimationFrame(rz);rz=requestAnimationFrame(render)});
+setInterval(()=>{if(G.mode!=='drag'&&document.visibilityState==='visible')render()},60000);
+document.addEventListener('visibilitychange',()=>{if(document.visibilityState==='visible')render()});
+if(window.visualViewport){const vv=window.visualViewport;const f=()=>{const kb=Math.max(0,innerHeight-vv.height-vv.offsetTop);document.documentElement.style.setProperty('--kb',kb+'px')};vv.addEventListener('resize',f);vv.addEventListener('scroll',f)}
+
+/* ============ toast / dialog ============ */
+let toastTimer=null;const toastEl=$('#toast');
+function toast(msg,actLabel,fn,ms=4500){
+  $('#toastMsg').textContent=msg;const a=$('#toastAct');
+  if(actLabel){a.hidden=false;a.textContent=actLabel;a.onclick=()=>{toastEl.classList.remove('on');fn&&fn()};toastEl.classList.remove('noact')}else{a.hidden=true;toastEl.classList.add('noact')}
+  toastEl.classList.add('on');clearTimeout(toastTimer);toastTimer=setTimeout(()=>toastEl.classList.remove('on'),ms);
+}
+function ask(msg,ok='OK',cancel='やめる'){
+  return new Promise(res=>{
+    const d=document.createElement('div');d.className='dlg';d.setAttribute('role','alertdialog');
+    d.innerHTML=`<div><p>${esc(msg)}</p><div class="row2"><button class="btn" data-v="0">${esc(cancel)}</button><button class="btn pri" data-v="1">${esc(ok)}</button></div></div>`;
+    d.addEventListener('click',e=>{const b=e.target.closest('[data-v]');if(!b&&e.target!==d)return;d.remove();res(!!(b&&b.dataset.v==='1'))});
+    document.body.appendChild(d);d.querySelector('[data-v="1"]').focus();
+  });
+}
+
+/* ============ samples (only on request, marked) ============ */
+function makeSamples(base=Date.now()){
+  const today=sod(base);let d1=addDays(today,1);while(isHoliday(d1))d1=addDays(d1,1);let d2=addDays(d1,1);while(isHoliday(d2))d2=addDays(d2,1);
+  const sat=addDays(monday(today),5)>today?addDays(monday(today),5):addDays(monday(today),12);
+  let prev=addDays(today,-1);while(isHoliday(prev))prev=addDays(prev,-1);
+  const A=(d,h,m)=>atMin(d,h*60+m);const ids={};const mk=(k,o)=>{ids[k]=uid();return {id:ids[k],sample:true,...o}};
+  const list=[
+    mk('a',{name:'工程能力データ収集',project:'新製品トライ',kind:'desk',start:A(prev,13,0),end:A(prev,16,0),progress:60,status:'paused',segs:[{s:A(prev,13,5),e:A(prev,15,10)}]}),
+    mk('b',{name:'朝礼・日程確認',project:'日常業務',kind:'desk',start:A(d1,8,30),end:A(d1,8,45)}),
+    mk('c',{name:'3号機 治具調整',project:'3号機 立ち上げ',kind:'line',start:A(d1,10,15),end:A(d1,11,0),important:true,deadline:A(d2,17,30)}),
+    mk('e',{name:'トライ結果まとめ',project:'新製品トライ',kind:'desk',start:A(d1,13,0),end:A(d1,15,0),progress:30,deadline:A(d2,17,30)}),
+    mk('f',{name:'金型メンテ計画 作成',project:'設備保全',kind:'desk',start:A(d1,15,15),end:A(d1,16,30)}),
+    mk('g',{name:'2号機 シュート改造',project:'2号機 改善',kind:'line',start:A(d2,10,15),end:A(d2,11,0)}),
+    mk('h',{name:'改善効果の報告書',project:'2号機 改善',kind:'desk',start:A(d2,14,0),end:A(d2,16,0)}),
+    mk('i',{name:'コンベア改造（休日作業）',project:'2号機 改善',kind:'holiday',start:A(sat,8,30),end:A(sat,14,30)}),
+    mk('j',{name:'量産移行判定',project:'新製品トライ',kind:'desk',start:A(addDays(d1,14),16,0),end:A(addDays(d1,14),17,0),milestone:true,important:true})
+  ];
+  list.splice(3,0,mk('d',{name:'初品確認（立ち会い）',project:'3号機 立ち上げ',kind:'witness',start:A(d1,11,0),end:A(d1,11,45),deps:[ids.c]}));
+  list.find(x=>x.id===ids.h).deps=[ids.g];
+  return list;
+}
+function insertSamples(){
+  const list=makeSamples();for(const o of list)commit(o.id,o,{action:'サンプルを追加'});
+  S.anchor=sod(list[1].start);render();toast('サンプル工程を入れました。設定から削除できます');
+}
+
+/* ============ boot ============ */
+(function boot(){
+  const v=LS.get('view','day');if(['day','week','month'].includes(v))S.view=v;
+  const now=new Date();
+  // evening: open on the next day so the plan you need next is what you see first
+  if(now.getHours()>=20)S.anchor=addDays(sod(now.getTime()),1);
+  Store.init();initMuse();
+})();
+</script>
