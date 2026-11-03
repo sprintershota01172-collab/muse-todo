@@ -31,7 +31,7 @@
   --hatch:rgba(214,166,78,.15); --off:rgba(0,0,0,.28); --wkend:rgba(255,255,255,.025); --today:rgba(86,163,134,.10);
   --scrim:rgba(0,0,0,.55); --shadow:0 10px 28px rgba(0,0,0,.55); color-scheme:dark}
 
-html{box-sizing:border-box;height:100%;overflow:hidden;overscroll-behavior:none}
+html{box-sizing:border-box;height:100%;height:100dvh;overflow:hidden;overscroll-behavior:none}
 *,*::before,*::after{box-sizing:inherit}
 body{height:100%;overflow:hidden;background:var(--bg);color:var(--ink);font:13px/1.35 var(--font);
   -webkit-tap-highlight-color:transparent;-webkit-text-size-adjust:100%;-webkit-user-select:none;user-select:none;-webkit-touch-callout:none;
@@ -62,7 +62,8 @@ input,textarea,select{font:inherit;font-size:16px;color:var(--ink);-webkit-user-
 .musebtn{position:relative;flex:none;height:32px;padding:0 9px 0 8px;margin-left:4px;border-radius:9px;background:var(--green);color:var(--on-green);display:flex;align-items:center;gap:5px;font-weight:700;font-size:11.5px;letter-spacing:.08em}
 .musebtn::before{content:"";position:absolute;inset:-6px -2px}
 .musebtn svg{width:12px;height:12px;fill:currentColor;stroke:none}
-.badge{position:absolute;top:-5px;right:-5px;min-width:17px;height:17px;padding:0 4px;border-radius:9px;background:var(--brass);color:#fff;font-size:10px;font-weight:700;display:grid;place-items:center;letter-spacing:0}
+.musebtn.alert::after{content:"";position:absolute;top:-3px;right:-3px;width:9px;height:9px;border-radius:50%;background:var(--late);box-shadow:0 0 0 2px var(--bg)}
+.badge{position:absolute;top:-5px;right:-5px;z-index:1;min-width:17px;height:17px;padding:0 4px;border-radius:9px;background:var(--brass);color:#fff;font-size:10px;font-weight:700;display:grid;place-items:center;letter-spacing:0}
 
 /* chart */
 .chart{position:relative;min-height:0;background:var(--surface);border-top:1px solid var(--line-2);border-bottom:1px solid var(--line-2)}
@@ -274,6 +275,11 @@ table.mini td{text-align:right;padding:7px 4px;border-top:1px solid var(--line)}
 .prop .wn{font-size:12px;color:var(--brass);margin:6px 0 0}
 .prop .pa{display:flex;gap:8px;margin-top:10px}
 .prop .pa .btn{flex:1}
+.prop .pa .btn.see{flex:none;padding:0 12px}
+.chip.alert{background:var(--late-soft);color:var(--late)}
+.list-h .btn{height:32px;font-size:12px;padding:0 10px}
+.keyrow{display:flex;gap:8px;align-items:center;padding:6px 0}
+.keyrow input{flex:1;min-width:0;height:40px;border:0;background:var(--surface-2);border-radius:9px;padding:0 10px}
 .mchips{display:flex;gap:6px;overflow-x:auto;padding:8px max(14px,env(safe-area-inset-right,0px)) 2px max(14px,env(safe-area-inset-left,0px));scrollbar-width:none;flex:none}
 .mchips::-webkit-scrollbar{display:none}
 .mchips .chip{flex:none}
@@ -282,6 +288,7 @@ table.mini td{text-align:right;padding:7px 4px;border-top:1px solid var(--line)}
 .composer .btn{height:42px}
 .toast{position:fixed;left:12px;right:12px;margin:0 auto;width:fit-content;bottom:calc(64px + env(safe-area-inset-bottom,0px) + var(--kb));z-index:60;transform:translateY(20px);opacity:0;pointer-events:none;transition:all .22s;
   background:var(--ink);color:var(--surface);border-radius:12px;padding:0 6px 0 14px;min-height:44px;display:flex;align-items:center;gap:8px;font-size:13px;font-weight:600;max-width:440px;box-shadow:var(--shadow)}
+.toast.top{top:calc(env(safe-area-inset-top,0px) + 6px);bottom:auto;transform:translateY(-20px)}
 .toast.on{opacity:1;transform:none;pointer-events:auto}
 .toast span{padding:10px 0}
 .toast button{height:36px;padding:0 10px;color:var(--brass-soft);font-weight:700;white-space:nowrap}
@@ -307,7 +314,7 @@ table.mini td{text-align:right;padding:7px 4px;border-top:1px solid var(--line)}
     <button class="musebtn" id="museBtn" aria-label="MUSEを開く"><svg viewBox="0 0 24 24"><path d="M12 2l1.9 6.1L20 10l-6.1 1.9L12 18l-1.9-6.1L4 10l6.1-1.9z"/></svg>MUSE<span class="badge" id="museBadge" hidden>0</span></button>
   </header>
   <main class="chart" id="chart">
-    <div class="scroller" id="scroller"><div class="g" id="grid"></div></div>
+    <div class="scroller" id="scroller"><div class="g" id="grid"></div><div id="touchHold" hidden></div></div>
   </main>
   <nav class="nav" aria-label="メニュー">
     <button id="todayBtn"><svg class="ic" viewBox="0 0 24 24"><rect x="4" y="5" width="16" height="15" rx="3"/><path d="M4 10h16M9 3v4M15 3v4"/><circle cx="12" cy="15" r="1.6" fill="currentColor" stroke="none"/></svg>今日</button>
@@ -681,7 +688,7 @@ async function applyTimeChange(id,start,end,how='日時変更',by='user'){
 
 /* ============ axis & coordinates ============ */
 let AX=null;
-const scroller=$('#scroller'), grid=$('#grid');
+const scroller=$('#scroller'), grid=$('#grid'), touchHold=$('#touchHold');
 function rangeOfView(){
   const v=S.view;let days=[];
   if(v==='day')days=[S.anchor];
@@ -795,8 +802,12 @@ function render(){
   const empty=!groups.size?`<div class="empty"><b>${AX.v==='day'?(S.anchor===today?'今日':fMDW(S.anchor))+'の予定はありません':'この期間の予定はありません'}</b>＋で追加、または空いている所を長押し<br>${S.tasks.size?'':'<button class="btn ghost" data-sample="1">サンプル工程を入れる</button>'}</div>`:'';
   const scrollTop=scroller.scrollTop, scrollLeft=scroller.scrollLeft;
   grid.style.width=(S.nw+W)+'px';
+  const held=[...G.touchEls].filter(el=>grid.contains(el));
   grid.innerHTML=`<div class="axis"><div class="corner"><button class="chip-s" data-scope="1" aria-label="表示する予定の種類">${scopeLbl}</button>${S.zoom>1.01?`<button class="chip-s" data-zoomreset="1" aria-label="拡大を戻す">×${S.zoom.toFixed(1)}</button>`:''}</div><div class="ticks" style="width:${W}px">${ticks}</div></div>
 <div class="body" id="cbody"><div class="nfill" aria-hidden="true"></div><div class="bg" style="width:${W}px">${bg}</div>${rows}<svg class="deps" id="deps" width="${W}" height="10"></svg>${empty}</div>`;
+  // A touch keeps targeting the element it started on. If a re-render (pinch zoom, timer, sync) removed that element,
+  // its touchmove/touchend would no longer reach the scroller, so park it in a hidden holder inside the scroller.
+  for(const el of held)touchHold.appendChild(el);
   const body=$('#cbody');body.style.minHeight=Math.max(0,scroller.clientHeight-30)+'px';body.style.setProperty('--bodyh',body.scrollHeight+'px');
   scroller.scrollTop=scrollTop;scroller.scrollLeft=scrollLeft;
   drawDeps();updateTop();
@@ -864,10 +875,12 @@ function updateTop(){
   document.querySelectorAll('.seg button').forEach(b=>b.setAttribute('aria-selected',String(b.dataset.view===S.view)));
   const n=[...S.proposals.values()].filter(p=>p.status==='pending').length;
   const bd=$('#museBadge');bd.hidden=!n;bd.textContent=n;
+  const nl=lateTasks().length;const mb=$('#museBtn');mb.classList.toggle('alert',!n&&nl>0);
+  mb.setAttribute('aria-label','MUSEを開く'+(n?`（承認待ち${n}件）`:'')+(nl?`（遅延${nl}件）`:''));
 }
 
 /* ============ gestures: tap / long-press drag / handle resize / pinch ============ */
-const G={mode:null,lp:null,x0:0,y0:0,target:null,lastTouch:0,moved:false};
+const G={mode:null,lp:null,x0:0,y0:0,target:null,lastTouch:0,moved:false,touchEls:new Set()};
 const tip=$('#tip');
 function trackX(clientX){const r=scroller.getBoundingClientRect();return clientX-r.left+scroller.scrollLeft-S.nw}
 function down(x,y,target){
@@ -876,7 +889,7 @@ function down(x,y,target){
   if(hd){const bar=hd.closest('.bar');startDrag(hd.dataset.side,bar.dataset.id,bar,x,y);return true}
   const bar=target.closest('.bar[data-id],.ms[data-id]');
   if(bar){G.lp=setTimeout(()=>startDrag('move',bar.dataset.id,bar,G.x0,G.y0),300);return false}
-  if(target.closest('.trk')){G.lp=setTimeout(()=>{G.mode=null;const t=T(clamp(trackX(G.x0),0,AX.trackW-1));openAdd({start:AX.v==='month'?atMin(sod(t),hm2min(S.settings.workStart)):snapT(t)})},550)}
+  if(target.closest('.trk')){G.lp=setTimeout(()=>{G.mode='held';const t=T(clamp(trackX(G.x0),0,AX.trackW-1));openAdd({start:AX.v==='month'?atMin(sod(t),hm2min(S.settings.workStart)):snapT(t)})},550)}
   return false;
 }
 function startDrag(type,id,el,x,y){
@@ -919,8 +932,8 @@ function endDrag(){
   if(!d)return;
   d.el.classList.remove('lift');
   const done=()=>{if(pendingRemote){const m=pendingRemote;pendingRemote=null;applyRemoteTasks(m)}};
-  if(d.cur.start===d.t0.start&&d.cur.end===d.t0.end){render();openDetail(d.id);done();return}
-  applyTimeChange(d.id,d.cur.start,d.cur.end,d.type==='move'?'日時変更（ドラッグ）':'所要時間変更（ドラッグ）').then(()=>{openDetail(d.id);done()});
+  if(d.cur.start===d.t0.start&&d.cur.end===d.t0.end){render();openDetail(d.id);ensureVisible(d.id);done();return}
+  applyTimeChange(d.id,d.cur.start,d.cur.end,d.type==='move'?'日時変更（ドラッグ）':'所要時間変更（ドラッグ）').then(()=>{openDetail(d.id);ensureVisible(d.id);done()});
 }
 function up(){
   clearTimeout(G.lp);
@@ -949,10 +962,12 @@ function pinchStart(e){
 let pinchRAF=0;
 function pinchMove(e){
   const [a,b]=e.touches;const d=Math.hypot(a.clientX-b.clientX,a.clientY-b.clientY);
-  const z=clamp(G.p.z0*d/G.p.d0,1,AX.v==='day'?8:6);
+  G.p.z=clamp(G.p.z0*d/G.p.d0,1,AX.v==='day'?8:6);
   if(pinchRAF)return;
-  pinchRAF=requestAnimationFrame(()=>{pinchRAF=0;zoomTo(z,G.p.t,G.p.cx)});
+  // apply the latest finger distance on the next frame (not the one that scheduled it)
+  pinchRAF=requestAnimationFrame(()=>{pinchRAF=0;if(G.p)zoomTo(G.p.z,G.p.t,G.p.cx)});
 }
+function pinchEnd(){if(pinchRAF){cancelAnimationFrame(pinchRAF);pinchRAF=0}if(G.p&&G.p.z)zoomTo(G.p.z,G.p.t,G.p.cx)}
 function zoomTo(z,anchorT,clientX){
   if(Math.abs(z-S.zoom)<0.01)return;
   S.zoom=z;render();
@@ -960,7 +975,7 @@ function zoomTo(z,anchorT,clientX){
   scroller.scrollLeft=Math.max(0,X(anchorT)+S.nw-(clientX-r.left));
 }
 scroller.addEventListener('touchstart',e=>{
-  G.lastTouch=Date.now();
+  G.lastTouch=Date.now();for(const t of e.changedTouches)G.touchEls.add(t.target);
   if(e.touches.length===2){pinchStart(e);e.preventDefault();return}
   if(e.touches.length>2)return;
   const t=e.touches[0];if(down(t.clientX,t.clientY,e.target))e.preventDefault();
@@ -971,13 +986,15 @@ scroller.addEventListener('touchmove',e=>{
   if(G.mode==='drag'){e.preventDefault();moveDrag(t.clientX,t.clientY);return}
   if(Math.hypot(t.clientX-G.x0,t.clientY-G.y0)>8){G.moved=true;clearTimeout(G.lp);if(G.mode==='pending')G.mode='scroll'}
 },{passive:false});
+const releaseTouches=e=>{if(e.touches.length)return;G.touchEls.clear();if(touchHold.firstChild)setTimeout(()=>{if(!G.touchEls.size)touchHold.replaceChildren()},0)};
 scroller.addEventListener('touchend',e=>{
-  G.lastTouch=Date.now();
-  if(G.mode==='pinch'){if(e.touches.length===0)G.mode=null;return}
-  if(G.mode==='drag'||G.mode==='pending')e.preventDefault();
+  G.lastTouch=Date.now();setTimeout(()=>releaseTouches(e),0);
+  if(G.mode==='pinch'){pinchEnd();if(e.touches.length===0){G.mode=null;G.p=null}return}
+  // 'held' = long-press already opened the add sheet: swallow the synthetic click so it can't hit the sheet
+  if(G.mode==='drag'||G.mode==='pending'||G.mode==='held')e.preventDefault();
   up();
 },{passive:false});
-scroller.addEventListener('touchcancel',()=>{clearTimeout(G.lp);if(G.mode==='drag'){endDrag()}G.mode=null});
+scroller.addEventListener('touchcancel',e=>{releaseTouches(e);clearTimeout(G.lp);if(G.mode==='drag'){endDrag()}G.mode=null});
 scroller.addEventListener('mousedown',e=>{if(Date.now()-G.lastTouch<800||e.button!==0)return;G.ptr='mouse';if(down(e.clientX,e.clientY,e.target))e.preventDefault()});
 window.addEventListener('mousemove',e=>{
   if(G.ptr!=='mouse')return;
@@ -1202,7 +1219,7 @@ function updateQuickPreview(){
   const q=document.querySelector('[data-qimp]');if(q)q.setAttribute('aria-pressed',String(QA.imp||p.important));
   const win=pl.auto&&(pl.kind==='line'||pl.kind==='stop')&&!isHoliday(pl.start)?'（製造部門休憩）':'';
   el.textContent=`→ ${fMDW(pl.start)} ${fHM(pl.start)}–${fHM(pl.end)}${win}${pl.auto?' に自動配置':''}${p.deadline?` ・期限 ${fMDW(p.deadline)}`:''}${pl.note?' ・'+pl.note:''}${v.blocking.length?' ・'+v.blocking[0]:''}`;
-  el.className='qprev'+(!pl.auto||v.blocking.length?' warn':'');
+  el.className='qprev'+(pl.note||v.blocking.length?' warn':'');
 }
 function quickAdd(){
   const {p,pl,raw}=quickState();
@@ -1225,7 +1242,7 @@ function openList(refresh){
   const up=ts.filter(t=>t.status!=='done'&&t.status!=='doing'&&!isLate(t,now)&&t.start>=addDays(today,1)).sort(by);
   const done=ts.filter(t=>t.status==='done').sort((a,b)=>b.updatedAt-a.updatedAt).slice(0,20);
   const li=t=>`<div class="li"><span class="ck s-${t.status}${isLate(t,now)?' late':''}" data-lck="${t.id}" role="button" aria-label="完了">${ICON.check}</span><button class="nt" data-go="${t.id}" style="text-align:left"><b>${esc(t.name)}</b><small>${fMDW(t.start)} ${fHM(t.start)} · ${esc(t.project)}${t.deadline?` · 期限${fMD(t.deadline)}`:''}</small></button>${t.important?'<span class="pill imp">重要</span>':''}</div>`;
-  const sec=(title,arr,empty)=>arr.length||empty?`<div class="list-h"><b>${title}</b><small>${arr.length}件</small></div>${arr.map(li).join('')||`<p class="hint">${empty}</p>`}`:'';
+  const sec=(title,arr,empty)=>arr.length||empty?`<div class="list-h"><b>${title}</b>${title==='遅延'&&arr.length?`<button class="btn ghost" data-replan="1">再計画を提案</button>`:`<small>${arr.length}件</small>`}</div>${arr.map(li).join('')||`<p class="hint">${empty}</p>`}`:'';
   const html=`<div class="dh"><b style="font-size:16px;flex:1">タスク一覧</b><button class="chip" data-lscope="1">${{all:'全て',work:'仕事',private:'私用'}[S.scope]}</button><button class="iconbtn" data-act="close" aria-label="閉じる">${ICON.x}</button></div>
 ${sec('遅延',late)}${sec('作業中',doing)}${sec('今日',tod,'今日の残りの予定はありません')}${sec('これから',up.slice(0,60))}${sec('完了（最近）',done)}`;
   if(refresh&&Sheet.kind==='list'){const st=sheetBody.scrollTop;sheetBody.innerHTML=html;sheetBody.scrollTop=st}else openSheet('list',html,'full',{label:'タスク一覧'});
@@ -1280,6 +1297,10 @@ ${st.breaks.map((b,i)=>`<div class="f"><span>${i?'休憩'+(i+1):'製造部門休
 <div class="sect">休日（土日以外）</div>
 <div class="chips">${st.holidays.slice().sort().map(d=>`<button class="chip x" data-rmhol="${d}">${fMDW(parseDT(d))}</button>`).join('')||'<span class="hint" style="margin:0">工場カレンダーの休日を追加できます</span>'}</div>
 <div class="f"><span>追加</span><input type="date" id="s-hol"></div>
+${!window.claude?`<div class="sect">MUSEの接続（GitHub版）</div>
+<p class="hint" style="margin-top:0">${LS.get('apikey','')?`接続済み（${esc(LS.get('apimodel',API_MODEL)||API_MODEL)}）。キーはこの端末のブラウザにだけ保存され、全データのコピーにも含まれません。`:'AnthropicのAPIキーを登録すると、このページから直接MUSEが動きます。利用料はそのキーのAnthropicアカウントに請求されます。'}</p>
+<div class="keyrow"><input id="k-key" type="password" autocomplete="off" placeholder="${LS.get('apikey','')?'sk-ant-…（登録済み）':'sk-ant-…'}" aria-label="APIキー"></div>
+<div class="keyrow"><input id="k-model" autocomplete="off" value="${esc(LS.get('apimodel',API_MODEL)||API_MODEL)}" aria-label="モデル"><button class="btn pri" data-keysave="1">保存</button>${LS.get('apikey','')?'<button class="btn danger" data-keydel="1">削除</button>':''}</div>`:''}
 <div class="sect">データ</div>
 <p class="hint" style="margin-top:0">${esc(syncTxt)}</p>
 <div class="chips"><button class="btn ghost" data-copyjson="1">全データをコピー（JSON）</button>${samples?`<button class="btn danger" data-rmsample="1">サンプル${samples}件を削除</button>`:''}</div>
@@ -1294,6 +1315,9 @@ async function otherClick(e,b){
   if(b.dataset.qdur){QA.dur=QA.dur===+b.dataset.qdur?null:+b.dataset.qdur;updateQuickPreview();return}
   if(b.dataset.qimp){QA.imp=!QA.imp;updateQuickPreview();return}
   if(b.dataset.go){const id=b.dataset.go;closeSheet();goToTask(id);return}
+  if(b.dataset.replan){closeSheet();runReplan();return}
+  if(b.dataset.keysave){const k=($('#k-key').value||'').trim()||LS.get('apikey',''),m=($('#k-model').value||'').trim()||API_MODEL;if(!/^sk-ant-/.test(k)){toast('sk-ant- で始まるキーを入れてください');return}LS.set('apikey',k);LS.set('apimodel',m);await initMuse();openSettings(true);toast('MUSEをAPIで接続しました');return}
+  if(b.dataset.keydel){if(await ask('この端末からAPIキーを削除しますか？','削除','やめる')){try{localStorage.removeItem('muse.apikey')}catch{}await initMuse();openSettings(true);toast('APIキーを削除しました')}return}
   if(b.dataset.lscope){S.scope={all:'work',work:'private',private:'all'}[S.scope];render();openList(true);return}
   if(b.dataset.att){const now=Date.now();setAtt(now,b.dataset.att,ceilTo(now-4*MIN,5*MIN)-0);openStats(true);toast(b.dataset.att==='in'?'出勤を記録しました':'退勤を記録しました');return}
   if(b.dataset.addbreak){S.settings.breaks.push({s:'12:00',e:'12:45',label:'休憩'});Store.saveSettings();render();openSettings(true);return}
@@ -1316,8 +1340,44 @@ sheetBody.addEventListener('keydown',e=>{if(e.key==='Enter'&&e.target.id==='qa'&
 
 /* ============ MUSE agent ============ */
 const Muse={sample:null,tools:false,ready:false,running:null,log:LS.get('chat',[]),cur:null,disabled:''};
+/* Outside claude.ai (GitHub Pages / home-screen PWA): MUSE calls the Claude API directly with the user's own key.
+   The key stays in this browser only (never in the JSON export or the shared store). */
+const API_MODEL='claude-sonnet-5-5';
+async function apiSample(turns,opts={}){
+  const key=LS.get('apikey',''),model=LS.get('apimodel',API_MODEL)||API_MODEL;
+  const msgs=[];
+  for(const t of turns){const l=msgs[msgs.length-1];if(l&&l.role===t.role)l.content+='\n\n'+t.content;else msgs.push({role:t.role,content:String(t.content)})}
+  const tools=opts.tools||[], spec=tools.map(t=>({name:t.name,description:t.description,input_schema:t.inputSchema}));
+  let text='';
+  for(let i=0;i<10;i++){
+    let r;
+    try{r=await fetch('https://api.anthropic.com/v1/messages',{method:'POST',signal:opts.signal,headers:{'content-type':'application/json','x-api-key':key,'anthropic-version':'2023-06-01','anthropic-dangerous-direct-browser-access':'true'},body:JSON.stringify({model,max_tokens:2000,messages:msgs,...(spec.length?{tools:spec}:{})})})}
+    catch(e){const x=new Error(e.message);x.code=e.name==='AbortError'?'cancelled':'offline';x.text=text;throw x}
+    if(!r.ok){let m='';try{m=(await r.json()).error.message||''}catch{}
+      const x=new Error(m);x.text=text;x.detail=m;
+      x.code=r.status===401||r.status===403?'bad_key':r.status===429?'rate_limited':r.status===529||r.status>=500?'upstream_error':/too long|too many tokens/i.test(m)?'prompt_too_large':r.status===404||/model/i.test(m)?'bad_model':'api_error';throw x}
+    const j=await r.json();
+    const tx=(j.content||[]).filter(c=>c.type==='text').map(c=>c.text).join('');
+    if(tx){text+=(text?'\n':'')+tx;opts.onText&&opts.onText({text})}
+    if(j.stop_reason!=='tool_use')return {text,truncated:j.stop_reason==='max_tokens'};
+    msgs.push({role:'assistant',content:j.content});
+    const results=[];
+    for(const c of j.content){
+      if(c.type!=='tool_use')continue;
+      const tool=tools.find(t=>t.name===c.name);let out,err=false;
+      try{if(!tool)throw new Error('そのツールはありません');out=await tool.execute(c.input||{})}catch(e){out=String(e&&e.message||e);err=true}
+      results.push({type:'tool_result',tool_use_id:c.id,content:typeof out==='string'?out:JSON.stringify(out),...(err?{is_error:true}:{})});
+    }
+    msgs.push({role:'user',content:results});
+  }
+  return {text:text||'手順が長くなったため途中で止めました。範囲を絞って聞いてください。',truncated:true};
+}
 async function initMuse(){
-  if(!window.claude||typeof window.claude.use!=='function'){Muse.ready=true;Muse.disabled='MUSEはClaudeのアプリ内でこのページを開いたときに使えます（連携用インターフェース window.MUSE は用意済みです）';return}
+  if(!window.claude||typeof window.claude.use!=='function'){
+    Muse.ready=true;Muse.via='api';
+    if(LS.get('apikey','')){Muse.sample=apiSample;Muse.tools=true;Muse.disabled=''}
+    else{Muse.sample=null;Muse.tools=false;Muse.disabled='この画面（GitHub版）でMUSEを使うには、設定でAnthropicのAPIキーを登録してください。Claudeのアプリ内で開いた場合はキー不要です。'}
+    if(Sheet.kind==='muse')renderMuse();return}
   try{Muse.sample=await window.claude.use('sample')}catch{}
   if(Muse.sample){try{const lim=await Muse.sample.limits();Muse.tools=!!(lim&&lim.tools&&lim.tools.maxCount>=4)}catch{Muse.tools=false}}
   else Muse.disabled='この画面ではMUSEを使えません';
@@ -1416,6 +1476,60 @@ function buildProposal(input){
   S.proposals.set(p.id,p);Store.saveProposal(p);pruneProposals();updateTop();
   return p;
 }
+/* delay detection -> re-plan (deterministic; works without the AI and goes through the same proposal/approval path) */
+function lateTasks(now=Date.now()){return [...S.tasks.values()].filter(t=>scopeOk(t)&&t.status!=='done'&&!t.milestone&&now>t.end)}
+function replanLate(){
+  const now=Date.now();
+  const late=lateTasks(now).filter(t=>singleDay(t.start,t.end)&&t.end-t.start<=DAY)
+    .sort((a,b)=>(b.important-a.important)||((a.deadline||Infinity)-(b.deadline||Infinity))||a.start-b.start);
+  const longOnes=lateTasks(now).filter(t=>!late.includes(t)).map(t=>t.name);
+  if(!late.length)return {err:longOnes.length?`複数日にまたがる遅延（${longOnes.join('、')}）は詳細から日付を直してください`:'遅延しているタスクはありません'};
+  const overrides=new Map(),exclude=new Set(late.map(t=>t.id)),ops=[],skipped=[],moved=[];
+  for(const t of late){
+    const plan=(t.end-t.start)/MIN, remain=t.progress>0?Math.max(15,Math.ceil(plan*(1-t.progress/100)/15)*15):plan;
+    const sl=findSlots(remain,t.kind,now,addDays(now,21),{count:1,self:t.id,overrides,exclude})[0];
+    if(!sl){skipped.push(t.name);continue}
+    overrides.set(t.id,{start:sl.start,end:sl.end,name:t.name});moved.push(t.id);
+    ops.push({op:'move',task_id:t.id,start:fISO(sl.start),end:fISO(sl.end)});
+  }
+  // successors that would now start before their predecessor ends follow to the next workable slot
+  const q=moved.slice();let guard=0;
+  while(q.length&&guard++<200){
+    const pid=q.shift(),p=overrides.get(pid);
+    for(const s of [...S.tasks.values()].filter(x=>x.deps.includes(pid)&&x.status!=='done').sort((a,b)=>a.start-b.start)){
+      const cur=overrides.get(s.id)||s;if(cur.start>=p.end||!singleDay(cur.start,cur.end))continue;
+      exclude.add(s.id);
+      const sl=findSlots((cur.end-cur.start)/MIN,s.kind,p.end,addDays(p.end,21),{count:1,self:s.id,overrides,exclude})[0];
+      if(!sl){skipped.push(s.name);continue}
+      overrides.set(s.id,{start:sl.start,end:sl.end,name:s.name});
+      const i=ops.findIndex(o=>o.task_id===s.id);const op={op:'move',task_id:s.id,start:fISO(sl.start),end:fISO(sl.end)};
+      if(i>=0)ops[i]=op;else ops.push(op);
+      q.push(s.id);
+    }
+  }
+  if(!ops.length)return {err:`作業可能な空き時間が3週間以内に見つかりません（${skipped.join('、')}）`};
+  const part=late.filter(t=>t.progress>0&&moved.includes(t.id)).length;
+  const reason=`遅延${moved.length}件を、作業可能条件（勤務時間・製造部門休憩・休日）と既存の予定を満たす直近の枠へ移します。`+(part?`途中まで進んだ${part}件は残りの作業時間で配置。`:'')+(ops.length>moved.length?`後続${ops.length-moved.length}件も前工程の後ろへずらします。`:'')+(skipped.length?`空きがない: ${skipped.join('、')}。`:'')+(longOnes.length?`複数日の遅延は対象外: ${longOnes.join('、')}。`:'');
+  try{return {p:buildProposal({summary:`遅延${moved.length}件を再計画`,reason,ops})}}catch(e){return {err:String(e.message||e)}}
+}
+const pendingReplan=()=>[...S.proposals.values()].find(p=>p.status==='pending'&&p.source==='replan');
+function runReplan(){
+  if(pendingReplan()){openMuse();toast('承認待ちの再計画があります');return}
+  const r=replanLate();
+  if(r.err){toast(r.err);return}
+  r.p.source='replan';Store.saveProposal(r.p);
+  render();openMuse();
+}
+function seeProposal(pid){
+  const p=S.proposals.get(pid);if(!p)return;
+  const o=p.ops.find(x=>x.start!=null);if(!o){toast('この提案には日時の変更がありません');return}
+  const multi=p.ops.some(x=>x.start!=null&&sod(x.start)!==sod(o.start));
+  S.scope='all';S.zoom=1;scroller.scrollLeft=0;
+  if(multi&&S.view==='day')S.view='week';
+  S.anchor=sod(o.start);closeSheet();render();
+  requestAnimationFrame(()=>{const g=grid.querySelector('.b-ghost');if(g){const r=g.getBoundingClientRect(),sr=scroller.getBoundingClientRect();if(r.top<sr.top+34||r.bottom>sr.bottom)scroller.scrollTop+=r.top-sr.top-80}});
+  toast('破線は未保存の提案です','MUSEで承認',openMuse,6000);
+}
 function pruneProposals(){
   const done=[...S.proposals.values()].filter(p=>p.status!=='pending').sort((a,b)=>b.createdAt-a.createdAt);
   for(const p of done.slice(30)){S.proposals.delete(p.id);Store.deleteProposal(p.id)}
@@ -1449,7 +1563,7 @@ function opLine(o){
 function propHTML(p){
   if(!p)return '';
   const lbl={pending:'承認待ち',approved:'反映済み',rejected:'却下'}[p.status];
-  return `<div class="prop ${p.status}"><div class="ph"><b>提案</b><span>${esc(p.summary)}</span><em>${lbl}</em></div><ul>${p.ops.map(opLine).join('')}</ul>${p.warnings&&p.warnings.length?`<p class="wn">${p.warnings.map(esc).join('<br>')}</p>`:''}${p.reason?`<p class="why">${esc(p.reason)}</p>`:''}${p.status==='pending'?`<div class="pa"><button class="btn" data-rej="${p.id}">却下</button><button class="btn pri" data-apr="${p.id}">承認して反映</button></div>`:''}</div>`;
+  return `<div class="prop ${p.status}"><div class="ph"><b>提案</b><span>${esc(p.summary)}</span><em>${lbl}</em></div><ul>${p.ops.map(opLine).join('')}</ul>${p.warnings&&p.warnings.length?`<p class="wn">${p.warnings.map(esc).join('<br>')}</p>`:''}${p.reason?`<p class="why">${esc(p.reason)}</p>`:''}${p.status==='pending'?`<div class="pa">${p.ops.some(o=>o.start!=null)?`<button class="btn ghost see" data-see="${p.id}" aria-label="チャートで提案を見る">チャート</button>`:''}<button class="btn" data-rej="${p.id}">却下</button><button class="btn pri" data-apr="${p.id}">承認して反映</button></div>`:''}</div>`;
 }
 function fmtMsg(s){return esc(s).replace(/\*\*(.+?)\*\*/g,'<b>$1</b>').replace(/^#+\s*/gm,'')}
 function msgHTML(m){
@@ -1461,7 +1575,7 @@ function msgHTML(m){
 function openMuse(){
   openSheet('muse',`<div class="mh"><div class="t"><b>MUSE</b><small id="mstate">計画エージェント</small></div><button class="iconbtn" data-mclear="1">履歴を消す</button><button class="iconbtn" data-act="close" aria-label="閉じる">${ICON.x}</button></div>
 <div class="msgs" id="msgs"></div>
-<div class="mchips" id="mchips">${['今日何を優先すべき？','遅れているタスクの影響は？','空き時間にできることは？','明日の計画を立てて','今週の重複と矛盾をチェック'].map(q=>`<button class="chip" data-mq="${q}">${q}</button>`).join('')}</div>
+<div class="mchips" id="mchips"></div>
 <form class="composer" id="mform"><textarea id="min" rows="1" placeholder="例）この作業が2時間延びた" aria-label="MUSEへのメッセージ"></textarea><button class="btn pri" id="msend" type="submit">送信</button></form>`,'full',{chat:true,label:'MUSE'});
   renderMuse();
 }
@@ -1472,18 +1586,21 @@ function renderMuse(){
   const orphan=pend.filter(p=>!inLog.has(p.id));
   let h='';
   if(!Muse.log.length&&!Muse.cur)h+=`<div class="intro"><b>MUSEは実際のタスクを読んで計画を手伝います。</b><br>空き時間の検索、遅延したときの後続への影響、優先順位の提案ができます。日時・期限・担当の変更は提案としてチャートに破線で表示され、あなたが承認したときに保存されます。</div>`;
-  if(Muse.disabled)h+=`<div class="intro" style="color:var(--late)">${esc(Muse.disabled)}</div>`;
+  if(Muse.disabled)h+=`<div class="intro"><span style="color:var(--late)">${esc(Muse.disabled)}</span>${!window.claude?`<br><button class="btn ghost" data-mset="1" style="margin-top:8px">APIキーを設定</button>`:''}<br><span style="font-size:12px">AIなしでも「遅延を再計画」は使えます。</span></div>`;
   if(orphan.length)h+=`<div class="intro"><b>承認待ちの提案</b></div>`+orphan.map(propHTML).join('');
   h+=Muse.log.map(msgHTML).join('');
   if(Muse.cur)h+=`<div id="mcur">${msgHTML(Muse.cur)}</div>`;
   const atBottom=box.scrollHeight-box.scrollTop-box.clientHeight<40;
   box.innerHTML=h;if(atBottom||Muse.cur)box.scrollTop=box.scrollHeight;
   const send=$('#msend');if(send){send.textContent=Muse.running?'停止':'送信';send.classList.toggle('pri',!Muse.running);send.classList.toggle('ink',!!Muse.running);send.disabled=!Muse.running&&(!Muse.sample||!!Muse.disabled)}
-  const stt=$('#mstate');if(stt)stt.textContent=Muse.running?'作業中…':Muse.sample?(Muse.tools?'計画エージェント・実データに接続':'計画エージェント（会話のみ）'):Muse.ready?'未接続':'接続中…';
-  $('#mchips').hidden=!!Muse.running;
+  const stt=$('#mstate');if(stt)stt.textContent=Muse.running?'作業中…':Muse.sample?(Muse.via==='api'?'計画エージェント・API接続':Muse.tools?'計画エージェント・実データに接続':'計画エージェント（会話のみ）'):Muse.ready?'未接続':'接続中…';
+  const mc=$('#mchips');
+  const nl=lateTasks().length, ai=Muse.sample&&!Muse.disabled;
+  mc.innerHTML=(nl&&!pendingReplan()?`<button class="chip alert" data-replan="1">遅延${nl}件を再計画</button>`:'')+(ai?['今日何を優先すべき？','遅れているタスクの影響は？','空き時間にできることは？','明日の計画を立てて','今週の重複と矛盾をチェック'].map(q=>`<button class="chip" data-mq="${q}">${q}</button>`).join(''):'');
+  mc.hidden=!!Muse.running||!mc.innerHTML;
 }
 function patchMuseCur(){const el=$('#mcur');if(!el){renderMuse();return}el.innerHTML=msgHTML(Muse.cur);const box=$('#msgs');box.scrollTop=box.scrollHeight}
-const ERR={not_granted:'MUSEの利用が許可されませんでした',sampling_disabled:'このアカウントではMUSEを使えません',rate_limited:'混み合っています。少し待ってからもう一度送ってください',session_expired:'サインインし直してください',refused:'この内容にはお答えできません。言い方を変えてください',empty_completion:'応答がありませんでした。短くして送り直してください',prompt_too_large:'データが多すぎます。期間を絞って聞いてください',upstream_error:'通信が途切れました。もう一度送ってください',tools_unavailable:'この画面ではMUSEがデータを操作できません'};
+const ERR={not_granted:'MUSEの利用が許可されませんでした',sampling_disabled:'このアカウントではMUSEを使えません',rate_limited:'混み合っています。少し待ってからもう一度送ってください',session_expired:'サインインし直してください',refused:'この内容にはお答えできません。言い方を変えてください',empty_completion:'応答がありませんでした。短くして送り直してください',prompt_too_large:'データが多すぎます。期間を絞って聞いてください',upstream_error:'通信が途切れました。もう一度送ってください',tools_unavailable:'この画面ではMUSEがデータを操作できません',bad_key:'APIキーが使えません。設定で確認してください',bad_model:'モデル名が使えません。設定で確認してください',offline:'ネットに接続できません。オンラインでもう一度送ってください',api_error:'APIエラーが起きました'};
 async function museSend(text){
   text=String(text||'').trim();if(!text||Muse.running)return;
   if(!Muse.sample){toast(Muse.disabled||'MUSEに接続しています');return}
@@ -1499,7 +1616,7 @@ async function museSend(text){
     b.content=res.text;if(res.truncated)b.err='回答が途中で切れました。範囲を絞ってもう一度聞いてください';
   }catch(e){
     b.content=(e&&e.text)||'';
-    if(e&&e.code!=='cancelled')b.err=ERR[e&&e.code]||'うまく応答できませんでした。もう一度送ってください';
+    if(e&&e.code!=='cancelled')b.err=(ERR[e&&e.code]||'うまく応答できませんでした。もう一度送ってください')+(e&&e.detail&&e.code==='api_error'?`（${String(e.detail).slice(0,120)}）`:'');
     if(e&&['not_granted','sampling_disabled','not_declared','capability_disabled','capability_removed'].includes(e.code))Muse.disabled=ERR[e.code]||'MUSEを使えません';
     if(e&&e.code==='tools_unavailable')Muse.tools=false;
   }
@@ -1510,6 +1627,9 @@ async function museClick(e,b){
   if(b.dataset.act==='close')return closeSheet();
   if(b.dataset.apr)return approveProposal(b.dataset.apr);
   if(b.dataset.rej)return rejectProposal(b.dataset.rej);
+  if(b.dataset.see)return seeProposal(b.dataset.see);
+  if(b.dataset.replan)return runReplan();
+  if(b.dataset.mset){closeSheet();openSettings();requestAnimationFrame(()=>{const k=$('#k-key');if(k)k.scrollIntoView({block:'center'})});return}
   if(b.dataset.mq)return museSend(b.dataset.mq);
   if(b.dataset.mclear){if(await ask('MUSEとの会話を消しますか？（提案と変更履歴は残ります）','消す','やめる')){Muse.log=[];saveChat();renderMuse()}return}
 }
@@ -1523,7 +1643,8 @@ sheetBody.addEventListener('keydown',e=>{if(e.target.id==='min'&&e.key==='Enter'
 
 /* integration interface for external agents (same functions MUSE uses) */
 window.MUSE=Object.freeze({
-  version:'1.0',
+  version:'1.1',
+  replanLate:()=>{if(pendingReplan())throw new Error('承認待ちの再計画があります');const r=replanLate();if(r.err)throw new Error(r.err);r.p.source='replan';Store.saveProposal(r.p);render();return clone(r.p)},
   listTasks:()=>[...S.tasks.values()].map(clone),
   getSettings:()=>clone(S.settings),
   findSlots:(durationMin,kind,from,to,count=5)=>findSlots(durationMin,kind,parseDT(from)||Date.now(),parseDT(to),{count}).map(s=>({start:fISO(s.start),end:fISO(s.end)})),
@@ -1559,6 +1680,11 @@ let toastTimer=null;const toastEl=$('#toast');
 function toast(msg,actLabel,fn,ms=4500){
   $('#toastMsg').textContent=msg;const a=$('#toastAct');
   if(actLabel){a.hidden=false;a.textContent=actLabel;a.onclick=()=>{toastEl.classList.remove('on');fn&&fn()};toastEl.classList.remove('noact')}else{a.hidden=true;toastEl.classList.add('noact')}
+  // keep the toast above an open sheet so it never covers the controls being used
+  const kb=parseFloat(getComputedStyle(document.documentElement).getPropertyValue('--kb'))||0;
+  const open=sheetEl.classList.contains('open'), tall=open&&sheetEl.offsetHeight+kb>innerHeight*0.6;
+  toastEl.classList.toggle('top',tall);
+  toastEl.style.bottom=open&&!tall?(kb+sheetEl.offsetHeight+10)+'px':'';
   toastEl.classList.add('on');clearTimeout(toastTimer);toastTimer=setTimeout(()=>toastEl.classList.remove('on'),ms);
 }
 function ask(msg,ok='OK',cancel='やめる'){
