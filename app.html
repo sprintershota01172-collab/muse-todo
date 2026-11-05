@@ -177,7 +177,7 @@ input,textarea,select{font:inherit;font-size:16px;color:var(--ink);-webkit-user-
 .tip.warn{background:var(--late);color:#fff}
 
 /* ---- tab bar ---- */
-.nav{display:grid;grid-template-columns:repeat(5,1fr);height:56px;align-items:center;padding-left:max(6px,env(safe-area-inset-left,0px));padding-right:max(6px,env(safe-area-inset-right,0px))}
+.nav{display:grid;grid-template-columns:repeat(4,1fr);height:56px;align-items:center;padding-left:max(6px,env(safe-area-inset-left,0px));padding-right:max(6px,env(safe-area-inset-right,0px))}
 .nav>button{position:relative;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px;height:50px;font-size:10px;font-weight:700;color:var(--ink-2)}
 .nav>button .ic{width:22px;height:22px}
 .nav .add{display:grid;place-items:center;width:56px;height:40px;border-radius:13px;background:var(--ink);color:var(--surface)}
@@ -467,7 +467,7 @@ table.mini td{text-align:right;padding:8px 4px;border-top:1px solid var(--line-2
     <button id="todayBtn"><svg class="ic" viewBox="0 0 24 24"><rect x="4" y="5" width="16" height="15" rx="3"/><path d="M4 10h16M9 3v4M15 3v4"/><circle cx="12" cy="15" r="1.6" fill="currentColor" stroke="none"/></svg>今日</button>
     <button id="listBtn"><svg class="ic" viewBox="0 0 24 24"><path d="M9 6h11M9 12h11M9 18h11"/><circle cx="4.5" cy="6" r="1" fill="currentColor"/><circle cx="4.5" cy="12" r="1" fill="currentColor"/><circle cx="4.5" cy="18" r="1" fill="currentColor"/></svg>一覧</button>
     <button id="addBtn" aria-label="追加"><span class="add"><svg class="ic" viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></svg></span></button>
-    <button id="museBtn" aria-label="MUSEを開く"><svg class="ic" viewBox="0 0 24 24"><path d="M12 2.5l2 6.2 6.3 1.8-6.3 1.9L12 18.6l-2-6.2-6.3-1.9 6.3-1.8z"/><path d="M19 15.5l.8 2.2 2.2.8-2.2.8-.8 2.2-.8-2.2-2.2-.8 2.2-.8z"/></svg>MUSE<span class="badge" id="museBadge" hidden>0</span></button>
+    <button id="museBtn" aria-label="MUSEを開く" hidden><svg class="ic" viewBox="0 0 24 24"><path d="M12 2.5l2 6.2 6.3 1.8-6.3 1.9L12 18.6l-2-6.2-6.3-1.9 6.3-1.8z"/><path d="M19 15.5l.8 2.2 2.2.8-2.2.8-.8 2.2-.8-2.2-2.2-.8 2.2-.8z"/></svg>MUSE<span class="badge" id="museBadge" hidden>0</span></button>
     <button id="moreBtn"><svg class="ic" viewBox="0 0 24 24"><circle cx="5.5" cy="12" r="1.6" fill="currentColor" stroke="none"/><circle cx="12" cy="12" r="1.6" fill="currentColor" stroke="none"/><circle cx="18.5" cy="12" r="1.6" fill="currentColor" stroke="none"/></svg>その他</button>
   </nav>
 </div>
@@ -1129,7 +1129,7 @@ function updateTop(){
   document.querySelectorAll('.seg button').forEach(b=>b.setAttribute('aria-selected',String(b.dataset.view===S.view)));
   const n=[...S.proposals.values()].filter(p=>p.status==='pending').length;
   const bd=$('#museBadge');bd.hidden=!n;bd.textContent=n;
-  const fk=furikae(),mb2=$('#moreBtn');mb2.classList.toggle('alert',fk.need+fk.over>0);mb2.setAttribute('aria-label','その他'+(fk.need?`（振替休日があと${fk.need}日）`:fk.over?`（振替出勤のない振替休日${fk.over}日）`:''));
+  const fk=furikae(),mb2=$('#moreBtn');mb2.classList.toggle('alert',fk.need+fk.over+n>0);mb2.setAttribute('aria-label','その他'+(fk.need?`（振替休日があと${fk.need}日）`:fk.over?`（振替出勤のない振替休日${fk.over}日）`:''));
   const nl=lateTasks().length;const mb=$('#museBtn');mb.classList.toggle('alert',!n&&nl>0);
   mb.setAttribute('aria-label','MUSEを開く'+(n?`（承認待ち${n}件）`:'')+(nl?`（遅延${nl}件）`:''));
 }
@@ -1325,7 +1325,7 @@ const Pop={kind:null};
 const popEl=$('#pop'),popBody=$('#popBody'),scrim=$('#scrim');
 // every screen with tabs (and everything reached from the tab bar) opens as a page; only quick add stays a card
 const PAGES=['list','muse','more','settings','stats','detail'];
-function markNav(){const k=Pop.kind,on={list:'listBtn',muse:'museBtn',more:'moreBtn',settings:'moreBtn',stats:'moreBtn'}[k]||(!k||k==='detail'||k==='add'?'todayBtn':'');
+function markNav(){const k=Pop.kind,on={list:'listBtn',muse:'moreBtn',more:'moreBtn',settings:'moreBtn',stats:'moreBtn'}[k]||(!k||k==='detail'||k==='add'?'todayBtn':'');
   document.querySelectorAll('.nav>button').forEach(b=>b.classList.toggle('on',b.id===on))}
 function pageTop(o){
   Pop.back=o.back||null;$('#pgTitle').textContent=o.title||'';$('#pgSub').textContent=o.sub||'';$('#pgAct').innerHTML=o.actions||'';$('#pgBack').hidden=!o.back;
@@ -1694,6 +1694,7 @@ function openMore(refresh){
 ${(()=>{const f=furikae();return f.sw.length||f.sub.length?`<button class="menu-li" data-dayopen="${f.pairs.find(p=>!p.sub)?parseDT(f.pairs.find(p=>!p.sub).sw):f.extra.length?parseDT(f.extra[0]):today}"><span>振替</span>${f.need?`<span class="fk-ng" style="flex:none">振替休日あと${f.need}日</span>`:f.over?`<span class="fk-ng" style="flex:none">振替出勤なし${f.over}日</span>`:`<small class="fk-ok">${f.sw.length}日分 釣り合い</small>`}${ICON.r}</button>`:''})()}</div>
 <div class="sect">メニュー</div>
 <div class="fg">
+<button class="menu-li" data-gomuse="1"><span>MUSE（計画アシスタント）</span><small>${(()=>{const n=[...S.proposals.values()].filter(p=>p.status==='pending').length,l=lateTasks().length;return [n?`承認待ち${n}件`:'',l?`遅延${l}件`:''].filter(Boolean).join('・')||'今日の順番・空き時間'})()}</small>${ICON.r}</button>
 <button class="menu-li" data-gostats="1"><span>実績と残業</span><small>今月の時間外 ${(ot/HOUR).toFixed(1)}h</small>${ICON.r}</button>
 <button class="menu-li" data-goset="1"><span>設定</span><small>勤務時間・休日${window.claude?'':'・MUSE'}</small>${ICON.r}</button>
 ${S.tasks.size?'':`<button class="menu-li" data-sample="1"><span>サンプル工程を入れる</span>${ICON.r}</button>`}
@@ -1707,6 +1708,7 @@ async function otherClick(e,b){
   if(b.dataset.qwk){QA.wk=addDays(QA.wk,7*+b.dataset.qwk);const p=parseMaster($('#qa').value);if(p.wk!=null){$('#qa').value=$('#qa').value.replace(/W\d{1,2}(\s*[-~〜]\s*W?\d{1,2})?|\d{1,2}[\/月]\d{1,2}日?(の週)?(から|〜|~)?/i,'').trim()}updateQuickPreview();return}
   if(b.dataset.qwn){QA.wn=+b.dataset.qwn;const p=parseMaster($('#qa').value);if(p.wn!=null){$('#qa').value=$('#qa').value.replace(/\d{1,2}\s*週間?/,'').trim()}updateQuickPreview();return}
   if(b.dataset.gostats){openStats();return}
+  if(b.dataset.gomuse){openMuse();return}
   if(b.dataset.mark){setDayMark(b.dataset.mark);return}
   if(b.dataset.dayopen){openDay(+b.dataset.dayopen);return}
   if(b.dataset.calmark){closePop();S.view='week';S.zoom=1;LS.set('view','week');render();scrollToFocus();toast('日付をタップすると休み・休日出勤を登録できます');return}
@@ -1988,7 +1990,7 @@ function msgHTML(m){
   return `<div class="msg a">${acts}${body}${m.err?`<span class="err">${esc(m.err)}</span>`:''}</div>${(m.props||[]).map(id=>propHTML(S.proposals.get(id))).join('')}`;
 }
 function openMuse(){
-  pageTop({title:'MUSE',sub:'計画エージェント',actions:'<button class="chip-s" data-mclear="1">履歴を消す</button>'});
+  pageTop({title:'MUSE',sub:'計画エージェント',back:'more',actions:'<button class="chip-s" data-mclear="1">履歴を消す</button>'});
   openPop('muse',`<div class="msgs" id="msgs"></div>
 <div class="mchips" id="mchips"></div>
 <form class="composer" id="mform"><textarea id="min" rows="1" placeholder="例）この作業が2時間延びた" aria-label="MUSEへのメッセージ"></textarea><button class="btn pri" id="msend" type="submit">送信</button></form>`,'tall',{chat:true,label:'MUSE'});
