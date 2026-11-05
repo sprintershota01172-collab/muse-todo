@@ -109,6 +109,8 @@ input,textarea,select{font:inherit;font-size:16px;color:var(--ink);-webkit-user-
 .bg{position:absolute;top:0;bottom:0;left:var(--nw);pointer-events:none;overflow:hidden}
 .bg i{position:absolute;top:0;bottom:0;display:block}
 .bg .gl{width:0;border-left:1px solid var(--line)} .bg .gl.h{border-left-color:var(--line-2)} .bg .gl.w{border-left-color:var(--line-3)}
+.bg .mz{background:var(--wkend)} .bg .gl.m{border-left:1.5px solid var(--ink-3)}
+.tl.m{border-left:1.5px solid var(--ink-3)}
 .bg .off{background:var(--off)} .bg .wk{background:var(--wkend)} .bg .td{background:var(--today)}
 .bg .now{width:0;border-left:2px solid var(--late);z-index:1}
 .bg .now::before{content:"";position:absolute;top:-1px;left:-5px;width:8px;height:8px;border-radius:50%;background:var(--late)}
@@ -197,6 +199,7 @@ input,textarea,select{font:inherit;font-size:16px;color:var(--ink);-webkit-user-
   transform:translate(-50%,-50%) scale(.96);opacity:0;pointer-events:none;transition:opacity .16s ease,transform .2s cubic-bezier(.2,.9,.3,1);
   background:var(--surface-2);border-radius:20px;box-shadow:var(--shadow);display:flex;flex-direction:column;overflow:hidden}
 .pop.open{opacity:1;transform:translate(-50%,-50%);pointer-events:auto}
+.pop[data-size=fixed]{height:min(560px,calc(100% - env(safe-area-inset-top,0px) - env(safe-area-inset-bottom,0px) - var(--kb) - 20px))}
 .pop[data-size=tall]{height:calc(100% - env(safe-area-inset-top,0px) - env(safe-area-inset-bottom,0px) - var(--kb) - 20px)}
 .sc{flex:1;min-height:0;overflow:auto;overscroll-behavior:contain;padding:0 16px 18px}
 .sc.chat{display:flex;flex-direction:column;overflow:hidden;padding:0;background:var(--surface)}
@@ -883,17 +886,20 @@ function render(){
     const sw=AX.segW,tm=new Date(new Date(now).getFullYear(),new Date(now).getMonth(),1).getTime();
     AX.segs.forEach((g,i)=>{
       const x=i*sw,dt=new Date(g.d);
+      if(i%2)bg+=rect(x,x+sw,'mz');
       if(g.d===tm)bg+=rect(x,x+sw,'td');
-      if(i>0){bg+=`<i class="gl w" style="left:${x.toFixed(1)}px"></i>`;ticks+=`<i class="tl w" style="left:${x.toFixed(1)}px"></i>`}
+      if(i>0){bg+=`<i class="gl m" style="left:${x.toFixed(1)}px"></i>`;ticks+=`<i class="tl m" style="left:${x.toFixed(1)}px"></i>`}
       ticks+=`<span class="tk${g.d===tm?' tdy':''}" style="left:${(x+sw/2).toFixed(1)}px">${dt.getMonth()+1}${sw>=30?'月':''}${dt.getMonth()===0||i===0?`<i>${String(dt.getFullYear()).slice(2)}年</i>`:''}</span>`;
     });
   }else if(AX.v==='master'){
     // week columns; each month name is centered over the weeks that belong to it (by the week's Thursday)
-    const sw=AX.segW,tw=monday(now),mOf=d=>new Date(addDays(d,3)).getMonth(),spans=[];
+    const sw=AX.segW,tw=monday(now),mOf=d=>new Date(addDays(d,3)).getMonth(),spans=[];let mi=0;
     AX.segs.forEach((g,i)=>{
       const x=i*sw,d=g.d,dt=new Date(d),first=i>0&&mOf(d)!==mOf(AX.segs[i-1].d);
+      if(i===0||first)mi++;
+      if(mi%2===0)bg+=rect(x,x+sw,'mz');
       if(d===tw)bg+=rect(x,x+sw,'td');
-      if(i>0){bg+=`<i class="gl ${first?'w':'h'}" style="left:${x.toFixed(1)}px"></i>`;ticks+=`<i class="tl ${first?'w':''}" style="left:${x.toFixed(1)}px"></i>`}
+      if(i>0){bg+=`<i class="gl ${first?'m':'h'}" style="left:${x.toFixed(1)}px"></i>`;ticks+=`<i class="tl ${first?'m':''}" style="left:${x.toFixed(1)}px"></i>`}
       if(i===0||first)spans.push({a:i,b:i,m:mOf(d)});else spans[spans.length-1].b=i;
       ticks+=`<span class="tk wk${d===tw?' tdy':''}" style="left:${(x+sw/2).toFixed(1)}px">${dt.getDate()}</span>`;
     });
@@ -1209,7 +1215,7 @@ function refreshAnyPop(){
 }
 
 /* ---- detail ---- */
-function openDetail(id){const t=S.tasks.get(id);if(!t)return;const keep=Pop.kind==='detail';openPop('detail',detailHTML(t),'auto',{label:'タスクの詳細',keepScroll:keep})}
+function openDetail(id){const t=S.tasks.get(id);if(!t)return;const keep=Pop.kind==='detail';openPop('detail',detailHTML(t),'fixed',{label:'タスクの詳細',keepScroll:keep})}
 function refreshDetail(){
   const t=S.tasks.get(S.selected);if(!t){closePop();return}
   const a=document.activeElement;if(a&&popBody.contains(a)&&/INPUT|TEXTAREA|SELECT/.test(a.tagName))return;
@@ -1446,7 +1452,7 @@ function openList(refresh){
   const html=`<div class="dh dh2"><div class="dhr"><b class="ttl">一覧</b><button class="chip" data-lscope="1">${{all:'すべて',work:'仕事だけ',private:'私用だけ'}[S.scope]}</button>${XBTN}</div>
 <div class="segm big tabs">${[['today','今日'],['up','これから'],['mst','大日程'],['done','完了']].map(([k,l])=>`<button data-ltab="${k}" aria-pressed="${LT.tab===k}">${l}${cnt[k]?`<small>${cnt[k]}</small>`:''}</button>`).join('')}</div></div>
 ${body}`;
-  if(refresh&&Pop.kind==='list'){const st=popBody.scrollTop;popBody.innerHTML=html;popBody.scrollTop=st}else openPop('list',html,'auto',{label:'一覧'});
+  if(refresh&&Pop.kind==='list'){const st=popBody.scrollTop;popBody.innerHTML=html;popBody.scrollTop=st}else openPop('list',html,'fixed',{label:'一覧'});
 }
 const monthKey=t=>ymd(t).slice(0,7);
 function attDay(d){const mk=monthKey(d);return (S.attendance[mk]||{})[ymd(d)]||{}}
@@ -1478,7 +1484,7 @@ function openStats(refresh){
 <div class="stat"><div><small>時間外（平日）</small><b>${h(ot)}<span>時間</span></b></div><div><small>休日出勤</small><b>${h(hol)}<span>時間</span></b></div><div><small>完了 / 遅延</small><b>${doneN}<span>件</span> / <span style="color:var(--late);font-size:21px;margin:0">${lateN}</span><span>件</span></b></div><div><small>時間外の作業（タスク）</small><b>${h(taskOT)}<span>時間</span></b></div></div>
 <div class="segm big">${[['est','見積もり精度'],['att','出退勤']].map(([k,l])=>`<button data-sstab="${k}" aria-pressed="${SST.tab===k}">${l}</button>`).join('')}</div>
 ${body}`;
-  if(refresh&&Pop.kind==='stats'){const st=popBody.scrollTop;popBody.innerHTML=html;popBody.scrollTop=st}else openPop('stats',html,'auto',{label:'実績'});
+  if(refresh&&Pop.kind==='stats'){const st=popBody.scrollTop;popBody.innerHTML=html;popBody.scrollTop=st}else openPop('stats',html,'fixed',{label:'実績'});
 }
 function estimateStats(){
   const by={};
@@ -1510,7 +1516,7 @@ function openSettings(refresh){
   const html=`<div class="dh dh2"><div class="dhr"><b class="ttl">設定</b>${XBTN}</div>
 <div class="segm big tabs">${[['work','勤務'],['hol','休日'],['data',window.claude?'データ':'MUSE・データ']].map(([k,l])=>`<button data-stab="${k}" aria-pressed="${STT.tab===k}">${l}</button>`).join('')}</div></div>
 ${body}`;
-  if(refresh&&Pop.kind==='settings'){const a=document.activeElement;if(a&&popBody.contains(a)&&a.tagName==='INPUT')return;const sc=popBody.scrollTop;popBody.innerHTML=html;popBody.scrollTop=sc}else openPop('settings',html,'auto',{label:'設定'});
+  if(refresh&&Pop.kind==='settings'){const a=document.activeElement;if(a&&popBody.contains(a)&&a.tagName==='INPUT')return;const sc=popBody.scrollTop;popBody.innerHTML=html;popBody.scrollTop=sc}else openPop('settings',html,'fixed',{label:'設定'});
 }
 function openMore(refresh){
   const now=Date.now(),today=sod(now),r=attDay(today),mk=monthKey(now),days=S.attendance[mk]||{};
