@@ -371,7 +371,7 @@ table.mini td{text-align:right;padding:8px 4px;border-top:1px solid var(--line-2
 .dlg .row2{display:flex;gap:8px}
 .dlg .row2 .btn{flex:1}
 /* short screens (iPhone SE in Safari): tighten the detail page so every tab fits without scrolling */
-@media (max-height:600px){.f{min-height:41px}.title-in{font-size:18px;padding:0 0 2px}.acts .btn{height:38px}.prog{margin-top:2px}.dh{min-height:44px}.when{margin-bottom:6px}.segm.big{margin-bottom:8px}}
+@media (max-height:600px){.menu-li{min-height:44px}.sect{margin:12px 4px 4px}.att{padding:6px 0}.att input{height:38px}.f{min-height:41px}.title-in{font-size:18px;padding:0 0 2px}.acts .btn{height:38px}.prog{margin-top:2px}.dh{min-height:44px}.when{margin-bottom:6px}.segm.big{margin-bottom:8px}}
 /* day types: 休み / 振替休日 / 休日出勤 / 振替出勤 */
 .hc{position:absolute;top:0;bottom:0}
 .ticks .tk,.ticks .tl,.ticks .mb,.ticks .mkb{pointer-events:none}
@@ -1592,8 +1592,8 @@ function openMore(refresh){
 <div class="fg"><div class="att"><label>出勤<input type="time" id="a-in" value="${tm(r.in)}"></label><button class="btn" data-att="in">今</button><label>退勤<input type="time" id="a-out" value="${tm(r.out)}"></label><button class="btn" data-att="out">今</button></div></div>
 <div class="sect">休み・休日出勤</div>
 <div class="fg"><button class="menu-li" data-dayopen="${today}"><span>今日の区分</span><small>${dayLabel(today)}</small>${ICON.r}</button>
-<button class="menu-li" data-calmark="1"><span>カレンダーで登録</span><small>月表示で日付をタップ</small>${ICON.r}</button></div>
-<div class="sect">振替</div>${furikaeHTML()}
+<button class="menu-li" data-calmark="1"><span>カレンダーで登録</span><small>月表示で日付をタップ</small>${ICON.r}</button>
+${(()=>{const f=furikae();return f.sw.length||f.sub.length?`<button class="menu-li" data-dayopen="${f.pairs.find(p=>!p.sub)?parseDT(f.pairs.find(p=>!p.sub).sw):f.extra.length?parseDT(f.extra[0]):today}"><span>振替</span>${f.need?`<span class="fk-ng" style="flex:none">振替休日あと${f.need}日</span>`:f.over?`<span class="fk-ng" style="flex:none">振替出勤なし${f.over}日</span>`:`<small class="fk-ok">${f.sw.length}日分 釣り合い</small>`}${ICON.r}</button>`:''})()}</div>
 <div class="sect">メニュー</div>
 <div class="fg">
 <button class="menu-li" data-gostats="1"><span>実績と残業</span><small>今月の時間外 ${(ot/HOUR).toFixed(1)}h</small>${ICON.r}</button>
