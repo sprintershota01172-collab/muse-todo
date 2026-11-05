@@ -213,7 +213,7 @@ input,textarea,select{font:inherit;font-size:16px;color:var(--ink);-webkit-user-
 /* full-screen page (list, MUSE, details, settings…): sits under the date bar area down to the tab bar */
 .pop[data-size=page]{left:0;right:0;top:calc(env(safe-area-inset-top,0px) + 50px);bottom:calc(54px + env(safe-area-inset-bottom,0px));width:auto;max-height:none;border-radius:0;box-shadow:none;
   border-top:1px solid var(--line-3);background:var(--bg);transform:translateX(24px);border-bottom:1px solid var(--line-3)}
-.pop[data-size=page].open{transform:none}
+.pop[data-size=page]{transform:none;transition:opacity .12s ease} .pop[data-size=page].open{transform:none}
 .pop[data-size=page] .sc{padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px))}
 .pop[data-size=page] .dh{background:var(--bg);margin-left:calc(-1 * max(16px,env(safe-area-inset-left,0px)));margin-right:calc(-1 * max(16px,env(safe-area-inset-right,0px)))}
 .pop[data-size=page] .sc.chat{background:var(--surface)}
@@ -991,22 +991,28 @@ function render(){
     // each hour label sits centered in its own hour column (8:30 start → the first half column is "8")
     for(let h=Math.floor(AX.lo/60);h*60<AX.hi;h++){const a=X(atMin(d,Math.max(h*60,AX.lo))),b=X(atMin(d,Math.min(h*60+60,AX.hi)));if(b-a<13||(stepH>1&&h%2))continue;ticks+=`<span class="tk" style="left:${((a+b)/2).toFixed(1)}px">${h}${AX.pxH>=40?'時':''}</span>`}
   }else if(AX.v==='master'){
-    // two-row header: framed bands on top (months, or years in month mode), columns below (weeks, or months)
-    const sw=AX.segW,mm=AX.ms==='month',cur=mm?new Date(new Date(now).getFullYear(),new Date(now).getMonth(),1).getTime():monday(now);
-    const grpOf=d=>mm?new Date(d).getFullYear():new Date(addDays(d,3)).getFullYear()*12+new Date(addDays(d,3)).getMonth();
-    const lbl=d=>mm?`${new Date(d).getFullYear()}年`:`${new Date(addDays(d,3)).getMonth()+1}月`;
-    // a whole year of weeks on one screen: weeks get too thin for numbers, so the header is just the framed months
-    const narrow=!mm&&sw<16,bands=[];
+    // one column = one month; the label sits centered in its column like hours / days in the other views
+    const sw=AX.segW,cur=new Date(new Date(now).getFullYear(),new Date(now).getMonth(),1).getTime();
     AX.segs.forEach((g,i)=>{
-      const x=i*sw,d=g.d,first=i>0&&grpOf(d)!==grpOf(AX.segs[i-1].d);
-      if(i===0||first)bands.push({a:i,b:i,d});else bands[bands.length-1].b=i;
-      if(d===cur)bg+=rect(x,x+sw,'td');
-      if(i>0&&(first||!narrow)){bg+=`<i class="gl ${first?'m':mm?'w':'h'}" style="left:${x.toFixed(1)}px"></i>`;if(!first)ticks+=`<i class="tl lo" style="left:${x.toFixed(1)}px"></i>`}
-      if(!narrow)ticks+=`<span class="tk wk${d===cur?' tdy':''}" style="left:${(x+sw/2).toFixed(1)}px">${mm?new Date(d).getMonth()+1+(sw>=30?'月':''):new Date(d).getDate()}</span>`;
+      const x=i*sw,dt=new Date(g.d),ny=dt.getMonth()===0&&i>0;
+      if(i%2)bg+=rect(x,x+sw,'mz');
+      if(g.d===cur)bg+=rect(x,x+sw,'td');
+      if(i>0){bg+=`<i class="gl ${ny?'m':'w'}" style="left:${x.toFixed(1)}px"></i>`;ticks+=`<i class="tl ${ny?'m':'w'}" style="left:${x.toFixed(1)}px"></i>`}
+      ticks+=`<span class="tk${g.d===cur?' tdy':''}" style="left:${(x+sw/2).toFixed(1)}px">${dt.getMonth()+1}${sw>=26?'月':''}</span>`;
     });
-    bands.forEach((p,k)=>{if(k%2)bg=rect(p.a*sw,(p.b+1)*sw,'mz')+bg;const bw=(p.b-p.a+1)*sw,hasCur=AX.segs.slice(p.a,p.b+1).some(g=>g.d===cur);ticks+=`<span class="mb${k%2?' alt':''}${p.a===0?' first':''}${narrow?' one':''}${narrow&&hasCur?' cur':''}" style="left:${(p.a*sw).toFixed(1)}px;width:${bw.toFixed(1)}px;height:100%">${bw>=22?lbl(p.d):bw>=11?lbl(p.d).replace(/[月年]/,''):''}</span>`});
   }else{
     const sw=AX.segW, few=AX.v==='month'&&sw<20;
+    if(few){
+      // too narrow for every date: one label per week, centered over that week's days ("2–8", "9–15", …)
+      let a=0;
+      AX.segs.forEach((g,i)=>{
+        const dow=new Date(g.d).getDay(),last=i===AX.segs.length-1||new Date(AX.segs[i+1].d).getDay()===1;
+        if(!last)return;
+        const hasToday=AX.segs.slice(a,i+1).some(x=>x.d===today);
+        ticks+=`<span class="tk${hasToday?' tdy':''}" style="left:${((a+i+1)/2*sw).toFixed(1)}px">${new Date(AX.segs[a].d).getDate()}${i>a?'–'+new Date(g.d).getDate():''}</span>`;
+        a=i+1;
+      });
+    }
     const ti=AX.segs.findIndex(g=>g.d===today);
     AX.segs.forEach((g,i)=>{
       const x=i*sw,d=g.d,dow=new Date(d).getDay();
@@ -1017,10 +1023,10 @@ function render(){
       if(i>0&&(AX.v==='week'||dow===1||sw>=14)){const c=AX.v==='week'||dow===1?'w':'h';bg+=`<i class="gl ${c}" style="left:${x.toFixed(1)}px"></i>`;ticks+=`<i class="tl ${c==='w'?'w':''}" style="left:${x.toFixed(1)}px"></i>`}
       const cls=(d===today?' tdy':'')+(S.settings.holidays.includes(ymd(d))?' hol':dow===0?' sun':dow===6?' sat':'');
       if(AX.v==='week')ticks+=`<span class="tk${cls}" style="left:${(x+sw/2).toFixed(1)}px">${new Date(d).getDate()}${mk?`<i class="mk ${mk}">${MARKS[mk].short}</i>`:`<i>${DOW[dow]}</i>`}</span>`;
-      else if(!few||d===today||(dow===1&&(ti<0||Math.abs(i-ti)>=3))||(i===0&&dow!==1&&(ti<0||ti>=3)&&sw*((8-dow)%7)>=22))ticks+=`<span class="tk${cls}" style="left:${(x+sw/2).toFixed(1)}px">${new Date(d).getDate()}${few?'':`<i>${DOW[dow]}</i>`}</span>`;
+      else if(!few)ticks+=`<span class="tk${cls}" style="left:${(x+sw/2).toFixed(1)}px">${new Date(d).getDate()}${few?'':`<i>${DOW[dow]}</i>`}</span>`;
     });
   }
-  if(inSeg(now)){const x=X(now);bg+=`<i class="now" style="left:${x.toFixed(1)}px"></i>`;if(AX.v==='day')ticks+=`<span class="nowp" style="left:${clamp(x,20,W-20).toFixed(1)}px">${fHM(now)}</span>`}
+  if(AX.v==='day'&&inSeg(now)){const x=X(now);bg+=`<i class="now" style="left:${x.toFixed(1)}px"></i>`;if(AX.v==='day')ticks+=`<span class="nowp" style="left:${clamp(x,20,W-20).toFixed(1)}px">${fHM(now)}</span>`}
   const scopeLbl={all:'すべて',work:'仕事だけ',private:'私用だけ'}[S.scope];
   const emptyTitle=AX.v==='master'?'この期間の大日程はありません':AX.v==='day'?(S.anchor===today?'今日':fMDW(S.anchor))+'の予定はありません':'この期間の予定はありません';
   const emptyHint=AX.v==='master'?'＋の「大日程」から週ごとに入れられます':'＋で追加、または空いている所を長押し';
@@ -1035,7 +1041,7 @@ function render(){
   // A touch keeps targeting the element it started on. If a re-render (pinch zoom, timer, sync) removed that element,
   // its touchmove/touchend would no longer reach the scroller, so park it in a hidden holder inside the scroller.
   for(const el of held)touchHold.appendChild(el);
-  const axH=AX.v==='master'?40:30;document.documentElement.style.setProperty('--axis',axH+'px');
+  const axH=30;document.documentElement.style.setProperty('--axis',axH+'px');
   const body=$('#cbody');body.style.minHeight=Math.max(0,scroller.clientHeight-axH)+'px';body.style.setProperty('--bodyh',body.scrollHeight+'px');
   scroller.scrollTop=scrollTop;scroller.scrollLeft=scrollLeft;
   scroller.style.touchAction=scroller.scrollWidth>scroller.clientWidth+1?'pan-x pan-y':'pan-y';
@@ -2062,7 +2068,7 @@ function shift(n){
 }
 $('#prevBtn').onclick=()=>shift(-1);$('#nextBtn').onclick=()=>shift(1);
 $('#datePick').addEventListener('change',e=>{const d=parseDT(e.target.value);if(d){S.anchor=sod(d);scroller.scrollLeft=0;render();scrollToFocus()}});
-document.querySelectorAll('.seg button').forEach(b=>b.onclick=()=>{S.view=b.dataset.view;S.zoom=1;scroller.scrollLeft=0;render();scrollToFocus();LS.set('view',S.view)});
+document.querySelectorAll('.seg button').forEach(b=>b.onclick=()=>{if(S.view===b.dataset.view)return;S.view=b.dataset.view;S.zoom=1;S.selected=null;scroller.scrollLeft=0;scroller.scrollTop=0;render();scrollToFocus();LS.set('view',S.view);grid.animate&&grid.animate([{opacity:.4},{opacity:1}],{duration:140,easing:'ease-out'})});
 $('#museBtn').onclick=()=>Pop.kind==='muse'?closePop():openMuse();
 $('#moreBtn').onclick=()=>['more','settings','stats'].includes(Pop.kind)?closePop():openMore();
 $('#todayBtn').onclick=()=>{if(Pop.kind)closePop();S.anchor=sod(Date.now());S.zoom=1;render();scroller.scrollTop=0;scrollToFocus()};
