@@ -134,7 +134,7 @@ input,textarea,select{font:inherit;font-size:16px;color:var(--ink);-webkit-user-
 .ck.s-done svg{opacity:1}
 .ck.gh{color:var(--green);font-size:13px} .ck.gh::after{display:none}
 .ck.mst::after{border-radius:4px}
-.trk{position:relative;flex:none;border-bottom:1px solid var(--line-2)}
+.trk{position:relative;flex:none;border-bottom:1px solid var(--line-2);overflow-x:clip}
 .bar{--c:var(--green);--t:var(--green-soft);position:absolute;top:10px;height:25px;border-radius:7px;background:var(--t);color:var(--c);box-shadow:inset 0 0 0 1.5px var(--c);overflow:visible;z-index:2;transition:box-shadow .15s,transform .15s}
 .bar .pg{position:absolute;left:0;top:0;bottom:0;border-radius:7px 0 0 7px;background:var(--c);display:block;max-width:100%}
 .bar .pg.full{border-radius:7px}
@@ -199,6 +199,21 @@ input,textarea,select{font:inherit;font-size:16px;color:var(--ink);-webkit-user-
   transform:translate(-50%,-50%) scale(.96);opacity:0;pointer-events:none;transition:opacity .16s ease,transform .2s cubic-bezier(.2,.9,.3,1);
   background:var(--surface-2);border-radius:20px;box-shadow:var(--shadow);display:flex;flex-direction:column;overflow:hidden}
 .pop.open{opacity:1;transform:translate(-50%,-50%);pointer-events:auto}
+/* full-screen page (list, MUSE, details, settings…): sits under the date bar area down to the tab bar */
+.pop[data-size=page]{left:0;right:0;top:0;bottom:calc(56px + env(safe-area-inset-bottom,0px));width:auto;max-height:none;border-radius:0;box-shadow:none;
+  padding-top:env(safe-area-inset-top,0px);background:var(--bg);transform:translateX(24px);border-bottom:1px solid var(--line-3)}
+.pop[data-size=page].open{transform:none}
+.pop[data-size=page] .sc{padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px))}
+.pop[data-size=page] .dh{background:var(--bg);margin-left:calc(-1 * max(16px,env(safe-area-inset-left,0px)));margin-right:calc(-1 * max(16px,env(safe-area-inset-right,0px)))}
+.pop[data-size=page] .sc.chat{background:var(--surface)}
+.pop[data-size=page] .mh{background:var(--bg)}
+.nav>button.on{color:var(--ink)}
+.nav>button.on::after{content:"";position:absolute;bottom:1px;left:calc(50% - 10px);width:20px;height:3px;border-radius:2px;background:var(--ink)}
+.nav #museBtn.on{color:var(--green)} .nav #museBtn.on::after{background:var(--green)}
+.bar.mlab .pg{top:auto;height:4px;border-radius:0 0 0 7px;opacity:.9}
+.bar .bl.nmi{left:7px;right:7px;overflow:hidden;text-overflow:ellipsis;color:var(--ink);font-weight:700}
+.bar .bl.out{color:var(--ink);font-weight:700}
+.msl{position:absolute;top:15px;font-size:11px;font-weight:700;color:var(--ink);white-space:nowrap;pointer-events:none;z-index:2}
 .pop[data-size=fixed]{height:min(560px,calc(100% - env(safe-area-inset-top,0px) - env(safe-area-inset-bottom,0px) - var(--kb) - 20px))}
 .pop[data-size=tall]{height:calc(100% - env(safe-area-inset-top,0px) - env(safe-area-inset-bottom,0px) - var(--kb) - 20px)}
 .sc{flex:1;min-height:0;overflow:auto;overscroll-behavior:contain;padding:0 16px 18px}
@@ -364,6 +379,8 @@ table.mini td{text-align:right;padding:8px 4px;border-top:1px solid var(--line-2
 .dlg p{margin:0 0 14px;font-size:14.5px;line-height:1.6;white-space:pre-wrap;font-weight:600}
 .dlg .row2{display:flex;gap:8px}
 .dlg .row2 .btn{flex:1}
+/* short screens (iPhone SE in Safari): tighten the detail page so every tab fits without scrolling */
+@media (max-height:600px){.f{min-height:41px}.title-in{font-size:18px;padding:0 0 2px}.acts .btn{height:38px}.prog{margin-top:2px}.dh{min-height:44px}.when{margin-bottom:6px}.segm.big{margin-bottom:8px}}
 @media (prefers-reduced-motion: reduce){*{transition:none!important;animation:none!important}}
 </style>
 
@@ -961,17 +978,19 @@ function rowHTML(t,now,conflicts,ghostMove){
 }
 function barHTML(t,st,sel){
   const attr=t.ghost?`data-pid="${t.pid}"`:`data-id="${t.id}"`;
-  if(t.milestone){let x;if(AX.cell){const sp=spanOf({start:t.end-1,end:t.end});x=(sp.l+sp.r)/2}else x=X(t.end);return `<i class="ms b-${st}${sel?' sel':''}" ${attr} style="left:${x.toFixed(1)}px"></i>`}
+  if(t.milestone){let x;if(AX.cell){const sp=spanOf({start:t.end-1,end:t.end});x=(sp.l+sp.r)/2}else x=X(t.end);return `<i class="ms b-${st}${sel?' sel':''}" ${attr} style="left:${x.toFixed(1)}px"></i>${AX.v==='master'&&!t.ghost?`<span class="msl" style="left:${(x+11).toFixed(1)}px">${esc(t.name)}</span>`:''}`}
   let {l,r}=spanOf(t);
   let w=Math.max(AX.cell?8:6,r-l);if(l+w>AX.trackW)l=Math.max(0,AX.trackW-w);
   const p=st==='done'?100:t.progress, solid=w*p/100;
-  let lbl='',lx=6,on=false;
-  if(st==='ghost'){if(w>=34)lbl='提案'}
+  let lbl='',lx=6,on=false,extra='',mlab=false;
+  // 大日程: the task name rides on the bar (outside it when the bar is too short); progress becomes a thin strip
+  if(AX.v==='master'&&st!=='ghost'){mlab=true;lbl=esc(t.name);const fit=w>=[...t.name].length*11.5+14;extra=fit?' nmi':' out';lx=fit?7:w+6}
+  else if(st==='ghost'){if(w>=34)lbl='提案'}
   else if(st==='done'){if(w>=34){lbl='完了';on=true}}
   else if(p>0){lbl=p+'%';const tw=lbl.length*7;if(solid>=tw+10){on=true}else if(solid+4+tw<=w-3){lx=solid+4}else lbl=''}
   // resize handles: always in DAY; in day/week cells only for spans longer than one day
   const handles=sel&&(!AX.cell||isMaster(t)||!singleDay(t.start,t.end));
-  return `<div class="bar b-${st}${sel?' sel':''}${t.status==='doing'&&!t.ghost?' run':''}" ${attr} style="left:${l.toFixed(1)}px;width:${w.toFixed(1)}px">${st!=='ghost'?`<i class="pg${p>=100?' full':''}" style="width:${p}%"></i>`:''}${lbl?`<span class="bl${on?' on':''}" style="left:${lx.toFixed(1)}px">${lbl}</span>`:''}${handles?'<i class="hd l" data-side="l"></i><i class="hd r" data-side="r"></i>':''}</div>`;
+  return `<div class="bar b-${st}${sel?' sel':''}${t.status==='doing'&&!t.ghost?' run':''}${mlab?' mlab':''}" ${attr} style="left:${l.toFixed(1)}px;width:${w.toFixed(1)}px">${st!=='ghost'?`<i class="pg${p>=100?' full':''}" style="width:${p}%"></i>`:''}${lbl?`<span class="bl${on?' on':''}${extra}" style="left:${lx.toFixed(1)}px">${lbl}</span>`:''}${handles?'<i class="hd l" data-side="l"></i><i class="hd r" data-side="r"></i>':''}</div>`;
 }
 function rangeText(t){
   if(isMaster(t))return masterRange(t)+`（${weeksOf(t)}週）`;
@@ -1195,15 +1214,20 @@ function toggleDone(id){
 /* ============ centered card ============ */
 const Pop={kind:null};
 const popEl=$('#pop'),popBody=$('#popBody'),scrim=$('#scrim');
+// every screen with tabs (and everything reached from the tab bar) opens as a page; only quick add stays a card
+const PAGES=['list','muse','more','settings','stats','detail'];
+function markNav(){const k=Pop.kind,on={list:'listBtn',muse:'museBtn',more:'moreBtn',settings:'moreBtn',stats:'moreBtn'}[k]||(!k||k==='detail'||k==='add'?'todayBtn':'');
+  document.querySelectorAll('.nav>button').forEach(b=>b.classList.toggle('on',b.id===on))}
 function openPop(kind,html,size='auto',opts={}){
   Pop.kind=kind;popBody.className='sc'+(opts.chat?' chat':'');popBody.innerHTML=html;
+  if(PAGES.includes(kind))size='page';
   popEl.dataset.size=size;popEl.classList.add('open');popEl.setAttribute('aria-label',opts.label||'');
-  scrim.classList.add('on');
+  scrim.classList.toggle('on',size!=='page');markNav();
   if(!opts.keepScroll)popBody.scrollTop=0;
 }
 function closePop(){
   if(!Pop.kind)return;
-  Pop.kind=null;popEl.classList.remove('open');scrim.classList.remove('on');
+  Pop.kind=null;popEl.classList.remove('open');scrim.classList.remove('on');markNav();
   if(document.activeElement&&popEl.contains(document.activeElement))document.activeElement.blur();
   render();
 }
@@ -1917,9 +1941,9 @@ $('#prevBtn').onclick=()=>shift(-1);$('#nextBtn').onclick=()=>shift(1);
 $('#datePick').addEventListener('change',e=>{const d=parseDT(e.target.value);if(d){S.anchor=sod(d);scroller.scrollLeft=0;render();scrollToFocus()}});
 document.querySelectorAll('.seg button').forEach(b=>b.onclick=()=>{S.view=b.dataset.view;S.zoom=1;scroller.scrollLeft=0;render();scrollToFocus();LS.set('view',S.view)});
 $('#museBtn').onclick=()=>Pop.kind==='muse'?closePop():openMuse();
-$('#moreBtn').onclick=()=>openMore();
-$('#todayBtn').onclick=()=>{S.anchor=sod(Date.now());S.zoom=1;render();scroller.scrollTop=0;scrollToFocus()};
-$('#listBtn').onclick=()=>openList();
+$('#moreBtn').onclick=()=>['more','settings','stats'].includes(Pop.kind)?closePop():openMore();
+$('#todayBtn').onclick=()=>{if(Pop.kind)closePop();S.anchor=sod(Date.now());S.zoom=1;render();scroller.scrollTop=0;scrollToFocus()};
+$('#listBtn').onclick=()=>Pop.kind==='list'?closePop():openList();
 $('#addBtn').onclick=()=>openAdd();
 let rz=0;window.addEventListener('resize',()=>{cancelAnimationFrame(rz);rz=requestAnimationFrame(render)});
 setInterval(()=>{if(G.mode!=='drag'&&document.visibilityState==='visible')render()},60000);
@@ -1933,7 +1957,7 @@ function toast(msg,actLabel,fn,ms=4500){
   if(actLabel){a.hidden=false;a.textContent=actLabel;a.onclick=()=>{toastEl.classList.remove('on');fn&&fn()};toastEl.classList.remove('noact')}else{a.hidden=true;toastEl.classList.add('noact')}
 
   // with a card open, show the toast at the top so it never covers the card's buttons
-  toastEl.classList.toggle('top',!!Pop.kind);
+  toastEl.classList.toggle('top',!!Pop.kind&&popEl.dataset.size!=='page');
   toastEl.classList.add('on');clearTimeout(toastTimer);toastTimer=setTimeout(()=>toastEl.classList.remove('on'),ms);
 }
 function ask(msg,ok='OK',cancel='やめる'){
@@ -1985,7 +2009,7 @@ function insertSamples(){
   const now=new Date();
   // evening: open on the next day so the plan you need next is what you see first
   if(now.getHours()>=20)S.anchor=addDays(sod(now.getTime()),1);
-  Store.init();initMuse();scrollToFocus();
+  Store.init();initMuse();scrollToFocus();markNav();
 })();
 </script>
 
