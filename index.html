@@ -103,7 +103,7 @@ input,textarea,select{font:inherit;font-size:16px;color:var(--ink);-webkit-user-
 .tk i{display:block;font-style:normal;font-size:var(--fs);font-weight:600;color:var(--ink-3);margin-top:1px}
 .tk.sun,.tk.hol,.tk.sun i,.tk.hol i{color:var(--late)} .tk.sat,.tk.sat i{color:var(--priv)}
 .tk.tdy{color:var(--on-green)} .tk.tdy::before{content:"";position:absolute;z-index:-1;inset:4px -3px;border-radius:7px;background:var(--green)} .tk.tdy i{color:var(--on-green)}
-.tl{position:absolute;top:0;bottom:0;width:0;border-left:1px solid var(--line-2)} .tl.w{border-left-color:var(--line-3)}
+.tl{position:absolute;top:0;bottom:0;width:0;border-left:1px solid var(--line-2)} .tl.w{border-left-color:var(--line-3)} .tl.tick{top:auto;height:5px;border-left-color:var(--line)}
 .mb{position:absolute;top:0;height:19px;box-shadow:inset 0 -1px 0 transparent;border-left:1.5px solid var(--ink-3);font-size:var(--fs);font-weight:800;line-height:18px;padding-left:5px;white-space:nowrap;overflow:hidden;color:var(--ink)}
 .mb::after{content:"";position:absolute;left:0;right:0;top:19px;border-top:1px solid var(--line-3)}
 .mb.alt{background:var(--wkend)} .mb.first{border-left:0}
@@ -900,8 +900,8 @@ function computeAxis(tasks){
   const ws=hm2min(S.settings.workStart), we=hm2min(S.settings.workEnd);
   let lo=0,hi=1440,segs;
   if(v==='day'){
-    // DAY: the working day (8:30–17:30 by default), widened only when a task sits outside it
-    lo=ws;hi=we;
+    // DAY: 6:00–20:00, widened only when a task sits outside it; outside working hours is shaded
+    lo=Math.min(ws,360);hi=Math.max(we,1200);
     for(const t of tasks){if(!singleDay(t.start,t.end)||t.start<from||t.end>to)continue;const ds=sod(t.start);lo=Math.min(lo,(t.start-ds)/MIN);hi=Math.max(hi,(t.end-ds)/MIN)}
     lo=Math.max(0,Math.floor(lo/30)*30);hi=Math.min(1440,Math.ceil(hi/30)*30);if(hi<=lo)hi=lo+60;
     segs=[{d:days[0],s:atMin(days[0],lo),e:atMin(days[0],hi)}];
@@ -986,7 +986,7 @@ function render(){
     if(isOffDay(d))bg+=rect(0,W,'wk');
     else{if(g.s<ws)bg+=rect(0,X(ws),'off');if(g.e>we)bg+=rect(X(we),W,'off')}
     for(let m=Math.ceil(AX.lo/AX.unit)*AX.unit;m<AX.hi;m+=AX.unit){if(m===AX.lo)continue;bg+=`<i class="gl${m%60?'':' h'}" style="left:${X(atMin(d,m)).toFixed(1)}px"></i>`}
-    const stepH=AX.pxH<24?2:1;
+    const stepH=AX.pxH<15?2:1;
     for(let h=Math.ceil(AX.lo/60);h*60<AX.hi;h++){const x=X(atMin(d,h*60));if(x>=1)ticks+=`<i class="tl" data-h="${h}" style="left:${x.toFixed(1)}px"></i>`}
     // each hour label sits centered in its own hour column (8:30 start → the first half column is "8")
     for(let h=Math.floor(AX.lo/60);h*60<AX.hi;h++){const a=X(atMin(d,Math.max(h*60,AX.lo))),b=X(atMin(d,Math.min(h*60+60,AX.hi)));if(b-a<13||(stepH>1&&h%2))continue;ticks+=`<span class="tk" style="left:${((a+b)/2).toFixed(1)}px">${h}${AX.pxH>=40?'時':''}</span>`}
@@ -1020,7 +1020,7 @@ function render(){
       if(d===today)bg+=rect(x,x+sw,'td');
       // tap a date in the header to mark 休み / 休日出勤 / 振替
       const mk=dayMark(d);ticks+=`<i class="hc" data-day="${d}" role="button" aria-label="${fMDW(d)}の休み・休日出勤を登録" style="left:${x.toFixed(1)}px;width:${sw.toFixed(1)}px"></i>`;if(mk)ticks+=`<i class="mkb ${mk}" style="left:${(x+2).toFixed(1)}px;width:${Math.max(3,sw-4).toFixed(1)}px"></i>`;
-      if(i>0&&(AX.v==='week'||dow===1||sw>=14)){const c=AX.v==='week'||dow===1?'w':'h';bg+=`<i class="gl ${c}" style="left:${x.toFixed(1)}px"></i>`;ticks+=`<i class="tl ${c==='w'?'w':''}" style="left:${x.toFixed(1)}px"></i>`}
+      if(i>0){const c=AX.v==='week'||dow===1?'w':'';bg+=`<i class="gl ${c}" style="left:${x.toFixed(1)}px"></i>`;ticks+=`<i class="tl ${c==='w'?'w':'tick'}" style="left:${x.toFixed(1)}px"></i>`}
       const cls=(d===today?' tdy':'')+(S.settings.holidays.includes(ymd(d))?' hol':dow===0?' sun':dow===6?' sat':'');
       if(AX.v==='week')ticks+=`<span class="tk${cls}" style="left:${(x+sw/2).toFixed(1)}px">${new Date(d).getDate()}${mk?`<i class="mk ${mk}">${MARKS[mk].short}</i>`:`<i>${DOW[dow]}</i>`}</span>`;
       else if(!few)ticks+=`<span class="tk${cls}" style="left:${(x+sw/2).toFixed(1)}px">${new Date(d).getDate()}${few?'':`<i>${DOW[dow]}</i>`}</span>`;
