@@ -1649,7 +1649,6 @@ const STT={tab:'work'};
 function openSettings(refresh){
   const st=S.settings,samples=[...S.tasks.values()].filter(t=>t.sample).length;
   const syncTxt={saved:'クラウドに保存済み（他の端末と同期）',saving:'保存中…',local:S.mode==='cloud'?'クラウド接続中':'この端末のみに保存（クラウド同期なし）',error:'クラウドに接続できません（この端末には保存）'}[S.sync]||'';
-  const key=LS.get('apikey',''),model=LS.get('apimodel',API_MODEL)||API_MODEL;
   let body;
   if(STT.tab==='disp'){Object.keys(FONTS).forEach(loadFont);const cf=FONTS[st.font]?st.font:'system',cz=FSIZES[st.fsize]?st.fsize:'m';
     body=`<div class="sect" style="margin-top:2px">フォント</div><div class="fg"><div class="chips">${Object.entries(FONTS).map(([k,f])=>`<button class="chip" data-font="${k}" aria-pressed="${cf===k}" style="font-family:${f.fam?f.fam.replace(/'/g,'&quot;')+',':''}${BASE_FONT.replace(/"/g,'&quot;')}">${f.label}</button>`).join('')}</div></div>
@@ -1658,11 +1657,7 @@ function openSettings(refresh){
   else if(STT.tab==='hol')body=`<div class="fg"><label class="f"><span>休日を追加</span><input type="date" id="s-hol"></label>
 <div class="chips">${st.holidays.slice().sort().map(d=>`<button class="chip x" data-rmhol="${d}">${fMDW(parseDT(d))}</button>`).join('')||'<span class="hint" style="margin:0">追加した休日はまだありません</span>'}</div></div>
 <p class="hint">土日は最初から休日です。工場カレンダーの休日をここに足してください。</p>`;
-  else if(STT.tab==='data')body=`${!window.claude?`<div class="sect" style="margin-top:2px">MUSEの接続（GitHub版）</div>
-<div class="fg"><div class="keyrow"><input id="k-key" type="password" autocomplete="off" placeholder="${key?'sk-ant-…（登録済み）':'sk-ant-…'}" aria-label="APIキー"></div>
-<div class="keyrow"><input id="k-model" autocomplete="off" value="${esc(model)}" aria-label="モデル"><button class="btn pri sm" data-keysave="1">保存</button>${key?'<button class="btn danger sm" data-keydel="1">削除</button>':''}</div></div>
-<p class="hint">${key?`接続済み（${esc(model)}）。キーはこの端末だけに保存され、全データのコピーにも含まれません。`:'AnthropicのAPIキーを入れると、このページからMUSEが動きます。利用料はそのキーのアカウントに請求されます。'}</p>`:''}
-<div class="sect"${window.claude?' style="margin-top:2px"':''}>データ</div>
+  else if(STT.tab==='data')body=`<div class="sect" style="margin-top:2px">データ</div>
 <div class="fg"><div class="f"><span class="wide" style="color:var(--ink)">${esc(syncTxt)}</span></div>
 <div class="f"><button class="btn sm" data-copyjson="1">全データをコピー（JSON）</button>${samples?`<button class="btn danger sm" data-rmsample="1">サンプル${samples}件を削除</button>`:''}</div></div>`;
   else body=`<div class="fg"><div class="f"><span>通常勤務</span><input type="time" id="s-ws" value="${st.workStart}" style="flex:1"><span style="width:auto">–</span><input type="time" id="s-we" value="${st.workEnd}" style="flex:1"></div>
@@ -1710,7 +1705,7 @@ ${(()=>{const f=furikae();return f.sw.length||f.sub.length?`<button class="menu-
 <div class="fg">
 <button class="menu-li" data-gomuse="1"><span>MUSE（計画アシスタント）</span><small>${(()=>{const n=[...S.proposals.values()].filter(p=>p.status==='pending').length,l=lateTasks().length;return [n?`承認待ち${n}件`:'',l?`遅延${l}件`:''].filter(Boolean).join('・')||'今日の順番・空き時間'})()}</small>${ICON.r}</button>
 <button class="menu-li" data-gostats="1"><span>実績と残業</span><small>今月の時間外 ${(ot/HOUR).toFixed(1)}h</small>${ICON.r}</button>
-<button class="menu-li" data-goset="1"><span>設定</span><small>勤務時間・休日${window.claude?'':'・MUSE'}</small>${ICON.r}</button>
+<button class="menu-li" data-goset="1"><span>設定</span><small>勤務時間・休日・表示</small>${ICON.r}</button>
 ${S.tasks.size?'':`<button class="menu-li" data-sample="1"><span>サンプル工程を入れる</span>${ICON.r}</button>`}
 </div>`;
   if(refresh&&Pop.kind==='more'){const a=document.activeElement;if(a&&popBody.contains(a)&&a.tagName==='INPUT')return;popBody.innerHTML=html}else openPop('more',html,'auto',{label:'その他'});
@@ -1734,8 +1729,6 @@ async function otherClick(e,b){
   if(b.dataset.qimp){QA.imp=!QA.imp;updateQuickPreview();return}
   if(b.dataset.go){const id=b.dataset.go;closePop();goToTask(id);return}
   if(b.dataset.replan){closePop();runReplan();return}
-  if(b.dataset.keysave){const k=($('#k-key').value||'').trim()||LS.get('apikey',''),m=($('#k-model').value||'').trim()||API_MODEL;if(!/^sk-ant-/.test(k)){toast('sk-ant- で始まるキーを入れてください');return}LS.set('apikey',k);LS.set('apimodel',m);await initMuse();openSettings(true);toast('MUSEをAPIで接続しました');return}
-  if(b.dataset.keydel){if(await ask('この端末からAPIキーを削除しますか？','削除','やめる')){try{localStorage.removeItem('muse.apikey')}catch{}await initMuse();openSettings(true);toast('APIキーを削除しました')}return}
   if(b.dataset.lck){toggleDone(b.dataset.lck);return}
   if(b.dataset.ltab){LT.tab=b.dataset.ltab;openList(true);popBody.scrollTop=0;return}
   if(b.dataset.stab){STT.tab=b.dataset.stab;openSettings(true);popBody.scrollTop=0;return}
@@ -1765,43 +1758,10 @@ popBody.addEventListener('keydown',e=>{if(e.key==='Enter'&&e.target.id==='qa'&&!
 
 /* ============ MUSE agent ============ */
 const Muse={sample:null,tools:false,ready:false,running:null,log:LS.get('chat',[]),cur:null,disabled:''};
-/* Outside claude.ai (GitHub Pages / home-screen PWA): MUSE calls the Claude API directly with the user's own key.
-   The key stays in this browser only (never in the JSON export or the shared store). */
-const API_MODEL='claude-sonnet-5-5';
-async function apiSample(turns,opts={}){
-  const key=LS.get('apikey',''),model=LS.get('apimodel',API_MODEL)||API_MODEL;
-  const msgs=[];
-  for(const t of turns){const l=msgs[msgs.length-1];if(l&&l.role===t.role)l.content+='\n\n'+t.content;else msgs.push({role:t.role,content:String(t.content)})}
-  const tools=opts.tools||[], spec=tools.map(t=>({name:t.name,description:t.description,input_schema:t.inputSchema}));
-  let text='';
-  for(let i=0;i<10;i++){
-    let r;
-    try{r=await fetch('https://api.anthropic.com/v1/messages',{method:'POST',signal:opts.signal,headers:{'content-type':'application/json','x-api-key':key,'anthropic-version':'2023-06-01','anthropic-dangerous-direct-browser-access':'true'},body:JSON.stringify({model,max_tokens:2000,messages:msgs,...(spec.length?{tools:spec}:{})})})}
-    catch(e){const x=new Error(e.message);x.code=e.name==='AbortError'?'cancelled':'offline';x.text=text;throw x}
-    if(!r.ok){let m='';try{m=(await r.json()).error.message||''}catch{}
-      const x=new Error(m);x.text=text;x.detail=m;
-      x.code=r.status===401||r.status===403?'bad_key':r.status===429?'rate_limited':r.status===529||r.status>=500?'upstream_error':/too long|too many tokens/i.test(m)?'prompt_too_large':r.status===404||/model/i.test(m)?'bad_model':'api_error';throw x}
-    const j=await r.json();
-    const tx=(j.content||[]).filter(c=>c.type==='text').map(c=>c.text).join('');
-    if(tx){text+=(text?'\n':'')+tx;opts.onText&&opts.onText({text})}
-    if(j.stop_reason!=='tool_use')return {text,truncated:j.stop_reason==='max_tokens'};
-    msgs.push({role:'assistant',content:j.content});
-    const results=[];
-    for(const c of j.content){
-      if(c.type!=='tool_use')continue;
-      const tool=tools.find(t=>t.name===c.name);let out,err=false;
-      try{if(!tool)throw new Error('そのツールはありません');out=await tool.execute(c.input||{})}catch(e){out=String(e&&e.message||e);err=true}
-      results.push({type:'tool_result',tool_use_id:c.id,content:typeof out==='string'?out:JSON.stringify(out),...(err?{is_error:true}:{})});
-    }
-    msgs.push({role:'user',content:results});
-  }
-  return {text:text||'手順が長くなったため途中で止めました。範囲を絞って聞いてください。',truncated:true};
-}
 async function initMuse(){
   if(!window.claude||typeof window.claude.use!=='function'){
-    Muse.ready=true;Muse.via='api';
-    if(LS.get('apikey','')){Muse.sample=apiSample;Muse.tools=true;Muse.disabled=''}
-    else{Muse.sample=null;Muse.tools=false;Muse.disabled='この画面（GitHub版）でMUSEを使うには、設定でAnthropicのAPIキーを登録してください。Claudeのアプリ内で開いた場合はキー不要です。'}
+    // GitHub / home-screen version: no paid AI. MUSE offers its built-in planning tools only.
+    Muse.ready=true;Muse.noAI=true;Muse.sample=null;Muse.tools=false;Muse.disabled='';
     if(Pop.kind==='muse')renderMuse();return}
   try{Muse.sample=await window.claude.use('sample')}catch{}
   if(Muse.sample){try{const lim=await Muse.sample.limits();Muse.tools=!!(lim&&lim.tools&&lim.tools.maxCount>=4)}catch{Muse.tools=false}}
@@ -2004,10 +1964,10 @@ function msgHTML(m){
   return `<div class="msg a">${acts}${body}${m.err?`<span class="err">${esc(m.err)}</span>`:''}</div>${(m.props||[]).map(id=>propHTML(S.proposals.get(id))).join('')}`;
 }
 function openMuse(){
-  pageTop({title:'MUSE',sub:'計画エージェント',back:'more',actions:'<button class="chip-s" data-mclear="1">履歴を消す</button>'});
+  pageTop({title:'MUSE',sub:'計画アシスタント',back:'more',actions:'<button class="chip-s" data-mclear="1">履歴を消す</button>'});
   openPop('muse',`<div class="msgs" id="msgs"></div>
 <div class="mchips" id="mchips"></div>
-<form class="composer" id="mform"><textarea id="min" rows="1" placeholder="例）この作業が2時間延びた" aria-label="MUSEへのメッセージ"></textarea><button class="btn pri" id="msend" type="submit">送信</button></form>`,'tall',{chat:true,label:'MUSE'});
+${Muse.noAI?'':'<form class="composer" id="mform"><textarea id="min" rows="1" placeholder="例）この作業が2時間延びた" aria-label="MUSEへのメッセージ"></textarea><button class="btn pri" id="msend" type="submit">送信</button></form>'}`,'tall',{chat:true,label:'MUSE'});
   renderMuse();
 }
 // MUSE home: what the assistant can do right now, with real data (works without AI); chat below
@@ -2023,7 +1983,7 @@ function museHome(){
   return `<div class="mcard"><div class="mct"><b>今日やる順番</b><small>遅延 → 期限が近い → 重要 → 開始が早い</small></div>${order||'<p class="hint" style="margin:4px 0 0">今日の残りの予定はありません</p>'}</div>
 <div class="mcard"><div class="mct"><b>遅れの立て直し</b><small>作業できる時間へ移す案を作り、承認したら反映</small></div>${nl?`<button class="btn pri sm" data-replan="1">遅延${nl}件の再計画を提案</button>`:'<p class="hint" style="margin:4px 0 0">遅れているタスクはありません</p>'}</div>
 <div class="mcard"><div class="mct"><b>次の空き時間</b><small>勤務時間・ライン停止時間・予定から計算。押すとその時間で追加</small></div><div class="chips" style="padding:0">${slot(60,'desk')}${slot(45,'line')}</div></div>
-<div class="mcard"><div class="mct"><b>AIに相談</b><small>${ai?'下の入力欄か候補から。日時の変更は提案として出し、承認するまで保存しません':'未接続'}</small></div>${ai?'':`<p class="hint" style="margin:4px 0 6px">${esc(Muse.disabled||'接続を確認しています')}</p>${!window.claude?'<button class="btn sm" data-mset="1">APIキーを設定</button>':''}`}</div>`;
+${Muse.noAI?'':`<div class="mcard"><div class="mct"><b>AIに相談</b><small>${ai?'下の入力欄か候補から。日時の変更は提案として出し、承認するまで保存しません':'未接続'}</small></div>${ai?'':`<p class="hint" style="margin:4px 0 6px">${esc(Muse.disabled||'接続を確認しています')}</p>`}</div>`}`;
 }
 function renderMuse(){
   const box=$('#msgs');if(!box||Pop.kind!=='muse')return;
@@ -2076,7 +2036,7 @@ async function museClick(e,b){
   if(b.dataset.rej)return rejectProposal(b.dataset.rej);
   if(b.dataset.see)return seeProposal(b.dataset.see);
   if(b.dataset.replan)return runReplan();
-  if(b.dataset.mset){STT.tab='data';closePop();openSettings();requestAnimationFrame(()=>{const k=$('#k-key');if(k)k.focus()});return}
+  
   if(b.dataset.mq)return museSend(b.dataset.mq);
   if(b.dataset.mclear){if(await ask('MUSEとの会話を消しますか？（提案と変更履歴は残ります）','消す','やめる')){Muse.log=[];saveChat();renderMuse()}return}
 }
@@ -2190,6 +2150,7 @@ function insertSamples(){
 
 /* ============ boot ============ */
 (function boot(){
+  try{localStorage.removeItem('muse.apikey');localStorage.removeItem('muse.apimodel')}catch{}
   const v=LS.get('view','day');if(['day','week','master'].includes(v))S.view=v;else if(v==='month')S.view='week';
   const now=new Date();
   // evening: open on the next day so the plan you need next is what you see first
