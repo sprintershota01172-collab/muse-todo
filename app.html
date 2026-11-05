@@ -1012,7 +1012,7 @@ function spanOf(t){
 const viewOk=t=>S.view==='master'?(isMaster(t)||t.milestone||S.showDaily):S.view==='day'?!isMaster(t):true;
 function visibleTasks(){
   const {from,to}=rangeOfView();
-  return [...S.tasks.values()].filter(t=>scopeOk(t)&&viewOk(t)&&t.end>from&&t.start<to);
+  return [...S.tasks.values()].filter(t=>t.status!=='done'&&scopeOk(t)&&viewOk(t)&&t.end>from&&t.start<to);
 }
 function ghostData(){
   const creates=[],moves=new Map();
@@ -1384,9 +1384,13 @@ function goToTask(id){
 }
 function toggleDone(id){
   const t=S.tasks.get(id);if(!t)return;
-  setStatus(id,t.status==='done'?'reopen':'done');
-  render();refreshAnyPop();
-  toast(t.status==='done'?'未完了に戻しました':`「${t.name}」を完了にしました`,'元に戻す',doUndo);
+  const done=t.status!=='done';
+  setStatus(id,done?'done':'reopen');
+  if(done&&S.selected===id)S.selected=null;
+  const row=!Pop.kind&&done&&grid.querySelector(`[data-row="${CSS.escape(id)}"]`);
+  const fin=()=>{render();refreshAnyPop()};
+  if(row&&row.animate&&!matchMedia('(prefers-reduced-motion: reduce)').matches)row.animate([{opacity:1,transform:'none'},{opacity:0,transform:'translateX(24px)'}],{duration:200,easing:'ease-in',fill:'forwards'}).finished.then(fin,fin);else fin();
+  toast(done?`「${t.name}」を完了 → 一覧の「完了」へ`:'未完了に戻しました・チャートに戻ります','元に戻す',doUndo);
 }
 
 /* ============ centered card ============ */
@@ -1421,7 +1425,7 @@ function refreshAnyPop(){
 }
 
 /* ---- detail ---- */
-function openDetail(id){const t=S.tasks.get(id);if(!t)return;const keep=Pop.kind==='detail';pageTop({title:'タスク詳細',sub:t.project,back:'chart',actions:`<button class="iconbtn danger" data-act="del" aria-label="削除">${ICON.trash}</button>`});openPop('detail',detailHTML(t),'fixed',{label:'タスクの詳細',keepScroll:keep})}
+function openDetail(id,back){const t=S.tasks.get(id);if(!t)return;const keep=Pop.kind==='detail';if(keep&&!back)back=Pop.back;pageTop({title:'タスク詳細',sub:t.project,back:back||'chart',actions:`<button class="iconbtn danger" data-act="del" aria-label="削除">${ICON.trash}</button>`});openPop('detail',detailHTML(t),'fixed',{label:'タスクの詳細',keepScroll:keep})}
 function refreshDetail(){
   const t=S.tasks.get(S.selected);if(!t){closePop();return}
   const a=document.activeElement;if(a&&popBody.contains(a)&&/INPUT|TEXTAREA|SELECT/.test(a.tagName))return;
@@ -1481,7 +1485,7 @@ async function popClick(e){
   if(b.dataset.dtab){DT.tab=b.dataset.dtab;refreshDetail();return}
   const act=b.dataset.act;
   if(act==='close')return closePop();
-  if(['start','pause','resume','done','reopen'].includes(act)){setStatus(t.id,act);render();refreshDetail();toast({start:'作業を開始しました',pause:'中断しました',resume:'再開しました',done:'完了にしました',reopen:'未完了に戻しました'}[act],'元に戻す',doUndo);return}
+  if(['start','pause','resume','done','reopen'].includes(act)){setStatus(t.id,act);render();refreshDetail();toast({start:'作業を開始しました',pause:'中断しました',resume:'再開しました',done:'完了にしました・チャートから外れ、一覧の「完了」へ移ります',reopen:'未完了に戻しました・チャートに戻ります'}[act],'元に戻す',doUndo);return}
   if(act==='ext'){applyTimeChange(t.id,t.start,t.end+30*MIN,'延長（+30分）');return}
   if(act==='imp'){commit(t.id,{important:!t.important});render();refreshDetail();return}
   if(act==='del'){if(await ask(`「${t.name}」を削除しますか？`,'削除','やめる')){S.undo={items:snapshotFor([t.id])};removeTask(t.id);closePop();toast('削除しました','元に戻す',doUndo)}return}
@@ -1648,15 +1652,15 @@ function openList(refresh){
   const tod=ts.filter(t=>open(t)&&!isMaster(t)&&t.start<addDays(today,1)).sort(by);
   const up=ts.filter(t=>open(t)&&!isMaster(t)&&t.start>=addDays(today,1)).sort(by);
   const mst=ts.filter(t=>open(t)&&isMaster(t)).sort(by);
-  const done=ts.filter(t=>t.status==='done').sort((a,b)=>b.updatedAt-a.updatedAt).slice(0,20);
-  const li=t=>`<div class="li"><button class="ck s-${t.status}${isLate(t,now)?' late':''}${isMaster(t)?' mst':''}" data-lck="${t.id}" aria-label="${t.status==='done'?'未完了に戻す':'完了にする'}">${ICON.check}</button><button class="nt" data-go="${t.id}"><b>${esc(t.name)}</b><small>${isMaster(t)?masterRange(t)+`（${weeksOf(t)}週）`:fMDW(t.start)+' '+fHM(t.start)} · ${esc(t.project)}${t.deadline?` · 期限${fMD(t.deadline)}`:''}</small></button>${t.important?'<span class="pill imp">重要</span>':''}</div>`;
+  const doneAll=ts.filter(t=>t.status==='done').sort((a,b)=>b.updatedAt-a.updatedAt),done=doneAll.slice(0,80);
+  const li=t=>`<div class="li"><button class="ck s-${t.status}${isLate(t,now)?' late':''}${isMaster(t)?' mst':''}" data-lck="${t.id}" aria-label="${t.status==='done'?'未完了に戻す':'完了にする'}">${ICON.check}</button><button class="nt" data-go="${t.id}"><b>${esc(t.name)}</b><small>${t.status==='done'?`完了 ${fMDW(t.updatedAt)}`:isMaster(t)?masterRange(t)+`（${weeksOf(t)}週）`:fMDW(t.start)+' '+fHM(t.start)} · ${esc(t.project)}${t.deadline?` · 期限${fMD(t.deadline)}`:''}</small></button>${t.important?'<span class="pill imp">重要</span>':''}</div>`;
   const grp=(title,arr,extra='')=>arr.length?`<div class="list-h"><b>${title}</b>${extra||`<small>${arr.length}件</small>`}</div><div class="fg">${arr.map(li).join('')}</div>`:'';
-  const cnt={today:late.length+doing.length+tod.length,up:up.length,mst:mst.length,done:done.length};
+  const cnt={today:late.length+doing.length+tod.length,up:up.length,mst:mst.length,done:doneAll.length};
   const none=m=>`<p class="hint" style="text-align:center;margin:28px 0">${m}</p>`;
   let body;
   if(LT.tab==='up')body=up.length?`<div class="fg" style="margin-top:6px">${up.slice(0,60).map(li).join('')}</div>`:none('これからの予定はありません');
   else if(LT.tab==='mst')body=mst.length?`<div class="fg" style="margin-top:6px">${mst.map(li).join('')}</div>`:none('大日程はまだありません');
-  else if(LT.tab==='done')body=done.length?`<div class="fg" style="margin-top:6px">${done.map(li).join('')}</div>`:none('完了したタスクはまだありません');
+  else if(LT.tab==='done')body=done.length?`<p class="hint" style="margin:8px 4px 4px">チャートには出ません・丸を押すと未完了に戻ります</p><div class="fg">${done.map(li).join('')}</div>`:none('完了したタスクはまだありません');
   else body=(grp(`<span style="color:var(--late)">遅延 ${late.length}件</span>`,late,'<button class="btn sm" data-replan="1">再計画を提案</button>')+grp('作業中',doing)+grp('今日の予定',tod))||none('今日の残りの予定はありません');
   pageTop({title:'一覧',sub:`遅延 ${late.length}件・今日 ${tod.length+doing.length}件`,actions:`<button class="chip-s" data-gomuse="1">MUSE</button><button class="chip-s" data-gostats="1">実績</button><button class="chip-s" data-lscope="1">${{all:'すべて',work:'仕事だけ',private:'私用だけ'}[S.scope]}</button>`});
   const html=`<div class="tabsbar"><div class="segm big tabs">${[['today','今日'],['up','これから'],['mst','大日程'],['done','完了']].map(([k,l])=>`<button data-ltab="${k}" aria-pressed="${LT.tab===k}">${l}${cnt[k]?`<small>${cnt[k]}</small>`:''}</button>`).join('')}</div></div>
@@ -1828,7 +1832,7 @@ async function otherClick(e,b){
   if(b.dataset.qkind){QA.kind=QA.kind===b.dataset.qkind?null:b.dataset.qkind;updateQuickPreview();return}
   if(b.dataset.qdur){QA.dur=QA.dur===+b.dataset.qdur?null:+b.dataset.qdur;updateQuickPreview();return}
   if(b.dataset.qimp){QA.imp=!QA.imp;updateQuickPreview();return}
-  if(b.dataset.go){const id=b.dataset.go;closePop();goToTask(id);return}
+  if(b.dataset.go){const id=b.dataset.go,t=S.tasks.get(id);if(t&&t.status==='done'){S.selected=id;openDetail(id,'list');return}closePop();goToTask(id);return}
   if(b.dataset.replan){closePop();runReplan();return}
   if(b.dataset.lck){toggleDone(b.dataset.lck);return}
   if(b.dataset.ltab){LT.tab=b.dataset.ltab;openList(true);popBody.scrollTop=0;return}
