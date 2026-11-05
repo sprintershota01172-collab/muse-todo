@@ -1,6 +1,6 @@
 <!doctype html>
 <html lang="ja"><head><meta charset="utf-8">
-<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no,viewport-fit=cover">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="default">
@@ -51,7 +51,8 @@
   --off:rgba(0,0,0,.26); --wkend:rgba(255,255,255,.03); --today:rgba(93,170,140,.11); --grp-tint:rgba(255,255,255,.035);
   --scrim:rgba(0,0,0,.6); --shadow:0 22px 60px rgba(0,0,0,.6); color-scheme:dark}
 
-html{box-sizing:border-box;height:100%;height:100dvh;overflow:hidden;overscroll-behavior:none}
+/* manipulation: no double-tap zoom (and no tap delay waiting for one) */
+html{box-sizing:border-box;height:100%;height:100dvh;overflow:hidden;overscroll-behavior:none;touch-action:manipulation}
 *,*::before,*::after{box-sizing:inherit}
 body{height:100%;overflow:hidden;background:var(--bg);color:var(--ink);font:13px/1.35 var(--font);
   -webkit-tap-highlight-color:transparent;-webkit-text-size-adjust:100%;-webkit-user-select:none;user-select:none;-webkit-touch-callout:none;
@@ -82,7 +83,7 @@ input,textarea,select{font:inherit;font-size:16px;color:var(--ink);-webkit-user-
 
 /* ---- chart ---- */
 .chart{position:relative;min-height:0;background:var(--surface);border-top:1px solid var(--line-3);border-bottom:1px solid var(--line-3)}
-.scroller{position:absolute;inset:0;overflow:auto;overscroll-behavior:contain;-webkit-overflow-scrolling:touch;scrollbar-width:none}
+.scroller{position:absolute;inset:0;overflow:auto;overscroll-behavior:none;-webkit-overflow-scrolling:touch;scrollbar-width:none}
 .scroller::-webkit-scrollbar{display:none}
 .g{position:relative}
 .axis{position:sticky;top:0;z-index:6;display:flex;height:var(--axis);background:var(--surface);border-bottom:1px solid var(--line-3)}
@@ -100,8 +101,7 @@ input,textarea,select{font:inherit;font-size:16px;color:var(--ink);-webkit-user-
 .tk.sun,.tk.hol,.tk.sun i,.tk.hol i{color:var(--late)} .tk.sat,.tk.sat i{color:var(--priv)}
 .tk.tdy{color:var(--on-green)} .tk.tdy::before{content:"";position:absolute;z-index:-1;inset:4px -3px;border-radius:7px;background:var(--green)} .tk.tdy i{color:var(--on-green)}
 .tl{position:absolute;top:0;bottom:0;width:0;border-left:1px solid var(--line-2)} .tl.w{border-left-color:var(--line-3)}
-.tk.hr{transform:none;align-items:flex-start;padding-left:4px}
-.tk.mo{transform:none;align-items:flex-start;justify-content:flex-start;padding:3px 0 0 4px;font-size:9.5px;font-weight:700;color:var(--ink)}
+.tk.mo{justify-content:flex-start;padding-top:3px;font-size:9.5px;font-weight:700;color:var(--ink)}
 .tk.wk{justify-content:flex-end;padding-bottom:5px}
 .tk.wk.tdy::before{inset:auto -5px 2px;height:17px}
 .nowp{position:absolute;top:7px;transform:translateX(-50%);background:var(--ink);color:var(--surface);font-size:10px;font-weight:700;padding:2px 6px;border-radius:7px;z-index:2}
@@ -171,7 +171,7 @@ input,textarea,select{font:inherit;font-size:16px;color:var(--ink);-webkit-user-
 .deps path{fill:none;stroke:var(--ink);stroke-width:1.5;stroke-dasharray:3 3}
 .nfill{position:sticky;left:0;top:0;width:var(--nw);height:0;z-index:3}
 .nfill::before{content:"";position:absolute;left:0;top:0;width:100%;height:var(--bodyh,100%);background:var(--surface);border-right:1px solid var(--line-3)}
-.empty{position:absolute;left:var(--nw);right:0;top:26%;text-align:center;color:var(--ink-2);font-size:12.5px;line-height:1.7;pointer-events:none;padding:0 16px}
+.empty{position:absolute;left:var(--nw);right:0;top:26%;text-align:center;text-wrap:balance;color:var(--ink-2);font-size:12.5px;line-height:1.7;pointer-events:none;padding:0 16px}
 .empty b{display:block;font-size:14.5px;color:var(--ink);font-weight:700}
 .empty .btn{pointer-events:auto;margin-top:10px}
 .tip{position:fixed;z-index:50;transform:translate(-50%,-100%);background:var(--ink);color:var(--surface);font-size:12.5px;font-weight:700;padding:6px 10px;border-radius:9px;pointer-events:none;white-space:nowrap;display:none}
@@ -193,14 +193,24 @@ input,textarea,select{font:inherit;font-size:16px;color:var(--ink);-webkit-user-
 .scrim.on{opacity:1;pointer-events:auto}
 .pop{position:fixed;z-index:41;left:50%;
   top:calc(env(safe-area-inset-top,0px) + (100% - env(safe-area-inset-top,0px) - env(safe-area-inset-bottom,0px) - var(--kb)) / 2);
-  width:min(calc(100% - 24px),440px);max-height:calc(100% - env(safe-area-inset-top,0px) - env(safe-area-inset-bottom,0px) - var(--kb) - 28px);
+  width:min(calc(100% - 24px),440px);max-height:calc(100% - env(safe-area-inset-top,0px) - env(safe-area-inset-bottom,0px) - var(--kb) - 20px);
   transform:translate(-50%,-50%) scale(.96);opacity:0;pointer-events:none;transition:opacity .16s ease,transform .2s cubic-bezier(.2,.9,.3,1);
   background:var(--surface-2);border-radius:20px;box-shadow:var(--shadow);display:flex;flex-direction:column;overflow:hidden}
 .pop.open{opacity:1;transform:translate(-50%,-50%);pointer-events:auto}
-.pop[data-size=tall]{height:calc(100% - env(safe-area-inset-top,0px) - env(safe-area-inset-bottom,0px) - var(--kb) - 28px)}
+.pop[data-size=tall]{height:calc(100% - env(safe-area-inset-top,0px) - env(safe-area-inset-bottom,0px) - var(--kb) - 20px)}
 .sc{flex:1;min-height:0;overflow:auto;overscroll-behavior:contain;padding:0 16px 18px}
 .sc.chat{display:flex;flex-direction:column;overflow:hidden;padding:0;background:var(--surface)}
-.dh{position:sticky;top:0;z-index:3;display:flex;align-items:center;gap:6px;min-height:52px;margin:0 -16px 4px;padding:8px 6px 6px 16px;background:var(--surface-2)}
+.dh{position:sticky;top:0;z-index:3;display:flex;align-items:center;gap:6px;min-height:50px;margin:0 -16px 4px;padding:6px 6px 4px 16px;background:var(--surface-2)}
+.dh.dh2{flex-direction:column;align-items:stretch;gap:2px;padding:6px 16px 8px}
+.dhr{display:flex;align-items:center;gap:6px;min-height:44px;margin-right:-10px}
+.segm.tabs button small{font-size:10.5px;font-weight:800;opacity:.65;margin-left:3px}
+.chips.row{flex-wrap:nowrap;overflow-x:auto;scrollbar-width:none;min-width:0;margin-right:-12px;padding-right:12px}
+.chips.row::-webkit-scrollbar{display:none}
+.chips.row>*{flex:none}
+.iconbtn.danger{color:var(--late)}
+/* every control answers the finger at once */
+.btn,.chip,.chip-s,.seg button,.segm button,.mseg button,.nav>button,.menu-li,.xbtn,.iconbtn,.step button,.nav-arrow,.ck{transition:transform .08s,opacity .08s}
+.btn:active,.chip:active,.chip-s:active,.seg button:active,.segm button:active,.mseg button:active,.nav>button:active,.menu-li:active,.xbtn:active,.iconbtn:active,.step button:active,.nav-arrow:active{transform:scale(.95);opacity:.7}
 .dh .ttl{font-size:17px;font-weight:750;flex:1;letter-spacing:-.01em}
 .dh .proj{font-size:12px;color:var(--ink-2);font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;flex:1;min-width:0}
 .xbtn{width:44px;height:44px;display:grid;place-items:center;flex:none;color:var(--ink-2)}
@@ -220,20 +230,20 @@ input,textarea,select{font:inherit;font-size:16px;color:var(--ink);-webkit-user-
 .tag{font-size:10px;font-weight:800;color:var(--ink-3);border:1px solid var(--line-2);border-radius:5px;padding:1px 5px;white-space:nowrap}
 .title-in{width:100%;border:0;background:transparent;font-size:20px;font-weight:750;padding:2px 0 4px;letter-spacing:-.015em;outline:none}
 .title-in:focus{box-shadow:0 2px 0 var(--green)}
-.when{display:flex;align-items:center;gap:8px;flex-wrap:wrap;font-size:14px;margin:0 0 12px}
+.when{display:flex;align-items:center;gap:8px;flex-wrap:wrap;font-size:14px;margin:0 0 10px}
 .when b{font-weight:700}
 .when span{color:var(--ink-2);font-weight:600}
 .pill{font-size:10.5px;font-weight:800;padding:2px 8px;border-radius:10px}
 .pill.late{background:var(--late-soft);color:var(--late)} .pill.imp{background:var(--brass-soft);color:var(--brass)} .pill.run{background:var(--green-soft);color:var(--green)}
 .acts{display:flex;gap:8px}
 .acts .btn{flex:1;min-width:0}
-.prog{display:flex;align-items:center;gap:12px;margin:14px 0 2px}
+.prog{display:flex;align-items:center;gap:12px;margin:8px 0 0}
 .prog input{flex:1;accent-color:var(--green);height:30px}
 .prog output{width:46px;text-align:right;font-weight:800;font-size:16px}
-.actual{font-size:12px;color:var(--ink-2);min-height:18px;font-weight:500}
+.actual{font-size:11.5px;color:var(--ink-2);min-height:16px;font-weight:500;margin-bottom:8px}
 .sect{font-size:11px;font-weight:800;letter-spacing:.06em;color:var(--ink-2);margin:20px 4px 6px}
 .fg{background:var(--surface);border-radius:13px;box-shadow:inset 0 0 0 1px var(--line-2);padding:0 12px}
-.f{display:flex;align-items:center;gap:10px;min-height:48px;border-bottom:1px solid var(--line-2)}
+.f{display:flex;align-items:center;gap:10px;min-height:46px;border-bottom:1px solid var(--line-2)}
 .fg>.f:last-child{border-bottom:0}
 .f>span:first-child{width:78px;flex:none;font-size:13px;color:var(--ink-2);font-weight:600}
 .f input:not([type=checkbox]):not([type=range]),.f select{flex:1;min-width:0;height:36px;border:0;background:var(--surface-2);border-radius:8px;padding:0 10px}
@@ -257,6 +267,7 @@ input,textarea,select{font:inherit;font-size:16px;color:var(--ink);-webkit-user-
 .segm button{min-width:44px;height:32px;border-radius:7px;font-weight:700;color:var(--ink-2);padding:0 10px}
 .segm button[aria-pressed=true]{background:var(--surface);color:var(--ink);box-shadow:0 1px 3px rgba(0,0,0,.12)}
 .segm.big{margin:2px 0 10px}
+.dh2 .segm.big{margin:0}
 .segm.big button{flex:1;height:34px}
 .hist{list-style:none;padding:0;margin:0}
 .hist li{font-size:12px;padding:8px 0;border-bottom:1px solid var(--line-2);color:var(--ink);line-height:1.5}
@@ -274,10 +285,10 @@ input,textarea,select{font:inherit;font-size:16px;color:var(--ink);-webkit-user-
 .list-h{display:flex;align-items:center;justify-content:space-between;margin:16px 4px 6px;min-height:28px}
 .list-h b{font-size:12px;font-weight:800;color:var(--ink-2);letter-spacing:.04em}
 .list-h small{color:var(--ink-3);font-weight:600}
-.li{display:flex;align-items:center;gap:6px;min-height:54px;border-bottom:1px solid var(--line-2)}
+.li{display:flex;align-items:center;gap:6px;min-height:48px;border-bottom:1px solid var(--line-2)}
 .fg>.li:last-child{border-bottom:0}
-.li .nt{background:none;padding:6px 0;text-align:left}
-.li .nt b{font-size:14px;white-space:normal}
+.li .nt{background:none;padding:4px 0;text-align:left}
+.li .nt b{font-size:13.5px}
 .li .nt small{font-size:11.5px}
 .li .ck{height:44px;margin-left:-6px}
 .menu-li{display:flex;align-items:center;gap:10px;min-height:52px;width:100%;border-bottom:1px solid var(--line-2);font-size:14.5px;font-weight:650;text-align:left}
@@ -419,7 +430,8 @@ const ICON={
   l:'<svg class="ic" viewBox="0 0 24 24"><path d="M15 5l-7 7 7 7"/></svg>',
   r:'<svg class="ic" viewBox="0 0 24 24"><path d="M9 5l7 7-7 7"/></svg>',
   plus:'<svg class="ic" viewBox="0 0 24 24"><path d="M12 6v12M6 12h12"/></svg>',
-  minus:'<svg class="ic" viewBox="0 0 24 24"><path d="M6 12h12"/></svg>'
+  minus:'<svg class="ic" viewBox="0 0 24 24"><path d="M6 12h12"/></svg>',
+  trash:'<svg class="ic" viewBox="0 0 24 24" style="width:20px;height:20px"><path d="M5 7h14M10 7V5h4v2M7 7l1 12h8l1-12M10 11v5M14 11v5"/></svg>'
 };
 const XBTN='<button class="xbtn" data-act="close" aria-label="閉じる"><svg viewBox="0 0 24 24"><path d="M7 7l10 10M17 7L7 17"/></svg></button>';
 const MASTER_WEEKS=13;
@@ -864,8 +876,9 @@ function render(){
     else{if(g.s<ws)bg+=rect(0,X(ws),'off');if(g.e>we)bg+=rect(X(we),W,'off')}
     for(let m=Math.ceil(AX.lo/AX.unit)*AX.unit;m<AX.hi;m+=AX.unit){if(m===AX.lo)continue;bg+=`<i class="gl${m%60?'':' h'}" style="left:${X(atMin(d,m)).toFixed(1)}px"></i>`}
     const stepH=AX.pxH<24?2:1;
-    for(let h=Math.ceil(AX.lo/60);h*60<AX.hi;h++){const x=X(atMin(d,h*60));if(x<1)continue;ticks+=`<i class="tl" data-h="${h}" style="left:${x.toFixed(1)}px"></i>`;if((h-Math.ceil(AX.lo/60))%stepH||W-x<16)continue;ticks+=`<span class="tk hr" style="left:${x.toFixed(1)}px">${h}${AX.pxH>=48?':00':''}</span>`}
-    if(AX.pxH>=90)for(let m=Math.ceil(AX.lo/30)*30;m<AX.hi;m+=30){if(m%60===0)continue;const x=X(atMin(d,m));if(x<14||W-x<20)continue;ticks+=`<span class="tk hr" style="left:${x.toFixed(1)}px;color:var(--ink-3);font-size:10px">${Math.floor(m/60)}:30</span>`}
+    for(let h=Math.ceil(AX.lo/60);h*60<AX.hi;h++){const x=X(atMin(d,h*60));if(x>=1)ticks+=`<i class="tl" data-h="${h}" style="left:${x.toFixed(1)}px"></i>`}
+    // each hour label sits centered in its own hour column (8:30 start → the first half column is "8")
+    for(let h=Math.floor(AX.lo/60);h*60<AX.hi;h++){const a=X(atMin(d,Math.max(h*60,AX.lo))),b=X(atMin(d,Math.min(h*60+60,AX.hi)));if(b-a<13||(stepH>1&&h%2))continue;ticks+=`<span class="tk" style="left:${((a+b)/2).toFixed(1)}px">${h}${AX.pxH>=40?'時':''}</span>`}
   }else if(AX.v==='master'&&AX.ms==='month'){
     const sw=AX.segW,tm=new Date(new Date(now).getFullYear(),new Date(now).getMonth(),1).getTime();
     AX.segs.forEach((g,i)=>{
@@ -875,15 +888,16 @@ function render(){
       ticks+=`<span class="tk${g.d===tm?' tdy':''}" style="left:${(x+sw/2).toFixed(1)}px">${dt.getMonth()+1}${sw>=30?'月':''}${dt.getMonth()===0||i===0?`<i>${String(dt.getFullYear()).slice(2)}年</i>`:''}</span>`;
     });
   }else if(AX.v==='master'){
-    const sw=AX.segW,tw=monday(now);
-    const firstIdx=AX.segs.findIndex(g=>new Date(g.d).getDate()<=7);
+    // week columns; each month name is centered over the weeks that belong to it (by the week's Thursday)
+    const sw=AX.segW,tw=monday(now),mOf=d=>new Date(addDays(d,3)).getMonth(),spans=[];
     AX.segs.forEach((g,i)=>{
-      const x=i*sw,d=g.d,dt=new Date(d),first=dt.getDate()<=7;
+      const x=i*sw,d=g.d,dt=new Date(d),first=i>0&&mOf(d)!==mOf(AX.segs[i-1].d);
       if(d===tw)bg+=rect(x,x+sw,'td');
       if(i>0){bg+=`<i class="gl ${first?'w':'h'}" style="left:${x.toFixed(1)}px"></i>`;ticks+=`<i class="tl ${first?'w':''}" style="left:${x.toFixed(1)}px"></i>`}
-      if(first||(i===0&&(firstIdx<0||firstIdx>2)))ticks+=`<span class="tk mo" style="left:${x.toFixed(1)}px">${dt.getMonth()+1}月</span>`;
+      if(i===0||first)spans.push({a:i,b:i,m:mOf(d)});else spans[spans.length-1].b=i;
       ticks+=`<span class="tk wk${d===tw?' tdy':''}" style="left:${(x+sw/2).toFixed(1)}px">${dt.getDate()}</span>`;
     });
+    for(const p of spans)if(p.b>p.a||spans.length===1)ticks+=`<span class="tk mo" style="left:${((p.a+p.b+1)/2*sw).toFixed(1)}px">${p.m+1}月</span>`;
   }else{
     const sw=AX.segW, few=AX.v==='month'&&sw<20;
     const ti=AX.segs.findIndex(g=>g.d===today);
@@ -914,6 +928,7 @@ function render(){
   for(const el of held)touchHold.appendChild(el);
   const body=$('#cbody');body.style.minHeight=Math.max(0,scroller.clientHeight-32)+'px';body.style.setProperty('--bodyh',body.scrollHeight+'px');
   scroller.scrollTop=scrollTop;scroller.scrollLeft=scrollLeft;
+  scroller.style.touchAction=scroller.scrollWidth>scroller.clientWidth+1?'pan-x pan-y':'pan-y';
   drawDeps();updateTop();
 }
 function rowHTML(t,now,conflicts,ghostMove){
@@ -1104,6 +1119,8 @@ scroller.addEventListener('touchmove',e=>{
   if(G.mode==='pinch'&&e.touches.length===2){e.preventDefault();pinchMove(e);return}
   const t=e.touches[0];if(!t)return;
   if(G.mode==='drag'){e.preventDefault();moveDrag(t.clientX,t.clientY);return}
+  // a sideways swipe past the chart's end must not drag the page (or the app around it) away
+  if(e.cancelable&&(G.mode==='pending'||G.mode==='scroll')){const dx=t.clientX-G.x0,dy=t.clientY-G.y0;if(Math.abs(dx)>Math.abs(dy)){const max=scroller.scrollWidth-scroller.clientWidth;if((dx<0&&scroller.scrollLeft>=max-1)||(dx>0&&scroller.scrollLeft<=0))e.preventDefault()}}
   if(Math.hypot(t.clientX-G.x0,t.clientY-G.y0)>8){G.moved=true;clearTimeout(G.lp);if(G.mode==='pending')G.mode='scroll'}
 },{passive:false});
 const releaseTouches=e=>{if(e.touches.length)return;G.touchEls.clear();if(touchHold.firstChild)setTimeout(()=>{if(!G.touchEls.size)touchHold.replaceChildren()},0)};
@@ -1124,6 +1141,18 @@ window.addEventListener('mousemove',e=>{
 window.addEventListener('mouseup',()=>{if(G.ptr!=='mouse')return;G.ptr=null;up()});
 scroller.addEventListener('wheel',e=>{if(!e.ctrlKey)return;e.preventDefault();const z=clamp(S.zoom*Math.exp(-e.deltaY/120),1,AX.v==='day'?8:6);zoomTo(z,T(clamp(trackX(e.clientX),0,AX.trackW)),e.clientX)},{passive:false});
 document.addEventListener('gesturestart',e=>e.preventDefault());
+// Safari turns a swipe that starts at the screen edge into back/forward, which leaves the app.
+// Swallow touches that start in the outer 16px; a plain tap there is passed on as a click.
+document.addEventListener('touchstart',e=>{
+  const t=e.touches[0];if(!t||e.touches.length>1){G.edge=null;return}
+  if(t.clientX>16&&t.clientX<innerWidth-16)return;
+  if(e.target.closest&&e.target.closest('input,textarea,select'))return;
+  e.preventDefault();G.edge={x:t.clientX,y:t.clientY,el:e.target};
+},{passive:false,capture:true});
+document.addEventListener('touchend',e=>{
+  const g=G.edge;G.edge=null;if(!g)return;const t=e.changedTouches[0];
+  if(t&&Math.hypot(t.clientX-g.x,t.clientY-g.y)<10&&!scroller.contains(g.el)){const b=g.el.closest&&g.el.closest('button,#scrim');if(b)b.click()}
+},{capture:true});
 scroller.addEventListener('contextmenu',e=>e.preventDefault());
 scroller.addEventListener('keydown',e=>{if(e.key==='Enter'||e.key===' '){const el=e.target.closest('[data-mscale],[data-daily],[data-ck],[data-id],[data-grp],[data-scope],[data-zoomreset],[data-sample]');if(el){e.preventDefault();tap(el)}}});
 
@@ -1186,6 +1215,7 @@ function refreshDetail(){
   const a=document.activeElement;if(a&&popBody.contains(a)&&/INPUT|TEXTAREA|SELECT/.test(a.tagName))return;
   const st=popBody.scrollTop;popBody.innerHTML=detailHTML(t);popBody.scrollTop=st;
 }
+const DT={tab:'plan'};
 function detailHTML(t){
   const now=Date.now(),late=isLate(t,now),same=singleDay(t.start,t.end),mst=isMaster(t);
   const sb={todo:`<button class="btn pri" data-act="start">開始</button><button class="btn" data-act="done">完了</button>`,
@@ -1202,30 +1232,30 @@ function detailHTML(t){
 <div class="f"><span>期間</span><div class="step"><button data-wn="-1" aria-label="1週短く">${ICON.minus}</button><b>${weeksOf(t)}週<small>${fMD(t.end-1)}まで</small></b><button data-wn="1" aria-label="1週長く">${ICON.plus}</button></div></div>`
     :`<label class="f"><span>開始</span><input type="datetime-local" id="d-st" value="${dtl(t.start)}"></label>
 <label class="f"><span>終了</span><input type="datetime-local" id="d-et" value="${dtl(t.end)}"></label>`;
-  return `<div class="dh">${mst?'<span class="kchip k-master">大日程</span>':`<span class="kchip k-${t.kind}">${KINDS[t.kind].label}</span>`}<span class="proj">${esc(t.project)}</span>${t.sample?'<span class="tag">サンプル</span>':''}${XBTN}</div>
+  const deps=`<div class="f"><span>前工程</span><div class="chips row">${t.deps.filter(d=>S.tasks.has(d)).map(d=>`<button class="chip x" data-undep="${d}" aria-label="依存を外す">${esc(S.tasks.get(d).name)}</button>`).join('')}<select id="d-dep" style="flex:none;width:auto;max-width:160px"><option value="">＋ 追加</option>${others.map(o=>`<option value="${o.id}">${fMD(o.start)} ${esc(o.name)}</option>`).join('')}</select></div></div>`;
+  const tabs=[['plan','予定'],['info','内容'],['memo','メモ'],['hist','履歴']];
+  let body;
+  if(DT.tab==='info')body=`<div class="fg">${mst?'':`<div class="f"><span>分類</span><div class="chips row">${Object.entries(KINDS).map(([k,v])=>`<button class="chip" data-kind="${k}" aria-pressed="${t.kind===k}">${v.label}</button>`).join('')}</div></div>`}
+<div class="f"><span>優先度</span><div class="segm">${[['high','高'],['mid','中'],['low','低']].map(([k,l])=>`<button data-pri="${k}" aria-pressed="${t.priority===k}">${l}</button>`).join('')}</div><button class="chip" data-act="imp" aria-pressed="${t.important}" style="margin-left:auto">重要</button></div>
+<label class="f"><span>プロジェクト</span><input id="d-proj" list="projlist" value="${esc(t.project)}" autocomplete="off"><datalist id="projlist">${projects.map(p=>`<option value="${esc(p)}">`).join('')}</datalist></label>
+<label class="f"><span>担当</span><input id="d-asg" value="${esc(t.assignee)}" placeholder="自分" autocomplete="off"></label>
+<label class="f"><span class="wide">マイルストーン（節目）</span><input type="checkbox" id="d-ms" ${t.milestone?'checked':''}></label></div>`;
+  else if(DT.tab==='memo')body=`<div class="fg"><div class="f col"><textarea id="d-memo" rows="6" placeholder="段取り、注意点など">${esc(t.memo)}</textarea></div></div>`;
+  else if(DT.tab==='hist')body=`<div class="fg"><ol class="hist">${histHTML(t,6)}</ol></div>${t.history.length>6?`<p class="hint" style="text-align:center">最新6件を表示（全${t.history.length}件）</p>`:''}`;
+  else body=`<div class="fg">${sched}<label class="f"><span>期限</span><input type="date" id="d-dl" value="${t.deadline?ymd(t.deadline):''}"></label>${deps}</div>`;
+  return `<div class="dh">${mst?'<span class="kchip k-master">大日程</span>':`<span class="kchip k-${t.kind}">${KINDS[t.kind].label}</span>`}<span class="proj">${esc(t.project)}</span>${t.sample?'<span class="tag">サンプル</span>':''}<button class="iconbtn danger" data-act="del" aria-label="削除">${ICON.trash}</button>${XBTN}</div>
 <input id="d-name" class="title-in" value="${esc(t.name)}" aria-label="名前" enterkeyhint="done" autocomplete="off">
 <div class="when"><b>${whenTxt}</b><span>${durTxt}</span>${late?'<span class="pill late">遅延</span>':''}${t.status==='doing'?'<span class="pill run">作業中</span>':''}${t.important?'<span class="pill imp">重要</span>':''}</div>
 <div class="acts">${sb}${t.status!=='done'&&!mst?'<button class="btn" data-act="ext" aria-label="終了を30分延ばす">+30分</button>':''}</div>
 <div class="prog"><input type="range" id="d-prog" min="0" max="100" step="5" value="${t.progress}" aria-label="進捗率"><output id="d-progv">${t.progress}%</output></div>
 <div class="actual">${actual}</div>
-<div class="sect">予定</div>
-<div class="fg">${sched}<label class="f"><span>期限</span><input type="date" id="d-dl" value="${t.deadline?ymd(t.deadline):''}"></label></div>
-<div class="sect">内容</div>
-<div class="fg">${mst?'':`<div class="f"><span>分類</span><div class="chips">${Object.entries(KINDS).map(([k,v])=>`<button class="chip" data-kind="${k}" aria-pressed="${t.kind===k}">${v.label}</button>`).join('')}</div></div>`}
-<div class="f"><span>優先度</span><div class="segm">${[['high','高'],['mid','中'],['low','低']].map(([k,l])=>`<button data-pri="${k}" aria-pressed="${t.priority===k}">${l}</button>`).join('')}</div><button class="chip" data-act="imp" aria-pressed="${t.important}" style="margin-left:auto">重要</button></div>
-<label class="f"><span>プロジェクト</span><input id="d-proj" list="projlist" value="${esc(t.project)}" autocomplete="off"><datalist id="projlist">${projects.map(p=>`<option value="${esc(p)}">`).join('')}</datalist></label>
-<label class="f"><span>担当</span><input id="d-asg" value="${esc(t.assignee)}" placeholder="自分" autocomplete="off"></label>
-<div class="f"><span>前工程</span><div class="chips">${t.deps.filter(d=>S.tasks.has(d)).map(d=>`<button class="chip x" data-undep="${d}" aria-label="依存を外す">${esc(S.tasks.get(d).name)}</button>`).join('')}<select id="d-dep" style="flex:1 1 140px"><option value="">＋ 追加</option>${others.map(o=>`<option value="${o.id}">${fMD(o.start)} ${esc(o.name)}</option>`).join('')}</select></div></div>
-<label class="f"><span class="wide">マイルストーン（節目）</span><input type="checkbox" id="d-ms" ${t.milestone?'checked':''}></label></div>
-<div class="sect">メモ</div>
-<div class="fg"><div class="f col"><textarea id="d-memo" rows="3" placeholder="段取り、注意点など">${esc(t.memo)}</textarea></div></div>
-<div class="sect">変更履歴</div><div class="fg"><ol class="hist">${histHTML(t)}</ol></div>
-<div style="margin-top:18px"><button class="btn danger wide" data-act="del">削除</button></div>`;
+<div class="segm big tabs">${tabs.map(([k,l])=>`<button data-dtab="${k}" aria-pressed="${DT.tab===k}">${l}${k==='hist'&&t.history.length?`<small>${t.history.length}</small>`:''}</button>`).join('')}</div>
+${body}`;
 }
-function histHTML(t){
+function histHTML(t,limit=15){
   const f=(k,v)=>v==null||v===''?'なし':(k==='start'||k==='end')?`${fMD(v)} ${fHM(v)}`:k==='deadline'?fMD(v):k==='progress'?v+'%':k==='kind'?KINDS[v].label:k==='deps'?(v.length+'件'):typeof v==='boolean'?(v?'あり':'なし'):String(v).slice(0,20);
   const L={start:'開始',end:'終了',deadline:'期限',progress:'進捗',status:'状態',name:'名称',project:'PJ',kind:'分類',priority:'優先度',important:'重要',assignee:'担当',deps:'前工程',milestone:'MS',memo:'メモ'};
-  return t.history.slice().reverse().slice(0,15).map(h=>{
+  return t.history.slice().reverse().slice(0,limit).map(h=>{
     let diff='';if(h.after){const ks=Object.keys(h.after).filter(k=>k!=='status'&&k!=='memo');diff=ks.slice(0,3).map(k=>`${L[k]||k} ${f(k,h.before?.[k])}→${f(k,h.after[k])}`).join(' / ')}
     return `<li><time>${fMD(h.at)} ${fHM(h.at)}</time><span class="by ${h.by}">${h.by==='muse'?'MUSE':'自分'}</span>${esc(h.action)}${diff?` <span style="color:var(--ink-2)">${esc(diff)}</span>`:''}${h.reason?`<em>${esc(h.reason)}</em>`:''}</li>`;
   }).join('')||'<li>履歴はありません</li>';
@@ -1236,6 +1266,7 @@ popBody.addEventListener('click',async e=>{
   if(Pop.kind==='muse')return museClick(e,b);
   if(['list','stats','settings','add','more'].includes(Pop.kind))return otherClick(e,b);
   const t=S.tasks.get(S.selected);if(!t)return;
+  if(b.dataset.dtab){DT.tab=b.dataset.dtab;refreshDetail();return}
   const act=b.dataset.act;
   if(act==='close')return closePop();
   if(['start','pause','resume','done','reopen'].includes(act)){setStatus(t.id,act);render();refreshDetail();toast({start:'作業を開始しました',pause:'中断しました',resume:'再開しました',done:'完了にしました',reopen:'未完了に戻しました'}[act],'元に戻す',doUndo);return}
@@ -1284,18 +1315,18 @@ function openAdd(o={}){
 function addHTML(){
   const m=QA.mode==='master';
   const projects=[...new Set([...S.tasks.values()].map(x=>x.project))];
+  const proj=`<label class="f"><span>プロジェクト</span><input id="qproj" list="qprojlist" value="${esc(QA.project||S.lastProject||'')}" placeholder="未分類" autocomplete="off"><datalist id="qprojlist">${projects.map(p=>`<option value="${esc(p)}">`).join('')}</datalist></label>`;
   return `<div class="dh"><b class="ttl">${m?'大日程を追加':'タスクを追加'}</b>${XBTN}</div>
 <div class="segm big"><button data-qmode="task" aria-pressed="${!m}">タスク（日・時刻）</button><button data-qmode="master" aria-pressed="${m}">大日程（週ごと）</button></div>
-<div class="addrow"><input id="qa" placeholder="${m?'例）3号機 据付・試運転':'例）明日 3号機 治具調整 45分'}" enterkeyhint="done" autocomplete="off" aria-label="内容"><button class="btn pri" data-act="qaAdd">追加</button></div>
+<div class="addrow"><input id="qa" placeholder="${m?'例）W47-W49 据付・試運転':'例）明日 治具調整 45分'}" enterkeyhint="done" autocomplete="off" aria-label="内容"><button class="btn pri" data-act="qaAdd">追加</button></div>
 <div class="qprev" id="qprev"></div>
 ${m?`<div class="fg"><div class="f"><span>開始週</span><div class="step"><button data-qwk="-1" aria-label="1週前">${ICON.l}</button><b id="qwk"></b><button data-qwk="1" aria-label="1週後">${ICON.r}</button></div></div>
-<div class="f"><span>期間</span><div class="chips" id="qwn">${[1,2,3,4,6,8,12].map(n=>`<button class="chip" data-qwn="${n}" aria-pressed="false">${n}週</button>`).join('')}</div></div>
-<label class="f"><span>プロジェクト</span><input id="qproj" list="qprojlist" value="${esc(QA.project||S.lastProject||'')}" placeholder="未分類" autocomplete="off"><datalist id="qprojlist">${projects.map(p=>`<option value="${esc(p)}">`).join('')}</datalist></label></div>
-<p class="hint">「W46-W48 設計」「11/9から3週 部品手配」のように書いても入ります。</p>`
-:`<div class="chips" id="qkind">${Object.entries(KINDS).map(([k,v])=>`<button class="chip" data-qkind="${k}" aria-pressed="false">${v.label}</button>`).join('')}</div>
-<div class="chips" id="qdur">${[15,30,45,60,120,240].map(n=>`<button class="chip" data-qdur="${n}" aria-pressed="false">${fDur(n*MIN)}</button>`).join('')}<button class="chip" data-qimp="1" aria-pressed="false">重要</button></div>
-<div class="chips"><button class="btn" data-act="qaMuse">MUSEに計画してもらう</button></div>
-<p class="hint">日付・時刻・時間・「〜まで」を文章で書けます。時刻を書かなければ、勤務時間と既存の予定を見て空いている時間へ自動で入れます。工程調整・改造・設備停止は、製造ラインが止まる時間か休日に入ります。</p>`}`;
+<div class="f"><span>期間</span><div class="chips row" id="qwn">${[1,2,3,4,6,8,12].map(n=>`<button class="chip" data-qwn="${n}" aria-pressed="false">${n}週</button>`).join('')}</div></div>
+${proj}</div>`
+:`<div class="fg"><div class="f"><span>分類</span><div class="chips row" id="qkind">${Object.entries(KINDS).map(([k,v])=>`<button class="chip" data-qkind="${k}" aria-pressed="false">${v.label}</button>`).join('')}</div></div>
+<div class="f"><span>時間</span><div class="chips row" id="qdur">${[15,30,45,60,120,240].map(n=>`<button class="chip" data-qdur="${n}" aria-pressed="false">${fDur(n*MIN)}</button>`).join('')}<button class="chip" data-qimp="1" aria-pressed="false">重要</button></div></div>
+${proj}</div>
+<div class="chips" style="justify-content:center;padding-top:10px"><button class="btn sm" data-act="qaMuse">MUSEに計画してもらう</button></div>`}`;
 }
 function parseMaster(raw){
   let s=' '+String(raw||'').normalize('NFKC')+' ';const r={wk:null,wn:null,name:''};
@@ -1384,7 +1415,7 @@ function quickAdd(){
   }
   const {p,pl}=quickState();
   if(!p.name&&!raw.trim()){toast('タスク名を入力してください');$('#qa').focus();return}
-  const id=uid(),proj=QA.project||S.lastProject||'未分類';
+  const id=uid(),proj=(($('#qproj')||{}).value||'').trim()||QA.project||S.lastProject||'未分類';S.lastProject=proj;
   commit(id,{name:p.name||raw.trim(),kind:pl.kind,start:pl.start,end:pl.end,deadline:p.deadline,important:QA.imp||p.important,project:proj},{action:'作成'});
   S.undo={items:[{id,prev:null}]};
   closePop();
@@ -1393,6 +1424,7 @@ function quickAdd(){
   toast(`${fMDW(pl.start)} ${fHM(pl.start)} に追加しました`,'元に戻す',doUndo);
 }
 /* ---- list / stats / settings ---- */
+const LT={tab:'today'};
 function openList(refresh){
   const now=Date.now(),today=sod(now),ts=[...S.tasks.values()].filter(scopeOk),by=(a,b)=>a.start-b.start;
   const late=ts.filter(t=>isLate(t,now)).sort(by);
@@ -1403,10 +1435,18 @@ function openList(refresh){
   const mst=ts.filter(t=>open(t)&&isMaster(t)).sort(by);
   const done=ts.filter(t=>t.status==='done').sort((a,b)=>b.updatedAt-a.updatedAt).slice(0,20);
   const li=t=>`<div class="li"><button class="ck s-${t.status}${isLate(t,now)?' late':''}${isMaster(t)?' mst':''}" data-lck="${t.id}" aria-label="${t.status==='done'?'未完了に戻す':'完了にする'}">${ICON.check}</button><button class="nt" data-go="${t.id}"><b>${esc(t.name)}</b><small>${isMaster(t)?masterRange(t)+`（${weeksOf(t)}週）`:fMDW(t.start)+' '+fHM(t.start)} · ${esc(t.project)}${t.deadline?` · 期限${fMD(t.deadline)}`:''}</small></button>${t.important?'<span class="pill imp">重要</span>':''}</div>`;
-  const sec=(title,arr,empty)=>arr.length||empty?`<div class="list-h"><b>${title}</b>${title==='遅延'&&arr.length?`<button class="btn sm" data-replan="1">再計画を提案</button>`:`<small>${arr.length}件</small>`}</div>${arr.length?`<div class="fg">${arr.map(li).join('')}</div>`:`<p class="hint" style="margin-top:0">${empty}</p>`}`:'';
-  const html=`<div class="dh"><b class="ttl">一覧</b><button class="chip" data-lscope="1">${{all:'すべて',work:'仕事だけ',private:'私用だけ'}[S.scope]}</button>${XBTN}</div>
-${sec('遅延',late)}${sec('作業中',doing)}${sec('今日',tod,'今日の残りの予定はありません')}${sec('これから',up.slice(0,60))}${sec('大日程',mst)}${sec('完了（最近）',done)}`;
-  if(refresh&&Pop.kind==='list'){const st=popBody.scrollTop;popBody.innerHTML=html;popBody.scrollTop=st}else openPop('list',html,'tall',{label:'一覧'});
+  const grp=(title,arr,extra='')=>arr.length?`<div class="list-h"><b>${title}</b>${extra||`<small>${arr.length}件</small>`}</div><div class="fg">${arr.map(li).join('')}</div>`:'';
+  const cnt={today:late.length+doing.length+tod.length,up:up.length,mst:mst.length,done:done.length};
+  const none=m=>`<p class="hint" style="text-align:center;margin:28px 0">${m}</p>`;
+  let body;
+  if(LT.tab==='up')body=up.length?`<div class="fg" style="margin-top:6px">${up.slice(0,60).map(li).join('')}</div>`:none('これからの予定はありません');
+  else if(LT.tab==='mst')body=mst.length?`<div class="fg" style="margin-top:6px">${mst.map(li).join('')}</div>`:none('大日程はまだありません');
+  else if(LT.tab==='done')body=done.length?`<div class="fg" style="margin-top:6px">${done.map(li).join('')}</div>`:none('完了したタスクはまだありません');
+  else body=(grp(`<span style="color:var(--late)">遅延 ${late.length}件</span>`,late,'<button class="btn sm" data-replan="1">再計画を提案</button>')+grp('作業中',doing)+grp('今日の予定',tod))||none('今日の残りの予定はありません');
+  const html=`<div class="dh dh2"><div class="dhr"><b class="ttl">一覧</b><button class="chip" data-lscope="1">${{all:'すべて',work:'仕事だけ',private:'私用だけ'}[S.scope]}</button>${XBTN}</div>
+<div class="segm big tabs">${[['today','今日'],['up','これから'],['mst','大日程'],['done','完了']].map(([k,l])=>`<button data-ltab="${k}" aria-pressed="${LT.tab===k}">${l}${cnt[k]?`<small>${cnt[k]}</small>`:''}</button>`).join('')}</div></div>
+${body}`;
+  if(refresh&&Pop.kind==='list'){const st=popBody.scrollTop;popBody.innerHTML=html;popBody.scrollTop=st}else openPop('list',html,'auto',{label:'一覧'});
 }
 const monthKey=t=>ymd(t).slice(0,7);
 function attDay(d){const mk=monthKey(d);return (S.attendance[mk]||{})[ymd(d)]||{}}
@@ -1418,60 +1458,59 @@ function overtimeOf(dayKey,rec){
   if(isHoliday(d))return {ot:0,hol:work};
   return {ot:Math.max(0,rec.out-Math.max(we,rec.in))+Math.max(0,Math.min(ws,rec.out)-rec.in),hol:0};
 }
+const SST={tab:'est'};
 function openStats(refresh){
-  const now=Date.now(),today=sod(now),mk=monthKey(now),days=S.attendance[mk]||{};
+  const now=Date.now(),mk=monthKey(now),days=S.attendance[mk]||{};
   let ot=0,hol=0;const rows=[];
   for(const k of Object.keys(days).sort()){const o=overtimeOf(k,days[k]);ot+=o.ot;hol+=o.hol;rows.push([k,days[k],o])}
-  const ms=new Date(new Date(now).getFullYear(),new Date(now).getMonth(),1).getTime(),me=addDays(new Date(new Date(now).getFullYear(),new Date(now).getMonth()+1,1).getTime(),0);
+  const ms=new Date(new Date(now).getFullYear(),new Date(now).getMonth(),1).getTime(),me=new Date(new Date(now).getFullYear(),new Date(now).getMonth()+1,1).getTime();
   const mt=[...S.tasks.values()].filter(t=>t.start<me&&t.end>ms&&t.kind!=='private');
   const doneN=mt.filter(t=>t.status==='done').length,lateN=mt.filter(t=>isLate(t,now)).length;
   let taskOT=0;for(const t of mt)for(const s of t.segs){const e=s.e||now;for(let d=sod(s.s);d<e;d=addDays(d,1)){const a=Math.max(s.s,d),b=Math.min(e,addDays(d,1));if(b<=a)continue;if(isHoliday(d)){taskOT+=b-a;continue}const ws=atMin(d,hm2min(S.settings.workStart)),we=atMin(d,hm2min(S.settings.workEnd));taskOT+=Math.max(0,Math.min(b,ws)-a)+Math.max(0,b-Math.max(a,we))}}
   const ratio=estimateStats();
-  const r=attDay(today);
   const tm=v=>v?`${pad(new Date(v).getHours())}:${pad(new Date(v).getMinutes())}`:'';
-  const h=ms=>(ms/HOUR).toFixed(1);
-  const html=`<div class="dh"><b class="ttl">実績 ・ ${new Date(now).getMonth()+1}月</b>${XBTN}</div>
-<div class="sect" style="margin-top:4px">今日の勤務（${fMDW(today)}）</div>
-<div class="fg"><div class="att"><label>出勤<input type="time" id="a-in" value="${tm(r.in)}"></label><button class="btn" data-att="in">今</button><label>退勤<input type="time" id="a-out" value="${tm(r.out)}"></label><button class="btn" data-att="out">今</button></div>
-</div><p class="hint">予定の勤務 ${S.settings.workStart}–${S.settings.workEnd}。実際の出退勤はここに別に記録し、時間外を計算します。</p>
-<div class="stat"><div><small>時間外（平日）</small><b>${h(ot)}<span>時間</span></b></div><div><small>休日出勤</small><b>${h(hol)}<span>時間</span></b></div><div><small>完了 / 遅延</small><b>${doneN}<span>件</span> / <span style="color:var(--late);font-size:20px;margin:0">${lateN}</span><span>件</span></b></div><div><small>時間外の作業（タスク実績）</small><b>${h(taskOT)}<span>時間</span></b></div></div>
-<div class="sect">見積もり精度（完了タスク）</div>
-${ratio.length?`<div class="fg tbl-wrap"><table class="mini"><tr><th>分類</th><th>件数</th><th>予定</th><th>実績</th><th>実績/予定</th></tr>${ratio.map(x=>`<tr><td>${KINDS[x.kind].label}</td><td>${x.n}</td><td>${h(x.plan)}h</td><td>${h(x.act)}h</td><td class="ratio ${x.r>1.15?'hi':x.r<0.9?'':'ok'}">${x.r.toFixed(2)}</td></tr>`).join('')}</table></div><p class="hint">1.15を超える分類は、MUSEが次の計画で所要時間を長めに見積もります。</p>`:'<p class="hint">開始・完了を記録したタスクが増えると、分類ごとの見積もり精度がここに出ます。</p>'}
-<div class="sect">今月の出退勤</div>
-${rows.length?`<div class="fg tbl-wrap"><table class="mini"><tr><th>日付</th><th>出勤</th><th>退勤</th><th>時間外</th></tr>${rows.reverse().map(([k,v,o])=>`<tr><td>${fMDW(parseDT(k))}</td><td>${tm(v.in)}</td><td>${tm(v.out)}</td><td>${o.hol?'休日 '+h(o.hol):h(o.ot)}h</td></tr>`).join('')}</table></div>`:'<p class="hint">まだ記録がありません。</p>'}`;
-  if(refresh&&Pop.kind==='stats'){const a=document.activeElement;if(a&&popBody.contains(a)&&a.tagName==='INPUT')return;const st=popBody.scrollTop;popBody.innerHTML=html;popBody.scrollTop=st}else openPop('stats',html,'tall',{label:'実績'});
+  const h=x=>(x/HOUR).toFixed(1);
+  const recent=rows.slice().reverse().slice(0,7);
+  const body=SST.tab==='att'
+    ?(recent.length?`<div class="fg tbl-wrap"><table class="mini"><tr><th>日付</th><th>出勤</th><th>退勤</th><th>時間外</th></tr>${recent.map(([k,v,o])=>`<tr><td>${fMDW(parseDT(k))}</td><td>${tm(v.in)}</td><td>${tm(v.out)}</td><td>${o.hol?'休日 '+h(o.hol):h(o.ot)}h</td></tr>`).join('')}</table></div>${rows.length>7?`<p class="hint" style="text-align:center">最新7日を表示（今月${rows.length}日）</p>`:''}`:'<p class="hint" style="text-align:center;margin:20px 0">まだ記録がありません。「その他」の出勤・退勤から記録できます。</p>')
+    :(ratio.length?`<div class="fg tbl-wrap"><table class="mini"><tr><th>分類</th><th>件数</th><th>予定</th><th>実績</th><th>実績/予定</th></tr>${ratio.map(x=>`<tr><td>${KINDS[x.kind].label}</td><td>${x.n}</td><td>${h(x.plan)}h</td><td>${h(x.act)}h</td><td class="ratio ${x.r>1.15?'hi':x.r<0.9?'':'ok'}">${x.r.toFixed(2)}</td></tr>`).join('')}</table></div><p class="hint">1.15を超える分類は、MUSEが次の計画で所要時間を長めに見積もります。</p>`:'<p class="hint" style="text-align:center;margin:20px 0">開始・完了を記録したタスクが増えると、分類ごとの見積もり精度がここに出ます。</p>');
+  const html=`<div class="dh"><b class="ttl">実績・${new Date(now).getMonth()+1}月</b>${XBTN}</div>
+<div class="stat"><div><small>時間外（平日）</small><b>${h(ot)}<span>時間</span></b></div><div><small>休日出勤</small><b>${h(hol)}<span>時間</span></b></div><div><small>完了 / 遅延</small><b>${doneN}<span>件</span> / <span style="color:var(--late);font-size:21px;margin:0">${lateN}</span><span>件</span></b></div><div><small>時間外の作業（タスク）</small><b>${h(taskOT)}<span>時間</span></b></div></div>
+<div class="segm big">${[['est','見積もり精度'],['att','出退勤']].map(([k,l])=>`<button data-sstab="${k}" aria-pressed="${SST.tab===k}">${l}</button>`).join('')}</div>
+${body}`;
+  if(refresh&&Pop.kind==='stats'){const st=popBody.scrollTop;popBody.innerHTML=html;popBody.scrollTop=st}else openPop('stats',html,'auto',{label:'実績'});
 }
 function estimateStats(){
   const by={};
   for(const t of S.tasks.values()){if(t.status!=='done'||!t.segs.length||t.milestone)continue;const a=workedMs(t);if(a<MIN)continue;(by[t.kind]=by[t.kind]||{kind:t.kind,n:0,plan:0,act:0});by[t.kind].n++;by[t.kind].plan+=t.end-t.start;by[t.kind].act+=a}
   return Object.values(by).map(x=>({...x,r:x.act/Math.max(1,x.plan)}));
 }
+const STT={tab:'work'};
 function openSettings(refresh){
   const st=S.settings,samples=[...S.tasks.values()].filter(t=>t.sample).length;
   const syncTxt={saved:'クラウドに保存済み（他の端末と同期）',saving:'保存中…',local:S.mode==='cloud'?'クラウド接続中':'この端末のみに保存（クラウド同期なし）',error:'クラウドに接続できません（この端末には保存）'}[S.sync]||'';
   const key=LS.get('apikey',''),model=LS.get('apimodel',API_MODEL)||API_MODEL;
-  const html=`<div class="dh"><b class="ttl">設定</b>${XBTN}</div>
-<div class="sect" style="margin-top:4px">勤務時間</div>
-<div class="fg"><div class="f"><span>通常勤務</span><input type="time" id="s-ws" value="${st.workStart}" style="flex:1"><span style="width:auto">–</span><input type="time" id="s-we" value="${st.workEnd}" style="flex:1"></div></div>
+  let body;
+  if(STT.tab==='hol')body=`<div class="fg"><label class="f"><span>休日を追加</span><input type="date" id="s-hol"></label>
+<div class="chips">${st.holidays.slice().sort().map(d=>`<button class="chip x" data-rmhol="${d}">${fMDW(parseDT(d))}</button>`).join('')||'<span class="hint" style="margin:0">追加した休日はまだありません</span>'}</div></div>
+<p class="hint">土日は最初から休日です。工場カレンダーの休日をここに足してください。</p>`;
+  else if(STT.tab==='data')body=`${!window.claude?`<div class="sect" style="margin-top:2px">MUSEの接続（GitHub版）</div>
+<div class="fg"><div class="keyrow"><input id="k-key" type="password" autocomplete="off" placeholder="${key?'sk-ant-…（登録済み）':'sk-ant-…'}" aria-label="APIキー"></div>
+<div class="keyrow"><input id="k-model" autocomplete="off" value="${esc(model)}" aria-label="モデル"><button class="btn pri sm" data-keysave="1">保存</button>${key?'<button class="btn danger sm" data-keydel="1">削除</button>':''}</div></div>
+<p class="hint">${key?`接続済み（${esc(model)}）。キーはこの端末だけに保存され、全データのコピーにも含まれません。`:'AnthropicのAPIキーを入れると、このページからMUSEが動きます。利用料はそのキーのアカウントに請求されます。'}</p>`:''}
+<div class="sect"${window.claude?' style="margin-top:2px"':''}>データ</div>
+<div class="fg"><div class="f"><span class="wide" style="color:var(--ink)">${esc(syncTxt)}</span></div>
+<div class="f"><button class="btn sm" data-copyjson="1">全データをコピー（JSON）</button>${samples?`<button class="btn danger sm" data-rmsample="1">サンプル${samples}件を削除</button>`:''}</div></div>`;
+  else body=`<div class="fg"><div class="f"><span>通常勤務</span><input type="time" id="s-ws" value="${st.workStart}" style="flex:1"><span style="width:auto">–</span><input type="time" id="s-we" value="${st.workEnd}" style="flex:1"></div>
+<label class="f"><span class="wide">大日程の1年の始まり</span><select id="s-ys" style="flex:none;width:118px">${Array.from({length:12},(_,i)=>`<option value="${i+1}"${(+st.yearStart||4)===i+1?' selected':''}>${i+1}月${i+1===4?'（年度）':''}</option>`).join('')}</select></label></div>
 <div class="sect">製造ラインが止まる時間</div>
 <div class="fg">${st.breaks.map((b,i)=>`<div class="f"><span>${i?'時間帯'+(i+1):'製造部門休憩'}</span><input type="time" data-bs="${i}" value="${b.s}" style="flex:1"><span style="width:auto">–</span><input type="time" data-be="${i}" value="${b.e}" style="flex:1"><button class="iconbtn" data-rmbreak="${i}" aria-label="この時間帯を削除">${ICON.x}</button></div>`).join('')}
 <div class="f"><button class="btn sm" data-addbreak="1">時間帯を追加</button></div>
-<label class="f"><span style="width:auto;flex:1">工程調整・改造・設備停止は、この時間帯か休日にだけ自動で入れる</span><input type="checkbox" id="s-line" ${st.lineRule?'checked':''}></label></div>
-<p class="hint">チャートには表示しません。タスクの自動配置とMUSEの提案だけに使います。</p>
-<div class="sect">大日程</div>
-<div class="fg"><label class="f"><span class="wide">1年の始まり</span><select id="s-ys" style="flex:none;width:118px">${Array.from({length:12},(_,i)=>`<option value="${i+1}"${(+st.yearStart||4)===i+1?' selected':''}>${i+1}月${i+1===4?'（年度）':''}</option>`).join('')}</select></label></div>
-<div class="sect">休日（土日以外）</div>
-<div class="fg"><div class="chips">${st.holidays.slice().sort().map(d=>`<button class="chip x" data-rmhol="${d}">${fMDW(parseDT(d))}</button>`).join('')||'<span class="hint" style="margin:0">工場カレンダーの休日を追加できます</span>'}</div>
-<label class="f"><span>追加</span><input type="date" id="s-hol"></label></div>
-${!window.claude?`<div class="sect">MUSEの接続（GitHub版）</div>
-<div class="fg"><div class="keyrow"><input id="k-key" type="password" autocomplete="off" placeholder="${key?'sk-ant-…（登録済み）':'sk-ant-…'}" aria-label="APIキー"></div>
-<div class="keyrow"><input id="k-model" autocomplete="off" value="${esc(model)}" aria-label="モデル"><button class="btn pri sm" data-keysave="1">保存</button>${key?'<button class="btn danger sm" data-keydel="1">削除</button>':''}</div></div>
-<p class="hint">${key?`接続済み（${esc(model)}）。キーはこの端末のブラウザにだけ保存され、全データのコピーにも含まれません。`:'AnthropicのAPIキーを登録すると、このページから直接MUSEが動きます。利用料はそのキーのAnthropicアカウントに請求されます。'}</p>`:''}
-<div class="sect">データ</div>
-<div class="fg"><div class="f"><span style="width:auto;flex:1;color:var(--ink)">${esc(syncTxt)}</span></div>
-<div class="f"><button class="btn sm" data-copyjson="1">全データをコピー（JSON）</button>${samples?`<button class="btn danger sm" data-rmsample="1">サンプル${samples}件を削除</button>`:''}</div></div>
-<p class="hint">チャート・一覧・MUSEは同じデータを読み書きします。変更はすぐ保存され、履歴が各タスクに残ります。</p>`;
-  if(refresh&&Pop.kind==='settings'){const a=document.activeElement;if(a&&popBody.contains(a)&&a.tagName==='INPUT')return;const sc=popBody.scrollTop;popBody.innerHTML=html;popBody.scrollTop=sc}else openPop('settings',html,'tall',{label:'設定'});
+<label class="f"><span class="wide">工程調整・改造・設備停止は、この時間帯か休日にだけ自動で入れる</span><input type="checkbox" id="s-line" ${st.lineRule?'checked':''}></label></div>`;
+  const html=`<div class="dh dh2"><div class="dhr"><b class="ttl">設定</b>${XBTN}</div>
+<div class="segm big tabs">${[['work','勤務'],['hol','休日'],['data',window.claude?'データ':'MUSE・データ']].map(([k,l])=>`<button data-stab="${k}" aria-pressed="${STT.tab===k}">${l}</button>`).join('')}</div></div>
+${body}`;
+  if(refresh&&Pop.kind==='settings'){const a=document.activeElement;if(a&&popBody.contains(a)&&a.tagName==='INPUT')return;const sc=popBody.scrollTop;popBody.innerHTML=html;popBody.scrollTop=sc}else openPop('settings',html,'auto',{label:'設定'});
 }
 function openMore(refresh){
   const now=Date.now(),today=sod(now),r=attDay(today),mk=monthKey(now),days=S.attendance[mk]||{};
@@ -1506,8 +1545,11 @@ async function otherClick(e,b){
   if(b.dataset.keysave){const k=($('#k-key').value||'').trim()||LS.get('apikey',''),m=($('#k-model').value||'').trim()||API_MODEL;if(!/^sk-ant-/.test(k)){toast('sk-ant- で始まるキーを入れてください');return}LS.set('apikey',k);LS.set('apimodel',m);await initMuse();openSettings(true);toast('MUSEをAPIで接続しました');return}
   if(b.dataset.keydel){if(await ask('この端末からAPIキーを削除しますか？','削除','やめる')){try{localStorage.removeItem('muse.apikey')}catch{}await initMuse();openSettings(true);toast('APIキーを削除しました')}return}
   if(b.dataset.lck){toggleDone(b.dataset.lck);return}
+  if(b.dataset.ltab){LT.tab=b.dataset.ltab;openList(true);popBody.scrollTop=0;return}
+  if(b.dataset.stab){STT.tab=b.dataset.stab;openSettings(true);popBody.scrollTop=0;return}
+  if(b.dataset.sstab){SST.tab=b.dataset.sstab;openStats(true);return}
   if(b.dataset.lscope){S.scope={all:'work',work:'private',private:'all'}[S.scope];render();openList(true);return}
-  if(b.dataset.att){const now=Date.now();setAtt(now,b.dataset.att,ceilTo(now-4*MIN,5*MIN)-0);refreshAnyPop();toast(b.dataset.att==='in'?'出勤を記録しました':'退勤を記録しました');return}
+  if(b.dataset.att){const now=Date.now(),v=ceilTo(now-4*MIN,5*MIN);setAtt(now,b.dataset.att,v);refreshAnyPop();toast(`${b.dataset.att==='in'?'出勤':'退勤'} ${fHM(v)} を記録しました`);return}
   if(b.dataset.addbreak){S.settings.breaks.push({s:'12:00',e:'12:45',label:'休憩'});Store.saveSettings();render();openSettings(true);return}
   if(b.dataset.rmbreak){S.settings.breaks.splice(+b.dataset.rmbreak,1);Store.saveSettings();render();openSettings(true);return}
   if(b.dataset.rmhol){S.settings.holidays=S.settings.holidays.filter(d=>d!==b.dataset.rmhol);Store.saveSettings();render();openSettings(true);return}
@@ -1823,7 +1865,7 @@ async function museClick(e,b){
   if(b.dataset.rej)return rejectProposal(b.dataset.rej);
   if(b.dataset.see)return seeProposal(b.dataset.see);
   if(b.dataset.replan)return runReplan();
-  if(b.dataset.mset){closePop();openSettings();requestAnimationFrame(()=>{const k=$('#k-key');if(k)k.scrollIntoView({block:'center'})});return}
+  if(b.dataset.mset){STT.tab='data';closePop();openSettings();requestAnimationFrame(()=>{const k=$('#k-key');if(k)k.focus()});return}
   if(b.dataset.mq)return museSend(b.dataset.mq);
   if(b.dataset.mclear){if(await ask('MUSEとの会話を消しますか？（提案と変更履歴は残ります）','消す','やめる')){Muse.log=[];saveChat();renderMuse()}return}
 }
