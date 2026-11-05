@@ -372,6 +372,21 @@ table.mini td{text-align:right;padding:8px 4px;border-top:1px solid var(--line-2
 .dlg .row2 .btn{flex:1}
 /* short screens (iPhone SE in Safari): tighten the detail page so every tab fits without scrolling */
 @media (max-height:600px){.f{min-height:41px}.title-in{font-size:18px;padding:0 0 2px}.acts .btn{height:38px}.prog{margin-top:2px}.dh{min-height:44px}.when{margin-bottom:6px}.segm.big{margin-bottom:8px}}
+/* day types: 休み / 振替休日 / 休日出勤 / 振替出勤 */
+.hc{position:absolute;top:0;bottom:0}
+.ticks .tk,.ticks .tl,.ticks .mb,.ticks .mkb{pointer-events:none}
+.mkb{position:absolute;bottom:2px;height:3px;border-radius:2px}
+.mkb.off,.mkb.sub,.dbtn.k-off[aria-pressed=true],.dbtn.k-sub[aria-pressed=true]{background:var(--late)} .mkb.hw,.dbtn.k-hw[aria-pressed=true]{background:var(--brass)} .mkb.sw,.dbtn.k-sw[aria-pressed=true]{background:var(--green)}
+.tk i.mk{font-weight:800} .tk i.mk.off,.tk i.mk.sub{color:var(--late)} .tk i.mk.hw{color:var(--brass)} .tk i.mk.sw{color:var(--green)}
+.chip-s.dt{color:var(--ink)} .chip-s.dt.off,.chip-s.dt.sub{color:var(--late)} .chip-s.dt.hw{color:var(--brass)} .chip-s.dt.sw{color:var(--green)}
+.dgrid{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.dbtn{min-height:64px;border-radius:13px;background:var(--surface);box-shadow:inset 0 0 0 1px var(--line-2);display:flex;flex-direction:column;align-items:flex-start;justify-content:center;gap:2px;padding:8px 12px;text-align:left;transition:transform .08s}
+.dbtn:active{transform:scale(.96)}
+.dbtn b{font-size:15px;font-weight:800} .dbtn small{font-size:10.5px;color:var(--ink-2);font-weight:600;line-height:1.35}
+.dbtn[aria-pressed=true]{color:#fff;box-shadow:none} .dbtn[aria-pressed=true] small{color:#fff;opacity:.85}
+.dbtn:disabled{opacity:.35}
+.fk-ok{color:var(--green);font-weight:800;white-space:nowrap} .fk-ng{color:var(--late);font-weight:800;white-space:nowrap}
+#moreBtn.alert::before{content:"";position:absolute;top:5px;left:calc(50% + 8px);width:9px;height:9px;border-radius:50%;background:var(--late);box-shadow:0 0 0 2px var(--bg)}
 @media (prefers-reduced-motion: reduce){*{transition:none!important;animation:none!important}}
 </style>
 
@@ -412,7 +427,7 @@ const KINDS={
   desk:{label:'通常業務'}, line:{label:'工程調整・改造'}, stop:{label:'設備停止'},
   witness:{label:'工程立ち会い'}, holiday:{label:'休日作業'}, private:{label:'プライベート'}
 };
-const DEFAULT_SETTINGS={workStart:'08:30',workEnd:'17:30',breaks:[{s:'10:15',e:'11:00',label:'製造部門休憩'}],holidays:[],lineRule:true,yearStart:4};
+const DEFAULT_SETTINGS={workStart:'08:30',workEnd:'17:30',breaks:[{s:'10:15',e:'11:00',label:'製造部門休憩'}],holidays:[],lineRule:true,yearStart:4,days:{}};
 const TRACKED=['name','project','kind','scale','start','end','deadline','important','priority','status','progress','deps','memo','assignee','milestone'];
 const $=(s,el=document)=>el.querySelector(s);
 const pad=n=>String(n).padStart(2,'0');
@@ -505,16 +520,35 @@ function barState(t,now){
 function workedMs(t,now=Date.now()){return t.segs.reduce((a,s)=>a+((s.e||now)-s.s),0)}
 
 /* ============ constraints & scheduling (pure, shared by chart / quick add / MUSE) ============ */
+// per-day marks (S.settings.days['YYYY-MM-DD']): off=休み, sub=振替休日 (on workdays); hw=休日出勤, sw=振替出勤 (on holidays)
+const MARKS={off:{label:'休み',short:'休み'},sub:{label:'振替休日',short:'振休'},hw:{label:'休日出勤',short:'休出'},sw:{label:'振替出勤',short:'振出'}};
+const dayMark=t=>(S.settings.days||{})[ymd(t)]||null;
+const isOffDay=t=>{const m=dayMark(t);return m==='off'||m==='sub'||(isHoliday(t)&&m!=='hw'&&m!=='sw')};
+const dayLabel=(t,short)=>{const m=dayMark(t);return m?MARKS[m][short?'short':'label']:isHoliday(t)?'休日':'平日'};
+// 振替: every 振替出勤 needs one 振替休日 (paired in date order)
+function furikae(){
+  const d=S.settings.days||{},ks=Object.keys(d).sort(),sw=ks.filter(k=>d[k]==='sw'),sub=ks.filter(k=>d[k]==='sub');
+  return {sw,sub,pairs:sw.map((k,i)=>({sw:k,sub:sub[i]||null})),extra:sub.slice(sw.length),need:Math.max(0,sw.length-sub.length),over:Math.max(0,sub.length-sw.length)};
+}
+function furikaeHTML(){
+  const f=furikae();if(!f.sw.length&&!f.sub.length)return '<p class="hint" style="margin-top:0">振替出勤・振替休日の登録はありません</p>';
+  const st=f.need?`<span class="fk-ng">振替休日があと${f.need}日足りません</span>`:f.over?`<span class="fk-ng">振替出勤のない振替休日が${f.over}日</span>`:'<span class="fk-ok">釣り合っています</span>';
+  const rows=f.pairs.slice(-4).map(p=>`<div class="f"><span class="wide">${fMDW(parseDT(p.sw))} 振替出勤 → ${p.sub?fMDW(parseDT(p.sub))+' 振替休日':'<span class="fk-ng">未取得</span>'}</span></div>`).join('')
+    +f.extra.map(k=>`<div class="f"><span class="wide">${fMDW(parseDT(k))} 振替休日 → <span class="fk-ng">対応する振替出勤なし</span></span></div>`).join('');
+  return `<div class="fg"><div class="f"><span class="wide">振替出勤 ${f.sw.length}日 / 振替休日 ${f.sub.length}日</span>${st}</div>${rows}</div>`;
+}
 function allowedWindows(kind,day){
-  const st=S.settings, ws=hm2min(st.workStart), we=hm2min(st.workEnd), hol=isHoliday(day);
+  const st=S.settings, ws=hm2min(st.workStart), we=hm2min(st.workEnd), hol=isHoliday(day), m=dayMark(day);
+  const off=m==='off'||m==='sub', hwork=hol&&(m==='hw'||m==='sw');
   const W=(a,b)=>({s:atMin(day,a),e:atMin(day,b)});
   switch(kind){
-    case 'private':return hol?[W(540,1260)]:[W(Math.max(we,hm2min('18:00')),1320)];
+    case 'private':return (hol&&!hwork)||off?[W(540,1260)]:[W(Math.max(we,hm2min('18:00')),1320)];
     case 'line':case 'stop':
+      if(off)return [];
       if(hol)return [W(ws,we)];
       return st.lineRule?st.breaks.map(b=>W(hm2min(b.s),hm2min(b.e))):[W(ws,we)];
-    case 'holiday':return hol?[W(ws,we)]:[];
-    default:return hol?[]:[W(ws,we)];
+    case 'holiday':return hol&&!off?[W(ws,we)]:[];
+    default:return off||(hol&&!hwork)?[]:[W(ws,we)];
   }
 }
 function windowRuleText(kind){
@@ -882,7 +916,7 @@ function render(){
   const today=sod(now);
   if(AX.v==='day'){
     const g=AX.segs[0],d=g.d,ws=atMin(d,AX.ws),we=atMin(d,AX.we);
-    if(isHoliday(d))bg+=rect(0,W,'wk');
+    if(isOffDay(d))bg+=rect(0,W,'wk');
     else{if(g.s<ws)bg+=rect(0,X(ws),'off');if(g.e>we)bg+=rect(X(we),W,'off')}
     for(let m=Math.ceil(AX.lo/AX.unit)*AX.unit;m<AX.hi;m+=AX.unit){if(m===AX.lo)continue;bg+=`<i class="gl${m%60?'':' h'}" style="left:${X(atMin(d,m)).toFixed(1)}px"></i>`}
     const stepH=AX.pxH<24?2:1;
@@ -909,11 +943,13 @@ function render(){
     const ti=AX.segs.findIndex(g=>g.d===today);
     AX.segs.forEach((g,i)=>{
       const x=i*sw,d=g.d,dow=new Date(d).getDay();
-      if(isHoliday(d))bg+=rect(x,x+sw,'wk');
+      if(isOffDay(d))bg+=rect(x,x+sw,'wk');
       if(d===today)bg+=rect(x,x+sw,'td');
+      // tap a date in the header to mark 休み / 休日出勤 / 振替
+      const mk=dayMark(d);ticks+=`<i class="hc" data-day="${d}" role="button" aria-label="${fMDW(d)}の休み・休日出勤を登録" style="left:${x.toFixed(1)}px;width:${sw.toFixed(1)}px"></i>`;if(mk)ticks+=`<i class="mkb ${mk}" style="left:${(x+2).toFixed(1)}px;width:${Math.max(3,sw-4).toFixed(1)}px"></i>`;
       if(i>0&&(AX.v==='week'||dow===1||sw>=14)){const c=AX.v==='week'||dow===1?'w':'h';bg+=`<i class="gl ${c}" style="left:${x.toFixed(1)}px"></i>`;ticks+=`<i class="tl ${c==='w'?'w':''}" style="left:${x.toFixed(1)}px"></i>`}
       const cls=(d===today?' tdy':'')+(S.settings.holidays.includes(ymd(d))?' hol':dow===0?' sun':dow===6?' sat':'');
-      if(AX.v==='week')ticks+=`<span class="tk${cls}" style="left:${(x+sw/2).toFixed(1)}px">${new Date(d).getDate()}<i>${DOW[dow]}</i></span>`;
+      if(AX.v==='week')ticks+=`<span class="tk${cls}" style="left:${(x+sw/2).toFixed(1)}px">${new Date(d).getDate()}${mk?`<i class="mk ${mk}">${MARKS[mk].short}</i>`:`<i>${DOW[dow]}</i>`}</span>`;
       else if(!few||d===today||(dow===1&&(ti<0||Math.abs(i-ti)>=3))||(i===0&&dow!==1&&(ti<0||ti>=3)&&sw*((8-dow)%7)>=22))ticks+=`<span class="tk${cls}" style="left:${(x+sw/2).toFixed(1)}px">${new Date(d).getDate()}${few?'':`<i>${DOW[dow]}</i>`}</span>`;
     });
   }
@@ -926,7 +962,7 @@ function render(){
   grid.style.width=(S.nw+W)+'px';
   const held=[...G.touchEls].filter(el=>grid.contains(el));
   const corner=AX.v==='master'?`<div class="mseg" role="group" aria-label="大日程の単位"><button data-mscale="week" aria-pressed="${AX.ms==='week'}">週</button><button data-mscale="month" aria-pressed="${AX.ms==='month'}">月</button></div><button class="chip-s" data-daily="1" aria-pressed="${S.showDaily}" aria-label="日ごとの予定も表示">日予定</button>`
-    :`<button class="chip-s" data-scope="1" aria-label="表示する予定（仕事・私用）を切り替え">${scopeLbl}</button>`;
+    :`<button class="chip-s" data-scope="1" aria-label="表示する予定（仕事・私用）を切り替え">${scopeLbl}</button>${AX.v==='day'?`<button class="chip-s dt ${dayMark(S.anchor)||''}" data-day="${S.anchor}" aria-label="この日の休み・休日出勤を登録">${dayLabel(S.anchor,true)}</button>`:''}`;
   grid.innerHTML=`<div class="axis"><div class="corner${AX.v==='master'?' stack':''}">${corner}${S.zoom>1.01?`<button class="chip-s" data-zoomreset="1" aria-label="拡大を戻す">×${S.zoom.toFixed(1)}</button>`:''}</div><div class="ticks" style="width:${W}px">${ticks}</div></div>
 <div class="body" id="cbody"><div class="nfill" aria-hidden="true"></div><div class="bg" style="width:${W}px">${bg}</div>${rows}<svg class="deps" id="deps" width="${W}" height="10"></svg>${empty}</div>`;
   // A touch keeps targeting the element it started on. If a re-render (pinch zoom, timer, sync) removed that element,
@@ -1002,7 +1038,7 @@ function drawDeps(){
 }
 function updateTop(){
   const today=sod(Date.now());let main,sub;
-  if(S.view==='day'){main=fMDW(S.anchor);const df=Math.round((S.anchor-today)/DAY);sub=df===0?'今日':df===1?'明日':df===-1?'昨日':new Date(S.anchor).getFullYear()+'年'}
+  if(S.view==='day'){main=fMDW(S.anchor);const df=Math.round((S.anchor-today)/DAY);sub=df===0?'今日':df===1?'明日':df===-1?'昨日':new Date(S.anchor).getFullYear()+'年';const mk=dayMark(S.anchor);if(mk)sub+='・'+MARKS[mk].label}
   else if(S.view==='week'){const m=monday(S.anchor);main=`${fMD(m)}–${fMD(addDays(m,6))}`;sub=today>=m&&today<addDays(m,7)?'今週':new Date(m).getFullYear()+'年'}
   else if(S.view==='month'){const d=new Date(S.anchor);main=`${d.getMonth()+1}月`;sub=d.getFullYear()+'年'}
   else{const ys=new Date(yearStartOf(S.anchor)),fy=ys.getMonth()===0;main=fy?`${ys.getFullYear()}年`:`${ys.getFullYear()}年度`;sub=`大日程・${S.mscale==='week'?'週':'月'}ごと`+(fy?'':`（${ys.getMonth()+1}月〜）`)}
@@ -1010,6 +1046,7 @@ function updateTop(){
   document.querySelectorAll('.seg button').forEach(b=>b.setAttribute('aria-selected',String(b.dataset.view===S.view)));
   const n=[...S.proposals.values()].filter(p=>p.status==='pending').length;
   const bd=$('#museBadge');bd.hidden=!n;bd.textContent=n;
+  const fk=furikae(),mb2=$('#moreBtn');mb2.classList.toggle('alert',fk.need+fk.over>0);mb2.setAttribute('aria-label','その他'+(fk.need?`（振替休日があと${fk.need}日）`:fk.over?`（振替出勤のない振替休日${fk.over}日）`:''));
   const nl=lateTasks().length;const mb=$('#museBtn');mb.classList.toggle('alert',!n&&nl>0);
   mb.setAttribute('aria-label','MUSEを開く'+(n?`（承認待ち${n}件）`:'')+(nl?`（遅延${nl}件）`:''));
 }
@@ -1090,6 +1127,7 @@ function tap(target){
   const grp=target.closest('[data-grp]');if(grp){const n=grp.dataset.grp;S.collapsed.has(n)?S.collapsed.delete(n):S.collapsed.add(n);LS.set('collapsed',[...S.collapsed]);render();return}
   if(target.closest('[data-scope]')){S.scope={all:'work',work:'private',private:'all'}[S.scope];render();toast({all:'仕事と私用の予定をすべて表示',work:'仕事の予定だけを表示',private:'私用の予定だけを表示'}[S.scope]);return}
   if(target.closest('[data-zoomreset]')){S.zoom=1;render();return}
+  const dd=target.closest('[data-day]');if(dd){openDay(+dd.dataset.day);return}
   const ms=target.closest('[data-mscale]');if(ms){if(S.mscale!==ms.dataset.mscale){S.mscale=ms.dataset.mscale;LS.set('mscale',S.mscale);S.zoom=1;render();scrollToFocus()}return}
   if(target.closest('[data-daily]')){S.showDaily=!S.showDaily;LS.set('showDaily',S.showDaily);render();toast(S.showDaily?'大日程に日ごとの予定も表示':'大日程は大日程の項目だけを表示');return}
   const gh=target.closest('[data-pid]');if(gh){openMuse();return}
@@ -1278,7 +1316,7 @@ let nameTimer=null;
 popBody.addEventListener('click',async e=>{
   const b=e.target.closest('button');if(!b)return;
   if(Pop.kind==='muse')return museClick(e,b);
-  if(['list','stats','settings','add','more'].includes(Pop.kind))return otherClick(e,b);
+  if(['list','stats','settings','add','more','day'].includes(Pop.kind))return otherClick(e,b);
   const t=S.tasks.get(S.selected);if(!t)return;
   if(b.dataset.dtab){DT.tab=b.dataset.dtab;refreshDetail();return}
   const act=b.dataset.act;
@@ -1469,7 +1507,7 @@ function overtimeOf(dayKey,rec){
   if(!rec||!rec.in||!rec.out)return {ot:0,hol:0};
   const d=parseDT(dayKey),ws=atMin(d,hm2min(S.settings.workStart)),we=atMin(d,hm2min(S.settings.workEnd));
   const work=Math.max(0,rec.out-rec.in);
-  if(isHoliday(d))return {ot:0,hol:work};
+  if(isHoliday(d)&&dayMark(d)!=='sw')return {ot:0,hol:work};
   return {ot:Math.max(0,rec.out-Math.max(we,rec.in))+Math.max(0,Math.min(ws,rec.out)-rec.in),hol:0};
 }
 const SST={tab:'est'};
@@ -1526,6 +1564,25 @@ function openSettings(refresh){
 ${body}`;
   if(refresh&&Pop.kind==='settings'){const a=document.activeElement;if(a&&popBody.contains(a)&&a.tagName==='INPUT')return;const sc=popBody.scrollTop;popBody.innerHTML=html;popBody.scrollTop=sc}else openPop('settings',html,'fixed',{label:'設定'});
 }
+let DAYC=null;
+function openDay(d){
+  DAYC=sod(d);const m=dayMark(DAYC),hol=isHoliday(DAYC);
+  const b=(k,sub,dis)=>`<button class="dbtn k-${k}" data-mark="${k}" aria-pressed="${m===k}"${dis?' disabled':''}><b>${MARKS[k].label}</b><small>${sub}</small></button>`;
+  const html=`<div class="dh"><b class="ttl">${fMDW(DAYC)}</b>${XBTN}</div>
+<p class="hint" style="margin:0 4px 10px">いまの区分：<b style="color:var(--ink)">${dayLabel(DAYC)}</b>${hol?'（工場の休日）':'（勤務日）'}。押すとすぐ登録されます。</p>
+<div class="dgrid">${b('off','有休・私用など。この日は仕事を入れません',hol)}${b('sub','振替出勤の代わりに休む日',hol)}${b('hw','休日に出勤（振替なし）',!hol)}${b('sw','休日に出勤し、あとで振替休日を取る',!hol)}</div>
+${m?'<button class="btn wide" data-mark="clear" style="margin-top:8px">登録を外す</button>':''}
+<div class="sect">振替の状況</div>${furikaeHTML()}`;
+  openPop('day',html,'auto',{label:'休み・休日出勤の登録'});
+}
+function setDayMark(mark){
+  const k=ymd(DAYC),prev=clone(S.settings.days||{});
+  S.settings.days={...prev};if(mark==='clear'||S.settings.days[k]===mark)delete S.settings.days[k];else S.settings.days[k]=mark;
+  Store.saveSettings();closePop();render();
+  const f=furikae(),now=S.settings.days[k];
+  const warn=f.need?`・振替休日があと${f.need}日必要です`:f.over?`・振替出勤のない振替休日が${f.over}日あります`:'';
+  toast(`${fMDW(DAYC)}を${now?MARKS[now].label:'通常の日'}にしました${warn}`,'元に戻す',()=>{S.settings.days=prev;Store.saveSettings();render();refreshAnyPop()},6000);
+}
 function openMore(refresh){
   const now=Date.now(),today=sod(now),r=attDay(today),mk=monthKey(now),days=S.attendance[mk]||{};
   let ot=0;for(const k of Object.keys(days)){const o=overtimeOf(k,days[k]);ot+=o.ot+o.hol}
@@ -1533,6 +1590,10 @@ function openMore(refresh){
   const html=`<div class="dh"><b class="ttl">その他</b>${XBTN}</div>
 <div class="sect" style="margin-top:4px">今日の勤務（${fMDW(today)}）</div>
 <div class="fg"><div class="att"><label>出勤<input type="time" id="a-in" value="${tm(r.in)}"></label><button class="btn" data-att="in">今</button><label>退勤<input type="time" id="a-out" value="${tm(r.out)}"></label><button class="btn" data-att="out">今</button></div></div>
+<div class="sect">休み・休日出勤</div>
+<div class="fg"><button class="menu-li" data-dayopen="${today}"><span>今日の区分</span><small>${dayLabel(today)}</small>${ICON.r}</button>
+<button class="menu-li" data-calmark="1"><span>カレンダーで登録</span><small>月表示で日付をタップ</small>${ICON.r}</button></div>
+<div class="sect">振替</div>${furikaeHTML()}
 <div class="sect">メニュー</div>
 <div class="fg">
 <button class="menu-li" data-gostats="1"><span>実績と残業</span><small>今月の時間外 ${(ot/HOUR).toFixed(1)}h</small>${ICON.r}</button>
@@ -1548,6 +1609,9 @@ async function otherClick(e,b){
   if(b.dataset.qwk){QA.wk=addDays(QA.wk,7*+b.dataset.qwk);const p=parseMaster($('#qa').value);if(p.wk!=null){$('#qa').value=$('#qa').value.replace(/W\d{1,2}(\s*[-~〜]\s*W?\d{1,2})?|\d{1,2}[\/月]\d{1,2}日?(の週)?(から|〜|~)?/i,'').trim()}updateQuickPreview();return}
   if(b.dataset.qwn){QA.wn=+b.dataset.qwn;const p=parseMaster($('#qa').value);if(p.wn!=null){$('#qa').value=$('#qa').value.replace(/\d{1,2}\s*週間?/,'').trim()}updateQuickPreview();return}
   if(b.dataset.gostats){openStats();return}
+  if(b.dataset.mark){setDayMark(b.dataset.mark);return}
+  if(b.dataset.dayopen){openDay(+b.dataset.dayopen);return}
+  if(b.dataset.calmark){closePop();S.view='month';S.zoom=1;LS.set('view','month');render();scrollToFocus();toast('日付をタップすると休み・休日出勤を登録できます');return}
   if(b.dataset.goset){openSettings();return}
   if(b.dataset.sample){closePop();insertSamples();return}
   if(b.dataset.act==='qaMuse'){const v=($('#qa').value||'').trim();closePop();openMuse();if(v)museSend(v+'（作業可能な時間帯に配置して提案して）');return}
@@ -1642,6 +1706,7 @@ function museContext(){
 勤務条件: 平日 ${st.workStart}–${st.workEnd}。製造部門の休憩 ${st.breaks.map(b=>`${b.s}–${b.e}`).join('、')||'なし'}。土日${st.holidays.length?'と '+st.holidays.join(','):''}は休日。
 大日程: 分類が「大日程」の項目は週単位の長期計画（開始=月曜0:00、終了=翌週以降の月曜0:00）。作成するときは propose_plan の create に scale:"week" と月曜の日付を渡す。
 作業可能時間: desk(通常業務)/witness(工程立ち会い)=平日の勤務時間。line(工程調整・改造)/stop(設備停止)=${st.lineRule?'平日は製造部門の休憩中だけ、休日は勤務時間帯':'平日の勤務時間'}。holiday(休日作業)=休日の勤務時間帯。private(プライベート)=勤務時間外（平日18:00–22:00、休日9:00–21:00）。
+日の区分（休み・休日出勤・振替）: ${Object.entries(S.settings.days||{}).filter(([k])=>{const t=parseDT(k);return t>=addDays(sod(now),-14)&&t<addDays(sod(now),90)}).sort().map(([k,v])=>`${k} ${MARKS[v]?MARKS[v].label:v}`).join(', ')||'なし'}。休み・振替休日には仕事を入れない。休日出勤・振替出勤の日は勤務時間に仕事を入れてよい。
 見積もり精度: ${est}
 承認待ちの提案: ${pend}
 
