@@ -88,7 +88,8 @@ input,textarea,select{font:inherit;font-size:16px;color:var(--ink);-webkit-user-
 .tk{position:absolute;top:0;height:100%;transform:translateX(-50%);display:flex;flex-direction:column;align-items:center;justify-content:center;font-size:var(--fs);font-weight:600;color:var(--ink-2);white-space:nowrap;line-height:1.05}
 .tk i{display:block;font-style:normal;font-size:var(--fs);font-weight:600;color:var(--ink-3);margin-top:1px}
 .tk.sun,.tk.hol,.tk.sun i,.tk.hol i{color:var(--late)} .tk.sat,.tk.sat i{color:var(--priv)}
-.tk.tdy{color:var(--on-green)} .tk.tdy::before{content:"";position:absolute;z-index:-1;inset:4px -3px;border-radius:7px;background:var(--green)} .tk.tdy i{color:var(--on-green)}
+.tk.tdy,.tk.tdy i{color:var(--pink-ink);font-weight:800}
+.ticks .hf{position:absolute;top:0;bottom:0;background:var(--pink);box-shadow:inset 0 -2px 0 var(--pink-ink)}
 .tl{position:absolute;top:0;bottom:0;width:0;border-left:1px solid var(--line-2)} .tl.w{border-left-color:var(--line-3)} .tl.tick{top:auto;height:5px;border-left-color:var(--line)}
 .mb{position:absolute;top:0;height:19px;box-shadow:inset 0 -1px 0 transparent;border-left:1.5px solid var(--ink-3);font-size:var(--fs);font-weight:800;line-height:18px;padding-left:5px;white-space:nowrap;overflow:hidden;color:var(--ink)}
 .mb::after{content:"";position:absolute;left:0;right:0;top:19px;border-top:1px solid var(--line-3)}
@@ -97,7 +98,6 @@ input,textarea,select{font:inherit;font-size:16px;color:var(--ink);-webkit-user-
 .mb.one::after{display:none}
 .mb.one.cur{color:var(--green)}
 .tk.wk{top:19px;height:auto;bottom:0}
-.tk.wk.tdy::before{inset:3px -5px}
 .tl.lo{top:19px}
 .nowp{position:absolute;top:7px;transform:translateX(-50%);background:var(--ink);color:var(--surface);font-size:var(--fs);font-weight:700;padding:2px 6px;border-radius:7px;z-index:2}
 .body{position:relative}
@@ -106,7 +106,7 @@ input,textarea,select{font:inherit;font-size:16px;color:var(--ink);-webkit-user-
 .bg .gl{width:0;border-left:1px solid var(--line)} .bg .gl.h{border-left-color:var(--line-2)} .bg .gl.w{border-left-color:var(--line-3)}
 .bg .mz{background:var(--wkend)} .bg .gl.m{border-left:1.5px solid var(--ink-3)}
 .tl.m{border-left:1.5px solid var(--ink-3)}
-.bg .off{background:var(--off)} .bg .wk{background:var(--wkend)} .bg .td{background:var(--today)}
+.bg .off{background:var(--off)} .bg .wk{background:var(--wkend)} .bg .td,.bg .cm{background:var(--pink)}
 .bg .now{width:0;border-left:2px solid var(--late);z-index:1}
 .bg .now::before{content:"";position:absolute;top:-1px;left:-5px;width:8px;height:8px;border-radius:50%;background:var(--late)}
 .row{display:flex;height:var(--row);position:relative}
@@ -177,7 +177,7 @@ input,textarea,select{font:inherit;font-size:16px;color:var(--ink);-webkit-user-
 .tip.warn{background:var(--late);color:#fff}
 
 /* ---- tab bar ---- */
-.nav{display:grid;grid-template-columns:repeat(4,1fr);height:56px;align-items:center;padding-left:max(6px,env(safe-area-inset-left,0px));padding-right:max(6px,env(safe-area-inset-right,0px))}
+.nav{display:grid;grid-template-columns:repeat(5,1fr);height:56px;align-items:center;padding-left:max(6px,env(safe-area-inset-left,0px));padding-right:max(6px,env(safe-area-inset-right,0px))}
 .nav>button{position:relative;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px;height:50px;font-size:10px;font-weight:700;color:var(--ink-2)}
 .nav>button .ic{width:22px;height:22px}
 .nav .add{display:grid;place-items:center;width:56px;height:40px;border-radius:13px;background:var(--ink);color:var(--surface)}
@@ -383,7 +383,11 @@ table.mini td{text-align:right;padding:8px 4px;border-top:1px solid var(--line-2
 .ticks .tk,.ticks .tl,.ticks .mb,.ticks .mkb{pointer-events:none}
 .mkb{position:absolute;bottom:2px;height:3px;border-radius:2px}
 .mkb.off,.mkb.sub,.dbtn.k-off[aria-pressed=true],.dbtn.k-sub[aria-pressed=true]{background:var(--late)} .mkb.hw,.dbtn.k-hw[aria-pressed=true]{background:var(--brass)} .mkb.sw,.dbtn.k-sw[aria-pressed=true]{background:var(--green)}
-.tk i.mk{font-weight:800} .tk i.mk.off,.tk i.mk.sub{color:var(--late)} .tk i.mk.hw{color:var(--brass)} .tk i.mk.sw{color:var(--green)}
+.tk i.mk{font-weight:800;color:#fff;border-radius:4px;padding:1px 3px;margin-top:2px;line-height:1.1;letter-spacing:-.02em}
+.tk i.mk.off,.tk i.mk.sub{background:var(--late)} .tk i.mk.hw{background:var(--brass)} .tk i.mk.sw{background:var(--green)}
+.tk.tdy i.mk{color:#fff}
+.bg .mc.off,.bg .mc.sub{background:repeating-linear-gradient(135deg,var(--late-soft) 0 5px,transparent 5px 10px)}
+.bg .mc.hw{background:var(--brass-soft)} .bg .mc.sw{background:var(--green-soft)}
 .chip-s.dt{color:var(--ink)} .chip-s.dt.off,.chip-s.dt.sub{color:var(--late)} .chip-s.dt.hw{color:var(--brass)} .chip-s.dt.sw{color:var(--green)}
 .dgrid{display:grid;grid-template-columns:1fr 1fr;gap:8px}
 .dbtn{min-height:64px;border-radius:13px;background:var(--surface);box-shadow:inset 0 0 0 1px var(--line-2);display:flex;flex-direction:column;align-items:flex-start;justify-content:center;gap:2px;padding:8px 12px;text-align:left;transition:transform .08s}
@@ -439,8 +443,6 @@ table.mini td{text-align:right;padding:8px 4px;border-top:1px solid var(--line-2
 .mrow i{font-style:normal;width:18px;height:18px;border-radius:50%;background:var(--ink);color:var(--surface);font-size:10px;font-weight:800;display:grid;place-items:center;flex:none}
 .mrow span:not(.mtag){flex:1;min-width:0;line-height:1.3;padding:4px 0}
 .mtag{font-size:10px;font-weight:800;padding:2px 6px;border-radius:6px;background:var(--surface-2);color:var(--ink-2);flex:none} .mtag.late{background:var(--late-soft);color:var(--late)} .mtag.imp{background:var(--brass-soft);color:var(--brass)}
-.bg .cm{background:var(--pink)}
-.tk.pk{color:#fff} .tk.pk::before{background:var(--pink-ink)}
 /* 一覧 uses the chart's text size */
 .pop .li{min-height:var(--row);gap:4px}
 .pop .li .nt b{font-size:var(--fs);font-weight:700;line-height:1.2}
@@ -448,6 +450,30 @@ table.mini td{text-align:right;padding:8px 4px;border-top:1px solid var(--line-2
 .pop .li .ck{height:var(--row);width:22px}
 .pop .li .pill{font-size:var(--fs);padding:1px 6px}
 /* 勤怠 */
+.attpg{display:flex;flex-direction:column;gap:6px;height:100%;min-height:0;padding-bottom:4px}
+.attpg .att{padding:0;flex:none} .attpg .att input{height:36px}
+.attpg .tiles{flex:none} .attpg .tiles div{padding:5px 8px}
+.attpg .tiles b{font-size:16px}
+.atab{flex:1;min-height:0;display:grid;grid-template-columns:1fr 1fr;gap:6px}
+.acol{display:grid;min-height:0;background:var(--surface);border-radius:11px;box-shadow:inset 0 0 0 1px var(--line-2);overflow:hidden}
+.ah,.ar{display:grid;grid-template-columns:30px minmax(0,1fr) 36px;align-items:center;font-size:10.5px;padding:0 6px 0 4px;min-height:0}
+.ah{font-size:9px;font-weight:700;color:var(--ink-3);padding-top:4px;padding-bottom:3px;border-bottom:1px solid var(--line-2)}
+.ah span:last-child,.ar .o{text-align:right}
+.ar{border-top:1px solid var(--line);text-align:left;font-variant-numeric:tabular-nums;font-weight:600;color:var(--ink)}
+.ah+.ar{border-top:0}
+.ar .d{font-weight:800;display:flex;align-items:baseline;gap:1px} .ar .d i{font-style:normal;font-size:8.5px;font-weight:700;color:var(--ink-3)}
+.ar .d.sun,.ar .d.sun i{color:var(--late)} .ar .d.sat,.ar .d.sat i{color:var(--priv)}
+.ar .t{white-space:nowrap;overflow:hidden;letter-spacing:-.01em} .ar .q{color:var(--ink-3);font-weight:500}
+.ar .o b{font-weight:800} .ar .o .ot{color:var(--late)} .ar .o .ho{color:var(--brass)}
+.ar.off{background:var(--wkend)} .ar.td{background:var(--pink);box-shadow:inset 3px 0 0 var(--pink-ink)}
+.ar em.mk{font-style:normal;font-weight:800;color:#fff;border-radius:4px;padding:0 4px;font-size:9.5px}
+.ar em.mk.off,.ar em.mk.sub{background:var(--late)} .ar em.mk.hw{background:var(--brass)} .ar em.mk.sw{background:var(--green)}
+.amn{display:flex;align-items:center;gap:2px} .amn b{font-size:15px;font-weight:800;min-width:44px;text-align:center}
+.amn button{width:34px;height:34px;border-radius:9px;display:grid;place-items:center;color:var(--ink-2)} .amn button .ic{width:18px;height:18px}
+.mrow5{flex:none;display:flex;gap:5px}
+.mrow5 button{flex:1;min-width:0;height:38px;border-radius:10px;background:var(--surface);box-shadow:inset 0 0 0 1px var(--line-2);font-size:11px;font-weight:700;display:flex;flex-direction:column;align-items:center;justify-content:center;line-height:1.15;white-space:nowrap}
+.mrow5 button small{font-size:9px;font-weight:700;color:var(--late)} .mrow5 button small.ok{color:var(--green)}
+.pop[data-size=page] .sc:has(> .attpg){overflow:hidden}
 .mnav{display:flex;align-items:center;justify-content:space-between;margin:6px 0 4px}
 .mnav b{font-size:15px;font-weight:750}
 .mnav button{width:40px;height:34px;border-radius:9px;display:grid;place-items:center;color:var(--ink-2)}
@@ -502,6 +528,7 @@ table.mini td{text-align:right;padding:8px 4px;border-top:1px solid var(--line-2
     <button id="addBtn" aria-label="追加"><span class="add"><svg class="ic" viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></svg></span></button>
     <button id="museBtn" aria-label="MUSEを開く" hidden><svg class="ic" viewBox="0 0 24 24"><path d="M12 2.5l2 6.2 6.3 1.8-6.3 1.9L12 18.6l-2-6.2-6.3-1.9 6.3-1.8z"/><path d="M19 15.5l.8 2.2 2.2.8-2.2.8-.8 2.2-.8-2.2-2.2-.8 2.2-.8z"/></svg>MUSE<span class="badge" id="museBadge" hidden>0</span></button>
     <button id="moreBtn"><svg class="ic" viewBox="0 0 24 24"><circle cx="12" cy="12" r="8.5"/><path d="M12 7.5V12l3 2"/></svg>勤怠</button>
+    <button id="setBtn"><svg class="ic" viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/><path d="M12 2.8v2.6M12 18.6v2.6M21.2 12h-2.6M5.4 12H2.8M18.5 5.5l-1.8 1.8M7.3 16.7l-1.8 1.8M18.5 18.5l-1.8-1.8M7.3 7.3L5.5 5.5"/></svg>設定</button>
   </nav>
 </div>
 <div class="scrim" id="scrim"></div>
@@ -1026,22 +1053,24 @@ function render(){
   const today=sod(now);
   if(AX.v==='day'){
     const g=AX.segs[0],d=g.d,ws=atMin(d,AX.ws),we=atMin(d,AX.we);
-    if(isOffDay(d))bg+=rect(0,W,'wk');
+    const m0=dayMark(d);if(m0)bg+=rect(0,W,'mc '+m0);
+    if(isOffDay(d)){if(!m0)bg+=rect(0,W,'wk')}
     else{if(g.s<ws)bg+=rect(0,X(ws),'off');if(g.e>we)bg+=rect(X(we),W,'off')}
     for(let m=Math.ceil(AX.lo/AX.unit)*AX.unit;m<AX.hi;m+=AX.unit){if(m===AX.lo)continue;bg+=`<i class="gl${m%60?'':' h'}" style="left:${X(atMin(d,m)).toFixed(1)}px"></i>`}
     const stepH=AX.pxH<15?2:1;
     for(let h=Math.ceil(AX.lo/60);h*60<AX.hi;h++){const x=X(atMin(d,h*60));if(x>=1)ticks+=`<i class="tl" data-h="${h}" style="left:${x.toFixed(1)}px"></i>`}
     // each hour label sits centered in its own hour column (8:30 start → the first half column is "8")
-    for(let h=Math.floor(AX.lo/60);h*60<AX.hi;h++){const a=X(atMin(d,Math.max(h*60,AX.lo))),b=X(atMin(d,Math.min(h*60+60,AX.hi)));if(b-a<13||(stepH>1&&h%2))continue;ticks+=`<span class="tk" style="left:${((a+b)/2).toFixed(1)}px">${h}${AX.pxH>=40?'時':''}</span>`}
+    const curH=d===today?new Date(now).getHours():-1;
+    for(let h=Math.floor(AX.lo/60);h*60<AX.hi;h++){const a=X(atMin(d,Math.max(h*60,AX.lo))),b=X(atMin(d,Math.min(h*60+60,AX.hi)));if(h===curH){bg+=rect(a,b,'cm');ticks+=rect(a,b,'hf')}if(b-a<13||(stepH>1&&h%2&&h!==curH))continue;ticks+=`<span class="tk${h===curH?' tdy':''}" style="left:${((a+b)/2).toFixed(1)}px">${h}${AX.pxH>=40?'時':''}</span>`}
   }else if(AX.v==='master'){
     // one column = one month; the label sits centered in its column like hours / days in the other views
     const sw=AX.segW,cur=new Date(new Date(now).getFullYear(),new Date(now).getMonth(),1).getTime();
     AX.segs.forEach((g,i)=>{
       const x=i*sw,dt=new Date(g.d),ny=dt.getMonth()===0&&i>0;
       if(i%2)bg+=rect(x,x+sw,'mz');
-      if(g.d===cur)bg+=rect(x,x+sw,'cm');
+      if(g.d===cur){bg+=rect(x,x+sw,'cm');ticks+=rect(x,x+sw,'hf')}
       if(i>0){bg+=`<i class="gl ${ny?'m':'w'}" style="left:${x.toFixed(1)}px"></i>`;ticks+=`<i class="tl ${ny?'m':'w'}" style="left:${x.toFixed(1)}px"></i>`}
-      ticks+=`<span class="tk${g.d===cur?' tdy pk':''}" style="left:${(x+sw/2).toFixed(1)}px">${dt.getMonth()+1}${sw>=26?'月':''}</span>`;
+      ticks+=`<span class="tk${g.d===cur?' tdy':''}" style="left:${(x+sw/2).toFixed(1)}px">${dt.getMonth()+1}${sw>=26?'月':''}</span>`;
     });
   }else{
     const sw=AX.segW, few=AX.v==='month'&&sw<20;
@@ -1059,17 +1088,17 @@ function render(){
     const ti=AX.segs.findIndex(g=>g.d===today);
     AX.segs.forEach((g,i)=>{
       const x=i*sw,d=g.d,dow=new Date(d).getDay();
-      if(isOffDay(d))bg+=rect(x,x+sw,'wk');
-      if(d===today)bg+=rect(x,x+sw,'td');
+      {const m0=dayMark(d);if(m0)bg+=rect(x,x+sw,'mc '+m0);else if(isOffDay(d))bg+=rect(x,x+sw,'wk')}
+      if(d===today){bg+=rect(x,x+sw,'td');ticks+=rect(x,x+sw,'hf')}
       // tap a date in the header to mark 休み / 休日出勤 / 振替
-      const mk=dayMark(d);ticks+=`<i class="hc" data-day="${d}" role="button" aria-label="${fMDW(d)}の休み・休日出勤を登録" style="left:${x.toFixed(1)}px;width:${sw.toFixed(1)}px"></i>`;if(mk)ticks+=`<i class="mkb ${mk}" style="left:${(x+2).toFixed(1)}px;width:${Math.max(3,sw-4).toFixed(1)}px"></i>`;
+      const mk=dayMark(d);ticks+=`<i class="hc" data-day="${d}" role="button" aria-label="${fMDW(d)}の休み・休日出勤を登録" style="left:${x.toFixed(1)}px;width:${sw.toFixed(1)}px"></i>`;
       if(i>0){const c=AX.v==='week'||dow===1?'w':'';bg+=`<i class="gl ${c}" style="left:${x.toFixed(1)}px"></i>`;ticks+=`<i class="tl ${c==='w'?'w':'tick'}" style="left:${x.toFixed(1)}px"></i>`}
       const cls=(d===today?' tdy':'')+(S.settings.holidays.includes(ymd(d))?' hol':dow===0?' sun':dow===6?' sat':'');
       if(AX.v==='week')ticks+=`<span class="tk${cls}" style="left:${(x+sw/2).toFixed(1)}px">${new Date(d).getDate()}${mk?`<i class="mk ${mk}">${MARKS[mk].short}</i>`:`<i>${DOW[dow]}</i>`}</span>`;
       else if(!few)ticks+=`<span class="tk${cls}" style="left:${(x+sw/2).toFixed(1)}px">${new Date(d).getDate()}${few?'':`<i>${DOW[dow]}</i>`}</span>`;
     });
   }
-  if(AX.v==='day'&&inSeg(now)){const x=X(now);bg+=`<i class="now" style="left:${x.toFixed(1)}px"></i>`;if(AX.v==='day')ticks+=`<span class="nowp" style="left:${clamp(x,20,W-20).toFixed(1)}px">${fHM(now)}</span>`}
+  if(AX.v==='day'&&inSeg(now)){const x=X(now);bg+=`<i class="now" style="left:${x.toFixed(1)}px"></i>`;}
   const scopeLbl={all:'すべて',work:'仕事だけ',private:'私用だけ'}[S.scope];
   const emptyTitle=AX.v==='master'?'この期間の大日程はありません':AX.v==='day'?(S.anchor===today?'今日':fMDW(S.anchor))+'の予定はありません':'この期間の予定はありません';
   const emptyHint=AX.v==='master'?'＋の「大日程」から週ごとに入れられます':'＋で追加、または空いている所を長押し';
@@ -1154,7 +1183,7 @@ function drawDeps(){
 }
 function updateTop(){
   const today=sod(Date.now());let main,sub;
-  if(S.view==='day'){main=fMDW(S.anchor);const df=Math.round((S.anchor-today)/DAY);sub=df===0?'今日':df===1?'明日':df===-1?'昨日':new Date(S.anchor).getFullYear()+'年';const mk=dayMark(S.anchor);if(mk)sub+='・'+MARKS[mk].label}
+  if(S.view==='day'){main=fMDW(S.anchor);const df=Math.round((S.anchor-today)/DAY);sub=df===0?'今日 '+fHM(Date.now()):df===1?'明日':df===-1?'昨日':new Date(S.anchor).getFullYear()+'年';const mk=dayMark(S.anchor);if(mk)sub+='・'+MARKS[mk].label}
   else if(S.view==='week'){const m=monday(S.anchor),md=new Date(m);main=`${md.getMonth()+1}月 第${Math.ceil(md.getDate()/7)}週`;sub=`${fMD(m)}–${fMD(addDays(m,6))}`+(today>=m&&today<addDays(m,7)?'・今週':'')}
   else if(S.view==='month'){const d=new Date(S.anchor);main=`${d.getMonth()+1}月`;sub=d.getFullYear()+'年'}
   else{const ys=new Date(yearStartOf(S.anchor)),fy=ys.getMonth()===0;main=fy?`${ys.getFullYear()}年`:`${ys.getFullYear()}年度`;sub='大日程・1年'+(fy?'':`（${ys.getMonth()+1}月〜）`)}
@@ -1358,7 +1387,7 @@ const Pop={kind:null};
 const popEl=$('#pop'),popBody=$('#popBody'),scrim=$('#scrim');
 // every screen with tabs (and everything reached from the tab bar) opens as a page; only quick add stays a card
 const PAGES=['list','muse','more','settings','stats','detail'];
-function markNav(){const k=Pop.kind,on={list:'listBtn',muse:'moreBtn',more:'moreBtn',settings:'moreBtn',stats:'moreBtn',attday:'moreBtn'}[k]||(!k||k==='detail'||k==='add'?'todayBtn':'');
+function markNav(){const k=Pop.kind,on={list:'listBtn',muse:'moreBtn',more:'moreBtn',settings:'setBtn',stats:'moreBtn',attday:'moreBtn'}[k]||(!k||k==='detail'||k==='add'?'todayBtn':'');
   document.querySelectorAll('.nav>button').forEach(b=>b.classList.toggle('on',b.id===on))}
 function pageTop(o){
   Pop.back=o.back||null;$('#pgTitle').textContent=o.title||'';$('#pgSub').textContent=o.sub||'';$('#pgAct').innerHTML=o.actions||'';$('#pgBack').hidden=!o.back;
@@ -1690,7 +1719,7 @@ function openSettings(refresh){
 <div class="fg">${st.breaks.map((b,i)=>`<div class="f"><span>${i?'時間帯'+(i+1):'製造部門休憩'}</span><input type="time" data-bs="${i}" value="${b.s}" style="flex:1"><span style="width:auto">–</span><input type="time" data-be="${i}" value="${b.e}" style="flex:1"><button class="iconbtn" data-rmbreak="${i}" aria-label="この時間帯を削除">${ICON.x}</button></div>`).join('')}
 <div class="f"><button class="btn sm" data-addbreak="1">時間帯を追加</button></div>
 <label class="f"><span class="wide">工程調整・改造・設備停止は、この時間帯か休日にだけ自動で入れる</span><input type="checkbox" id="s-line" ${st.lineRule?'checked':''}></label></div>`;
-  pageTop({title:'設定',sub:'勤務・休日・表示・データ',back:'more'});
+  pageTop({title:'設定',sub:'勤務・休日・表示・データ'});
   const html=`<div class="tabsbar"><div class="segm big tabs">${[['work','勤務'],['hol','休日'],['disp','表示'],['data','データ']].map(([k,l])=>`<button data-stab="${k}" aria-pressed="${STT.tab===k}">${l}</button>`).join('')}</div></div>
 ${body}`;
   if(refresh&&Pop.kind==='settings'){const a=document.activeElement;if(a&&popBody.contains(a)&&a.tagName==='INPUT')return;const sc=popBody.scrollTop;popBody.innerHTML=html;popBody.scrollTop=sc}else openPop('settings',html,'fixed',{label:'設定'});
@@ -1719,33 +1748,33 @@ function openMore(refresh){
   const now=Date.now(),today=sod(now),r=attDay(today);
   if(ATT.m==null)ATT.m=new Date(new Date(now).getFullYear(),new Date(now).getMonth(),1).getTime();
   const md=new Date(ATT.m),y=md.getFullYear(),mo=md.getMonth(),nd=new Date(y,mo+1,0).getDate(),days=S.attendance[monthKey(ATT.m)]||{};
-  const tm=v=>v?`${pad(new Date(v).getHours())}:${pad(new Date(v).getMinutes())}`:'';
+  const tm=v=>v?`${new Date(v).getHours()}:${pad(new Date(v).getMinutes())}`:'';
   const h=x=>(x/HOUR).toFixed(1);
-  let W=0,OT=0,HO=0,N=0;const bars=[];
-  for(let i=1;i<=nd;i++){const t=new Date(y,mo,i).getTime(),k=ymd(t),c=attCalc(k,days[k]);if(c.work>0){N++;W+=c.work;OT+=c.ot;HO+=c.hol}bars.push({t,c})}
-  const std=Math.max(0,(hm2min(S.settings.workEnd)-hm2min(S.settings.workStart))*MIN-lunchMs()),top=Math.max(12*HOUR,...bars.map(b=>b.c.work));
-  const pc=x=>(x/top*100).toFixed(1)+'%';
-  const chart=bars.map(b=>`<button class="ab${b.t===today?' td':''}${isOffDay(b.t)?' off':''}" data-attday="${b.t}" aria-label="${fMDW(b.t)} ${b.c.work?h(b.c.work)+'時間':'記録なし'}" style="--h:${pc(b.c.work-b.c.ot-b.c.hol)};--o:${pc(b.c.ot)};--x:${pc(b.c.hol)}"><i class="n"></i><i class="o"></i><i class="x"></i></button>`).join('');
-  const lbls=bars.map(b=>{const d=new Date(b.t).getDate();return `<span>${d===1||d%5===0?d:''}</span>`}).join('');
+  let W=0,OT=0,HO=0,N=0;const rows=[];
+  for(let i=1;i<=nd;i++){
+    const t=new Date(y,mo,i).getTime(),k=ymd(t),rec=days[k],c=attCalc(k,rec),dow=new Date(t).getDay(),mk=dayMark(t);
+    if(c.work>0){N++;W+=c.work;OT+=c.ot;HO+=c.hol}
+    const dc=S.settings.holidays.includes(k)||dow===0?' sun':dow===6?' sat':'';
+    const time=rec&&rec.in?`${tm(rec.in)}–${tm(rec.out)||'　'}`:(mk?`<em class="mk ${mk}">${MARKS[mk].short}</em>`:isOffDay(t)?'<span class="q">休</span>':'<span class="q">—</span>');
+    const ot=c.hol?`<b class="ho">休${h(c.hol)}</b>`:c.ot?`<b class="ot">${h(c.ot)}</b>`:'';
+    rows.push(`<button class="ar${t===today?' td':''}${isOffDay(t)?' off':''}" data-attday="${t}"><span class="d${dc}">${i}<i>${DOW[dow]}</i></span><span class="t">${time}</span><span class="o">${ot}</span></button>`);
+  }
+  const half=Math.ceil(nd/2),hd='<div class="ah"><span>日</span><span>出勤–退勤</span><span>残業</span></div>';
+  const col=a=>`<div class="acol" style="grid-template-rows:auto repeat(${half},minmax(0,1fr))">${hd}${a.join('')}</div>`;
   const f=furikae(),np=[...S.proposals.values()].filter(p=>p.status==='pending').length,nl=lateTasks().length;
-  pageTop({title:'勤怠',sub:`今日 ${fMDW(today)}・${dayLabel(today)}`});
-  const html=`<div class="fg" style="margin-top:6px"><div class="att"><label>出勤<input type="time" id="a-in" value="${tm(r.in)}"></label><button class="btn" data-att="in">今</button><label>退勤<input type="time" id="a-out" value="${tm(r.out)}"></label><button class="btn" data-att="out">今</button></div></div>
-<div class="mnav"><button data-attm="-1" aria-label="前の月">${ICON.l}</button><b>${y}年${mo+1}月</b><button data-attm="1" aria-label="次の月">${ICON.r}</button></div>
-<div class="tiles"><div><small>出勤日数</small><b>${N}<span>日</span></b></div><div><small>労働時間</small><b>${h(W)}<span>h</span></b></div><div class="ot"><small>残業</small><b>${h(OT)}<span>h</span></b></div><div class="ho"><small>休日出勤</small><b>${h(HO)}<span>h</span></b></div></div>
-<div class="achart" style="grid-template-columns:repeat(${nd},1fr)">${chart}<i class="astd" style="bottom:calc(${pc(std)} + 2px)"><span>${h(std)}h</span></i></div>
-<div class="adays" style="grid-template-columns:repeat(${nd},1fr)">${lbls}</div>
-<div class="alegend"><span><i style="background:var(--green)"></i>定時内</span><span><i style="background:var(--late)"></i>残業</span><span><i style="background:var(--brass)"></i>休日出勤</span><span style="margin-left:auto">棒を押すとその日を編集</span></div>
-<div class="sect" style="margin-top:12px">メニュー</div>
-<div class="mgrid">
-<button data-dayopen="${today}">今日の区分<small>${dayLabel(today)}</small></button>
-<button data-calmark="1">休み・休出<small>週で登録</small></button>
-<button data-dayopen="${f.pairs.find(p=>!p.sub)?parseDT(f.pairs.find(p=>!p.sub).sw):today}" class="${f.need||f.over?'warn':''}">振替<small>${f.need?`振休あと${f.need}日`:f.over?`振出なし${f.over}日`:f.sw.length?'釣り合い':'登録なし'}</small></button>
-<button data-gomuse="1" class="${np||nl?'warn':''}">MUSE<small>${[np?`承認${np}`:'',nl?`遅延${nl}`:''].filter(Boolean).join('・')||'順番・空き'}</small></button>
-<button data-gostats="1">実績<small>見積と実績</small></button>
-<button data-godisp="1">表示<small>フォント・文字</small></button>
-<button data-goset="1">設定<small>勤務・休日</small></button>
-${S.tasks.size?'':'<button data-sample="1">サンプル<small>工程を入れる</small></button>'}
-</div>`;
+  pageTop({title:'勤怠',sub:`今日 ${fMDW(today)}・${dayLabel(today)}`,actions:`<div class="amn"><button data-attm="-1" aria-label="前の月">${ICON.l}</button><b>${y===new Date(now).getFullYear()?'':y+'年'}${mo+1}月</b><button data-attm="1" aria-label="次の月">${ICON.r}</button></div>`});
+  const html=`<div class="attpg">
+<div class="att"><label>出勤<input type="time" id="a-in" value="${r.in?pad(new Date(r.in).getHours())+':'+pad(new Date(r.in).getMinutes()):''}"></label><button class="btn" data-att="in">今</button><label>退勤<input type="time" id="a-out" value="${r.out?pad(new Date(r.out).getHours())+':'+pad(new Date(r.out).getMinutes()):''}"></label><button class="btn" data-att="out">今</button></div>
+<div class="tiles"><div><small>出勤</small><b>${N}<span>日</span></b></div><div><small>労働時間</small><b>${h(W)}<span>h</span></b></div><div class="ot"><small>残業合計</small><b>${h(OT)}<span>h</span></b></div><div class="ho"><small>休日出勤</small><b>${h(HO)}<span>h</span></b></div></div>
+<div class="atab">${col(rows.slice(0,half))}${col(rows.slice(half))}</div>
+<div class="mrow5">
+<button data-dayopen="${today}">今日の区分</button>
+<button data-calmark="1">休み・休出</button>
+<button data-dayopen="${f.pairs.find(p=>!p.sub)?parseDT(f.pairs.find(p=>!p.sub).sw):today}" class="${f.need||f.over?'warn':''}">振替${f.need?`<small>あと${f.need}日</small>`:f.over?`<small>${f.over}日超過</small>`:f.sw.length?'<small class="ok">釣り合い</small>':''}</button>
+<button data-gomuse="1" class="${np||nl?'warn':''}">MUSE${np||nl?`<small>${np?`承認${np}`:`遅延${nl}`}</small>`:''}</button>
+<button data-gostats="1">実績</button>
+${S.tasks.size?'':'<button data-sample="1">見本</button>'}
+</div></div>`;
   if(refresh&&Pop.kind==='more'){const a=document.activeElement;if(a&&popBody.contains(a)&&a.tagName==='INPUT')return;popBody.innerHTML=html}else openPop('more',html,'auto',{label:'勤怠'});
 }
 let ATTD=null;
@@ -2141,7 +2170,8 @@ $('#prevBtn').onclick=()=>shift(-1);$('#nextBtn').onclick=()=>shift(1);
 $('#datePick').addEventListener('change',e=>{const d=parseDT(e.target.value);if(d){S.anchor=sod(d);scroller.scrollLeft=0;render();scrollToFocus()}});
 document.querySelectorAll('.seg button').forEach(b=>b.onclick=()=>{if(S.view===b.dataset.view)return;S.view=b.dataset.view;S.zoom=1;S.selected=null;scroller.scrollLeft=0;scroller.scrollTop=0;render();scrollToFocus();LS.set('view',S.view);grid.animate&&grid.animate([{opacity:.4},{opacity:1}],{duration:140,easing:'ease-out'})});
 $('#museBtn').onclick=()=>Pop.kind==='muse'?closePop():openMuse();
-$('#moreBtn').onclick=()=>['more','settings','stats'].includes(Pop.kind)?closePop():openMore();
+$('#moreBtn').onclick=()=>['more','stats','attday','muse'].includes(Pop.kind)?closePop():openMore();
+$('#setBtn').onclick=()=>Pop.kind==='settings'?closePop():openSettings();
 $('#todayBtn').onclick=()=>{if(Pop.kind)closePop();S.anchor=sod(Date.now());S.zoom=1;render();scroller.scrollTop=0;scrollToFocus()};
 $('#listBtn').onclick=()=>Pop.kind==='list'?closePop():openList();
 $('#addBtn').onclick=()=>openAdd();
