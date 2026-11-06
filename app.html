@@ -89,6 +89,8 @@ input,textarea,select{font:inherit;font-size:16px;color:var(--ink);-webkit-user-
 .tk i{display:block;font-style:normal;font-size:var(--fs);font-weight:600;color:var(--ink-3);margin-top:1px}
 .tk.sun,.tk.hol,.tk.sun i,.tk.hol i{color:var(--late)} .tk.sat,.tk.sat i{color:var(--priv)}
 .tk.tdy,.tk.tdy i{color:var(--pink-ink);font-weight:800}
+.tk.hr em{font-style:normal;font-size:.82em;font-weight:700;margin-left:1px;color:var(--ink-3)} .tk.hr.tdy em{color:var(--pink-ink)}
+.tk.hm{font-size:calc(var(--fs) * .85);color:var(--ink-3);font-weight:600}
 .ticks .hf{position:absolute;top:0;bottom:0;background:var(--pink);box-shadow:inset 0 -2px 0 var(--pink-ink)}
 .tl{position:absolute;top:0;bottom:0;width:0;border-left:1px solid var(--line-2)} .tl.w{border-left-color:var(--line-3)} .tl.tick{top:auto;height:5px;border-left-color:var(--line)}
 .mb{position:absolute;top:0;height:19px;box-shadow:inset 0 -1px 0 transparent;border-left:1.5px solid var(--ink-3);font-size:var(--fs);font-weight:800;line-height:18px;padding-left:5px;white-space:nowrap;overflow:hidden;color:var(--ink)}
@@ -107,6 +109,7 @@ input,textarea,select{font:inherit;font-size:16px;color:var(--ink);-webkit-user-
 .bg .mz{background:var(--wkend)} .bg .gl.m{border-left:1.5px solid var(--ink-3)}
 .tl.m{border-left:1.5px solid var(--ink-3)}
 .bg .off{background:var(--off)} .bg .wk{background:var(--wkend)} .bg .td,.bg .cm{background:var(--pink)}
+.bg .td.ol{background:transparent;box-shadow:inset 2px 0 0 var(--pink-ink),inset -2px 0 0 var(--pink-ink)}
 .bg .now{width:0;border-left:2px solid var(--late);z-index:1}
 .bg .now::before{content:"";position:absolute;top:-1px;left:-4px;width:6px;height:6px;border-radius:50%;background:var(--late)}
 .row{display:flex;height:var(--row);position:relative}
@@ -204,6 +207,11 @@ input,textarea,select{font:inherit;font-size:16px;color:var(--ink);-webkit-user-
 .bar .bl.nmi{left:7px;right:7px;overflow:hidden;text-overflow:ellipsis;color:var(--ink);font-weight:700}
 .bar .bl.out{color:var(--ink);font-weight:700}
 .msl{position:absolute;top:0;line-height:var(--row);font-size:var(--fs);font-weight:700;color:var(--ink);white-space:nowrap;pointer-events:none;z-index:2}
+/* add sheet: pinned just under the date bar with a fixed height, so typing, switching modes or the keyboard never moves it */
+.pop[data-size=sheet]{top:calc(env(safe-area-inset-top,0px) + 54px);transform:translate(-50%,-10px);
+  height:min(640px,calc(100% - env(safe-area-inset-top,0px) - env(safe-area-inset-bottom,0px) - var(--kb) - 62px));max-height:none}
+.pop[data-size=sheet].open{transform:translate(-50%,0)}
+.pop[data-size=sheet] .sc{overflow-anchor:none}
 .pop[data-size=fixed]{height:min(560px,calc(100% - env(safe-area-inset-top,0px) - env(safe-area-inset-bottom,0px) - var(--kb) - 20px))}
 .pop[data-size=tall]{height:calc(100% - env(safe-area-inset-top,0px) - env(safe-area-inset-bottom,0px) - var(--kb) - 20px)}
 .sc{flex:1;min-height:0;overflow:auto;overscroll-behavior:contain;padding:0 16px 18px}
@@ -285,7 +293,25 @@ input,textarea,select{font:inherit;font-size:16px;color:var(--ink);-webkit-user-
 .addrow{display:flex;gap:8px;margin:2px 0 6px}
 .addrow input{flex:1;min-width:0;height:48px;border:0;border-radius:12px;background:var(--surface);box-shadow:inset 0 0 0 1px var(--line-2);padding:0 12px}
 .addrow .btn{height:48px}
-.qprev{font-size:13px;color:var(--green);font-weight:700;min-height:20px;margin:4px 4px 6px}
+.qprev{font-size:12.5px;color:var(--green);font-weight:700;height:2.7em;line-height:1.35;margin:4px 4px 6px;display:-webkit-box;-webkit-box-orient:vertical;-webkit-line-clamp:2;overflow:hidden;word-break:break-all}
+.qtype{margin:2px 0 8px}
+.mpg.q7{grid-template-columns:repeat(7,minmax(0,1fr));column-gap:3px}
+.mpc.qd{border-radius:10px} .mpc.qd span{font-size:14px;font-weight:750} .mpc.qd small{font-size:9px;margin-top:2px}
+.mpc.qd small.sun{color:var(--late)} .mpc.qd small.sat{color:var(--priv)}
+.mpc.qd.off:not(.s){background:var(--wkend);color:var(--ink-3)}
+.mpc.qd.s small{color:var(--surface)}
+.mpw{display:grid;grid-template-columns:repeat(7,minmax(0,1fr));height:18px;line-height:18px;font-size:10px;font-weight:700;color:var(--ink-3);text-align:center}
+.mpw .sun{color:var(--late)} .mpw .sat{color:var(--priv)}
+.mpg.dp{grid-template-columns:repeat(7,minmax(0,1fr));row-gap:3px}
+.mpc.dd{height:36px} .mpc.dd span{font-size:13.5px;font-weight:750} .mpc.dd small{font-size:8.5px}
+.mpc.dd.off:not(.on){background:var(--wkend);color:var(--ink-3)}
+.mpc.dd.on.c0:not(.s){border-radius:0}
+.tm2{flex:1;min-width:0;display:grid;grid-template-columns:minmax(0,1fr) auto minmax(0,1fr);gap:6px;align-items:center}
+.tm2 input{width:100%;min-width:0;height:38px;border:0;background:var(--surface-2);border-radius:8px;padding:0 8px;font-size:16px;font-variant-numeric:tabular-nums}
+.tm2 i{font-style:normal;color:var(--ink-3);font-weight:700}
+.qdh .qdl{width:72px;flex:none;font-size:12px;color:var(--ink-2);font-weight:600}
+.qdh .mps{text-align:left;font-size:13px}
+.qhint{font-size:11px;color:var(--ink-2);line-height:1.55;margin:8px 4px 0;font-weight:500}
 .qprev.warn{color:var(--late)}
 .list-h{display:flex;align-items:center;justify-content:space-between;margin:16px 4px 6px;min-height:28px}
 .list-h b{font-size:12px;font-weight:800;color:var(--ink-2);letter-spacing:.04em}
@@ -496,6 +522,9 @@ table.mini td{text-align:right;padding:8px 4px;border-top:1px solid var(--line-2
 .gms{position:absolute;top:50%;width:calc(var(--fs) * .6);height:calc(var(--fs) * .6);margin:calc(var(--fs) * -.3) 0 0 calc(var(--fs) * -.3);transform:rotate(45deg);border-radius:2px;background:var(--ink-2);pointer-events:none}
 .gms.late{background:var(--late)} .gms.imp{background:var(--brass)}
 .gbd{position:absolute;top:50%;height:6px;margin-top:-3px;border-radius:3px;background:var(--ink-3);opacity:.6;pointer-events:none}
+.pk{position:absolute;top:2px;bottom:2px;border-radius:8px;background:var(--green-soft);box-shadow:inset 0 0 0 1.5px var(--green);z-index:1;pointer-events:none;animation:pkin .18s ease-out}
+.pk::after{content:attr(data-l);position:absolute;left:0;right:0;top:50%;transform:translateY(-50%);text-align:center;font-size:var(--fs);font-weight:800;color:var(--green);white-space:nowrap}
+@keyframes pkin{from{opacity:0;transform:scale(.8)}}
 .gadd{margin-left:auto;flex:none;width:28px;height:28px;border-radius:8px;display:grid;place-items:center;color:var(--ink-2)} .gadd .ic{width:calc(var(--fs) * 1.2);height:calc(var(--fs) * 1.2)}
 .bar.evb .bl{top:0}
 .evx{position:absolute;z-index:3;top:calc((var(--row) - 22px) / 2);height:22px;display:block;padding:0 8px;line-height:22px;text-align:left;border-radius:7px;background:var(--surface-2);box-shadow:inset 0 0 0 1px var(--line-2);font-size:var(--fs);font-weight:700;color:var(--ink-2);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
@@ -514,20 +543,26 @@ table.mini td{text-align:right;padding:8px 4px;border-top:1px solid var(--line-2
 .f.ftop{display:grid;grid-template-columns:72px minmax(0,1fr);align-items:start;padding:4px 0} .f.ftop>span:first-child{padding-top:10px;width:auto}
 .f .segm{flex:1}
 .mp{width:100%}
-.mph{display:flex;align-items:center;justify-content:space-between;height:36px}
-.mph b{font-size:13px;font-weight:750;letter-spacing:-.01em}
-.mph button{width:44px;height:36px;display:grid;place-items:center;color:var(--ink-2);border-radius:9px}
+.mph{display:flex;align-items:center;height:40px;gap:2px}
+.mph button{width:40px;height:40px;flex:none;display:grid;place-items:center;color:var(--ink-2);border-radius:9px}
 .mph button .ic{width:18px;height:18px}
-.mpg{display:grid;grid-template-columns:repeat(6,minmax(0,1fr));row-gap:6px}
-.mpc{position:relative;height:42px;font-size:13px;font-weight:700;color:var(--ink-2);display:flex;flex-direction:column;align-items:center;justify-content:center;line-height:1.1;font-variant-numeric:tabular-nums}
-.mpc small{font-size:9px;font-weight:700;color:var(--ink-3)}
+.mps{flex:1;min-width:0;text-align:center;font-size:14px;font-weight:750;letter-spacing:-.01em;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.mps small{font-size:11.5px;font-weight:650;color:var(--ink-2);margin-left:5px}
+.mpy{font-size:10.5px;font-weight:750;color:var(--ink-3);letter-spacing:.03em;height:20px;line-height:20px;padding-left:2px}
+.mpg{display:grid;grid-template-columns:repeat(6,minmax(0,1fr));row-gap:4px}
+.mpg+.mpy{margin-top:6px}
+@media (max-height:700px){.mpc{height:34px}.mpc.dd{height:33px}.mpy{height:18px;line-height:18px}.pop[data-size=sheet] .addrow input,.pop[data-size=sheet] .addrow .btn{height:44px}.pop[data-size=sheet] .dh{min-height:44px}.qhint{margin-top:6px}}
+.mpc{position:relative;height:38px;font-size:13px;font-weight:700;color:var(--ink-2);display:flex;flex-direction:column;align-items:center;justify-content:center;line-height:1.05;font-variant-numeric:tabular-nums;transition:background-color .12s}
+.mpc small{font-size:8.5px;font-weight:700;color:var(--ink-3);margin-top:1px}
 .mpc.on{background:var(--master-soft);color:var(--ink)}
 .mpc.s,.mpc.e{background:var(--master);color:var(--surface)} .mpc.s small,.mpc.e small{color:var(--surface);opacity:.8}
 .mpc.s{border-radius:10px 0 0 10px} .mpc.e{border-radius:0 10px 10px 0} .mpc.s.e{border-radius:10px}
+.mpc.on.c0:not(.s){border-radius:0} .mpc.pms{border-radius:10px}
 .mpc.cur::after{content:"";position:absolute;bottom:3px;left:50%;width:4px;height:4px;margin-left:-2px;border-radius:50%;background:var(--pink-ink)}
 .mpc:active{transform:scale(.94)}
-.mpt{font-size:11px;color:var(--ink-2);text-align:center;margin:6px 0 2px;font-weight:600}
-.f.mpf{padding:4px 0 8px}
+.mpt{height:18px;line-height:18px;font-size:11px;color:var(--ink-2);text-align:center;margin:6px 0 0;font-weight:650;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.mpt b{color:var(--ink);font-weight:800}
+.f.mpf{display:block;padding:2px 0 8px}
 @media (prefers-reduced-motion: reduce){*{transition:none!important;animation:none!important}}
 </style>
 
@@ -649,23 +684,48 @@ const LS={
 const S={
   tasks:new Map(), proposals:new Map(), settings:clone(DEFAULT_SETTINGS), attendance:{},
   view:'day', anchor:sod(Date.now()), zoom:1, selected:null, scope:'all', mscale:'month', showDaily:!!LS.get('showDaily',false),
-  collapsed:new Set(LS.get('collapsed',[])), dirty:new Map(), undo:null, nw:112, sync:'local', mode:'local'
+  pick:null, collapsed:new Set(LS.get('collapsed',[])), dirty:new Map(), undo:null, nw:112, sync:'local', mode:'local'
 };
+// MUSE (or any outside writer) may send times as epoch ms, "2026-11-09 08:30", ISO with offset, "2026-11-09" or "2027-05" (month),
+// and kinds / states / priorities as the Japanese labels shown in the app. Everything is turned into the app's own form here.
+const KIND_ALIAS={'通常業務':'desk','通常':'desk','デスク':'desk','工程調整・改造':'line','工程調整':'line','改造':'line','設備停止':'stop','工程立ち会い':'witness','立ち会い':'witness','立会':'witness','休日作業':'holiday','プライベート':'private','私用':'private'};
+const STATUS_ALIAS={'未着手':'todo','作業中':'doing','実施中':'doing','中断':'paused','保留':'paused','完了':'done','済':'done','済み':'done'};
+const PRI_ALIAS={'高':'high','中':'mid','低':'low'};
+const MASTER_SCALES=['week','month','master','big','大日程'];
+function toTime(v){
+  if(v==null||v==='')return NaN;
+  if(typeof v==='number')return v<1e11?v*1000:v;                 // seconds are accepted too
+  const s=String(v).trim();if(/^\d{9,}$/.test(s))return toTime(+s);
+  const m=/^(\d{4})[-\/年](\d{1,2})(?:[-\/月](\d{1,2})日?)?月?(?:[ T](\d{1,2}):(\d{2}))?$/.exec(s);
+  if(m)return new Date(+m[1],+m[2]-1,m[3]?+m[3]:1,m[4]!=null?+m[4]:0,m[5]!=null?+m[5]:0).getTime();
+  const t=Date.parse(s);return isNaN(t)?NaN:t;
+}
+const truthy=v=>v===true||v===1||v==='true'||v==='1'||v==='yes'||v==='はい';
 function normTask(o){
+  const scale=MASTER_SCALES.includes(o.scale)?'week':'time', kind=KINDS[o.kind]?o.kind:KIND_ALIAS[o.kind]||'desk';
+  const status=['todo','doing','paused','done'].includes(o.status)?o.status:STATUS_ALIAS[o.status]||(truthy(o.done)?'done':'todo');
+  const pri=['high','mid','low'].includes(o.priority)?o.priority:PRI_ALIAS[o.priority]||'mid';
+  let dl=toTime(o.deadline);if(typeof o.deadline==='string'&&/^\d{4}-\d{1,2}-\d{1,2}$/.test(o.deadline.trim()))dl=atMin(dl,hm2min(S.settings.workEnd));
   const t={
     id:String(o.id||uid()), name:String(o.name||'無題').slice(0,80), project:String(o.project||'未分類').slice(0,40),
-    kind:KINDS[o.kind]?o.kind:'desk', start:+o.start, end:+o.end,
-    deadline:o.deadline?+o.deadline:null, milestone:!!o.milestone, scale:o.scale==='week'?'week':'time', important:!!o.important,
-    priority:['high','mid','low'].includes(o.priority)?o.priority:'mid',
-    status:['todo','doing','paused','done'].includes(o.status)?o.status:'todo',
+    kind, start:toTime(o.start), end:toTime(o.end),
+    deadline:dl>0?dl:null, milestone:truthy(o.milestone), scale, important:truthy(o.important),
+    priority:pri,
+    status,
     progress:clamp(Math.round(+o.progress||0),0,100),
-    segs:Array.isArray(o.segs)?o.segs.filter(s=>s&&s.s).map(s=>({s:+s.s,e:s.e?+s.e:null})):[],
+    segs:Array.isArray(o.segs)?o.segs.filter(s=>s&&isFinite(toTime(s.s))).map(s=>({s:toTime(s.s),e:isFinite(toTime(s.e))?toTime(s.e):null})):[],
     deps:Array.isArray(o.deps)?o.deps.map(String):[], memo:String(o.memo||''), assignee:String(o.assignee||''),
     sample:!!o.sample, history:Array.isArray(o.history)?o.history.slice(-40):[],
-    createdAt:+o.createdAt||Date.now(), updatedAt:+o.updatedAt||Date.now(), rev:+o.rev||0, pendingSync:!!o.pendingSync
+    createdAt:toTime(o.createdAt)||Date.now(), updatedAt:toTime(o.updatedAt)||Date.now(), rev:+o.rev||0, pendingSync:!!o.pendingSync
   };
-  if(!isFinite(t.start))t.start=ceilTo(Date.now(),15*MIN);
-  if(!(t.end>t.start))t.end=t.start+HOUR;
+  if(!isFinite(t.start))t.start=isFinite(t.end)?t.end-HOUR:ceilTo(Date.now(),15*MIN);
+  // a date written without a time (「2026-11-09」) is a whole working day; an end date without a time includes that day
+  if(scale==='time'&&typeof o.start==='string'&&/^\d{4}-\d{1,2}-\d{1,2}$/.test(o.start.trim())){t.start=atMin(t.start,hm2min(S.settings.workStart));if(!o.end)t.end=atMin(t.start,hm2min(S.settings.workEnd))}
+  if(scale==='time'&&typeof o.end==='string'&&/^\d{4}-\d{1,2}-\d{1,2}$/.test(o.end.trim()))t.end=atMin(t.end,hm2min(S.settings.workEnd));
+  // 大日程: an end written as a month (「2027-09」) or a date means "through that month / day"
+  if(scale==='week'&&typeof o.end==='string'&&isFinite(t.end)){const e=o.end.trim();if(/^\d{4}[-\/年]\d{1,2}月?$/.test(e))t.end=addMonths(t.end,1);else if(/^\d{4}-\d{1,2}-\d{1,2}$/.test(e))t.end=addDays(t.end,1)}
+  if(!(t.end>t.start))t.end=scale==='week'?addMonths(t.start,1):t.start+HOUR;
+  if(t.status==='done'&&!o.progress)t.progress=100;
   // 大日程 items live on whole months (1st 0:00 → 1st of the next month); a ◆ takes its whole month
   if(t.scale==='week'){const a=mStart(t.start);t.start=a;t.end=t.milestone?addMonths(a,1):Math.max(addMonths(a,1),addMonths(mStart(t.end-1),1))}
   return t;
@@ -910,8 +970,19 @@ const Store={
   }
 };
 let pendingRemote=null;
+// a short note about outside changes, with a jump to the item when it is just one (never while a sheet or drag is in use)
+let noteTimer=null;
+function remoteNote(msg,id){clearTimeout(noteTimer);noteTimer=setTimeout(()=>{if(G.mode==='drag'||(Pop.kind&&Pop.kind!=='detail'&&Pop.kind!=='list'))return;toast(msg,id&&S.tasks.has(id)?'見る':null,id?()=>goToTask(id):null,5000)},400)}
 function applyRemoteTasks(m){
   if(G.mode==='drag'){pendingRemote=m;return}
+  // changes that did not come from this device: name them once (MUSE's own edits carry by:'muse' in their history)
+  if(Store.loaded&&applyRemoteTasks.ready){
+    const ch=[];let muse=0;
+    for(const [id,t] of m){if(S.dirty.has(id))continue;const o=S.tasks.get(id);if(o&&o.rev===t.rev&&o.updatedAt===t.updatedAt)continue;ch.push(t);const h=t.history[t.history.length-1];if(h&&h.by==='muse')muse++}
+    const gone=[...S.tasks.keys()].filter(id=>!m.has(id)&&!S.dirty.has(id)).length;
+    if(ch.length||gone){const who=muse?'MUSE':'別の端末';const n=ch.length+gone;remoteNote(`${who}が${ch.length?`「${ch[0].name}」${n>1?`ほか${n-1}件`:''}を`:`${gone}件を`}${ch.length?'更新':'削除'}しました`,ch.length===1&&!gone?ch[0].id:null)}
+  }
+  if(Store.loaded)applyRemoteTasks.ready=true;
   for(const [id,flag] of S.dirty){
     if(id.includes(':')||id==='settings')continue;
     if(flag==='del')m.delete(id);else if(S.tasks.has(id))m.set(id,S.tasks.get(id));
@@ -1081,6 +1152,7 @@ function render(){
       // folded: the project's events still show as small ◆ / bands on the header line
       let span='';
       if(col)for(const t of list){if(!(t.end>f0&&t.start<t0))continue;if(t.milestone){const sp=spanOf(t),x=(sp.l+sp.r)/2;span+=`<i class="gms${isLate(t,now)?' late':t.important?' imp':''}" style="left:${x.toFixed(1)}px"></i>`}else{const sp=spanOf(t);span+=`<i class="gbd" style="left:${sp.l.toFixed(1)}px;width:${Math.max(4,sp.r-sp.l).toFixed(1)}px"></i>`}}
+      if(S.pick&&S.pick.key==='g:'+name)span+=pickHTML('始');
       rows+=`<div class="grp${col?' col':''}" data-grp="${esc(key)}" role="button" tabindex="0" aria-expanded="${!col}"><div class="gn">${ICON.chev}<b>${esc(name)}<small>${list.length}件${late?` <span style="color:var(--late)">遅延${late}</span>`:''}</small></b><button class="gadd" data-gadd="${esc(name)}" aria-label="${esc(name)}に節目を追加">${ICON.plus}</button></div><div class="gt" style="width:${W}px">${span}</div></div>`;
       if(!col)for(const t of list)rows+=rowHTML(t,now,conflicts,gd.moves.get(t.id));
     }
@@ -1105,7 +1177,10 @@ function render(){
     for(let h=Math.ceil(AX.lo/60);h*60<AX.hi;h++){const x=X(atMin(d,h*60));if(x>=1)ticks+=`<i class="tl" data-h="${h}" style="left:${x.toFixed(1)}px"></i>`}
     // each hour label sits centered in its own hour column (8:30 start → the first half column is "8")
     const curH=d===today?new Date(now).getHours():-1;
-    for(let h=Math.floor(AX.lo/60);h*60<AX.hi;h++){const a=X(atMin(d,Math.max(h*60,AX.lo))),b=X(atMin(d,Math.min(h*60+60,AX.hi)));if(h===curH){bg+=rect(a,b,'cm');ticks+=rect(a,b,'hf')}if(b-a<13||(stepH>1&&h%2&&h!==curH))continue;ticks+=`<span class="tk${h===curH?' tdy':''}" style="left:${((a+b)/2).toFixed(1)}px">${h}${AX.pxH>=40?'時':''}</span>`}
+    // the axis is time: every hour column reads "8時" (stacked as 8 over 時 when the column is narrow, like the week view's date over weekday)
+    const one=AX.pxH>=30;
+    for(let h=Math.floor(AX.lo/60);h*60<AX.hi;h++){const a=X(atMin(d,Math.max(h*60,AX.lo))),b=X(atMin(d,Math.min(h*60+60,AX.hi)));if(h===curH){bg+=rect(a,b,'cm');ticks+=rect(a,b,'hf')}if(b-a<11||(stepH>1&&h%2&&h!==curH))continue;ticks+=`<span class="tk hr${h===curH?' tdy':''}${one?' one':''}" style="left:${((a+b)/2).toFixed(1)}px">${one?`${h}<em>時</em>`:`${h}<i>時</i>`}</span>`;
+      if(AX.pxH>=90){const x=X(atMin(d,h*60+30));if(h*60+30>AX.lo&&h*60+30<AX.hi)ticks+=`<span class="tk hm" style="left:${(x+(AX.pxH/4)).toFixed(1)}px">${h}:30</span>`}}
   }else if(AX.v==='master'){
     // one column = one month; the label sits centered in its column like hours / days in the other views
     const sw=AX.segW,cur=new Date(new Date(now).getFullYear(),new Date(now).getMonth(),1).getTime();
@@ -1133,7 +1208,7 @@ function render(){
     AX.segs.forEach((g,i)=>{
       const x=i*sw,d=g.d,dow=new Date(d).getDay();
       {const m0=dayMark(d);if(m0)bg+=rect(x,x+sw,'mc '+m0);else if(isOffDay(d))bg+=rect(x,x+sw,'wk')}
-      if(d===today){bg+=rect(x,x+sw,'td');ticks+=rect(x,x+sw,'hf')}
+      if(d===today){bg+=rect(x,x+sw,dayMark(d)?'td ol':'td');ticks+=rect(x,x+sw,'hf')}
       // tap a date in the header to mark 休み / 休日出勤 / 振替
       const mk=dayMark(d);ticks+=`<i class="hc" data-day="${d}" role="button" aria-label="${fMDW(d)}の休み・休日出勤を登録" style="left:${x.toFixed(1)}px;width:${sw.toFixed(1)}px"></i>`;
       if(i>0){const c=AX.v==='week'||dow===1?'w':'';bg+=`<i class="gl ${c}" style="left:${x.toFixed(1)}px"></i>`;ticks+=`<i class="tl ${c==='w'?'w':'tick'}" style="left:${x.toFixed(1)}px"></i>`}
@@ -1163,6 +1238,7 @@ function render(){
   scroller.style.touchAction=scroller.scrollWidth>scroller.clientWidth+1?'pan-x pan-y':'pan-y';
   drawDeps();updateTop();
 }
+function pickHTML(l){const sp=spanOf({start:S.pick.m,end:addMonths(S.pick.m,1)});return `<i class="pk" data-l="${l}" style="left:${(sp.l+1).toFixed(1)}px;width:${Math.max(6,sp.r-sp.l-2).toFixed(1)}px"></i>`}
 const yymm=t=>`${String(new Date(t).getFullYear()).slice(2)}/${new Date(t).getMonth()+1}`;
 function rowHTML(t,now,conflicts,ghostMove){
   const st=barState(t,now), sel=S.selected===t.id&&!t.ghost;
@@ -1171,6 +1247,7 @@ function rowHTML(t,now,conflicts,ghostMove){
   if(t.end>from&&t.start<to)inner+=barHTML(t,st,sel);
   else if(AX.v==='master'&&!t.ghost){const fwd=t.start>=to;inner+=`<button class="evx ${fwd?'r':'l'}" data-evjump="${t.start}" aria-label="${esc(fMDW(t.start))}の年度へ" style="${fwd?'right':'left'}:4px">${fwd?'→ ':'← '}${yymm(t.start)}${t.milestone?'':'〜'}</button>`}
   if(ghostMove)inner+=barHTML({...t,start:ghostMove.start,end:ghostMove.end,ghost:true,pid:ghostMove.pid},'ghost',false);
+  if(S.pick&&S.pick.key===t.id&&AX.v==='master')inner+=pickHTML(t.milestone?'◆':'始');
   if(!t.ghost){
     if(AX.v==='day')for(const s of t.segs){const a=Math.max(s.s,AX.segs[0].s),b=Math.min(s.e||now,AX.segs[AX.segs.length-1].e);if(b<=a)continue;const l=X(a),r=X(b);inner+=`<i class="act${s.e?'':' live'}" style="left:${l.toFixed(1)}px;width:${Math.max(3,r-l).toFixed(1)}px"></i>`}
     if(t.deadline&&!isMaster(t)&&t.deadline>=AX.segs[0].s&&t.deadline<=AX.segs[AX.segs.length-1].e){
@@ -1181,7 +1258,7 @@ function rowHTML(t,now,conflicts,ghostMove){
   let meta=rangeText(t),mc='';
   if(t.ghost){meta='提案 · '+meta;mc='gh'}
   else if(t.status==='done')meta='完了 · '+meta;
-  else if(isLate(t,now)){meta=(now>t.end?'遅延 ':'期限超過 ')+(AX.v==='day'||isMaster(t)?meta:fMD(t.start));mc='late'}
+  else if(isLate(t,now)){meta=AX.v==='day'?(now>t.end?'遅延':'期限超過')+(singleDay(t.start,t.end)?' '+fHM(t.start)+'〜':''):(now>t.end?'遅延 ':'期限超過 ')+(isMaster(t)?meta:fMD(t.start));mc='late'}
   else if(t.status==='doing'){meta='作業中 · '+meta;mc='run'}
   const ck=t.ghost?`<span class="ck gh" aria-hidden="true">✦</span>`:isMaster(t)?`<span class="ck mk0${t.milestone?' ev':''}" aria-hidden="true"></span>`:`<span class="ck s-${t.status}${isLate(t,now)?' late':''}${isMaster(t)?' mst':''}" data-ck="${t.id}" role="button" tabindex="0" aria-label="${t.status==='done'?'未完了に戻す':'完了にする'}">${ICON.check}</span>`;
   return `<div class="row${sel?' sel':''}" data-row="${t.id}"><div class="nm" ${t.ghost?`data-pid="${t.pid}"`:`data-id="${t.id}"`}>${ck}<span class="nt"><b>${esc(t.name)}</b><small class="${mc}">${esc(meta)}</small></span></div><div class="trk" style="width:${AX.trackW}px">${inner}</div></div>`;
@@ -1203,6 +1280,7 @@ function barHTML(t,st,sel){
   // 大日程: the name rides on the bar only when it fits whole (otherwise it is in the item column)
   if(AX.v==='master'&&st!=='ghost'){mlab=true;if(w>=[...t.name].length*10.5+14){lbl=esc(t.name);extra=' nmi';lx=7}}
   else if(st==='ghost'){if(w>=34)lbl='提案'}
+  else if(AX.v==='day'&&st!=='done'){const d0=AX.segs[0].d,d1=addDays(d0,1),tx=`${t.start<d0?fMD(t.start)+'〜':fHM(t.start)+'–'}${t.end>d1?fMD(t.end-1)+'まで':fHM(t.end)}`;if(w>=tx.length*6.2+12)lbl=tx}
   else if(st==='done'){if(w>=34){lbl='完了';on=true}}
   // resize handles: always in DAY; in day/week cells only for spans longer than one day
   const handles=sel&&!t.ghost;
@@ -1322,12 +1400,40 @@ function up(){
   if(G.mode==='pending'&&!G.moved)tap(G.target);
   G.mode=null;
 }
+// 大日程: two taps on a row set its months right on the chart (period: start → end; ◆: the same month twice);
+// two taps on a project's header lane open the add sheet with that range already chosen
+function chartMonthTap(target){
+  if(!AX||AX.v!=='master'||G.x0==null)return false;
+  const row=target.closest('.row'),grp=!row&&target.closest('.grp');
+  if(!row&&!grp)return false;
+  if(target===grp||target.closest('.nm,.gn,.evx,.ck,button'))return false;
+  const key=row?row.dataset.row:'g:'+grp.dataset.grp.replace(/^m:/,'');
+  if(row&&!S.tasks.has(key))return false;
+  // a bar or ◆ itself keeps its own taps (select / details) unless this row is already waiting for its second month
+  if(target.closest('.bar,.ms,.msl')&&!(S.pick&&S.pick.key===key))return false;
+  const x=trackX(G.x0);if(x<0||x>AX.trackW)return false;
+  pickMonth(key,mStart(T(clamp(x,0,AX.trackW-1))));return true;
+}
+function pickMonth(key,m){
+  const p=S.pick,isRow=!key.startsWith('g:'),t=isRow?S.tasks.get(key):null;
+  if(t&&t.milestone){
+    if(p&&p.key===key&&p.m===m){S.pick=null;toastOff();applyTimeChange(key,m,addMonths(m,1),'月を変更（チャートで2タップ）');return}
+    S.pick={key,m};S.selected=key;render();toast(`もう一度タップすると ◆ を ${fYM(m)} へ移します`,'やめる',cancelPick,8000);return;
+  }
+  if(!p||p.key!==key){S.pick={key,m};if(isRow)S.selected=key;else S.selected=null;render();toast(`${fYM(m)}から → 終わりの月をタップ`,'やめる',cancelPick,8000);return}
+  const a=Math.min(p.m,m),z=Math.max(p.m,m);S.pick=null;toastOff();
+  if(isRow)applyTimeChange(key,a,addMonths(z,1),'期間を変更（チャートで2タップ）');
+  else{render();openAdd({mode:'master',project:key.slice(2),range:[a,z]})}
+}
+function cancelPick(){if(S.pick){S.pick=null;render()}}
 function tap(target){
   if(!target)return;
+  if(chartMonthTap(target))return;
+  if(S.pick){S.pick=null;toastOff();render()}
   const s=target.closest('[data-sample]');if(s){insertSamples();return}
   const ck=target.closest('[data-ck]');if(ck){toggleDone(ck.dataset.ck);return}
   const ga=target.closest('[data-gadd]');if(ga){openAdd({mode:'master',project:ga.dataset.gadd});return}
-  const grp=target.closest('[data-grp]');if(grp){const n=grp.dataset.grp;S.collapsed.has(n)?S.collapsed.delete(n):S.collapsed.add(n);LS.set('collapsed',[...S.collapsed]);render();return}
+  const grp=target.closest('[data-grp]');if(grp&&(target===grp||target.closest('.gn')||!(AX&&AX.v==='master'))){const n=grp.dataset.grp;S.collapsed.has(n)?S.collapsed.delete(n):S.collapsed.add(n);LS.set('collapsed',[...S.collapsed]);render();return}
   if(target.closest('[data-scope]')){S.scope={all:'work',work:'private',private:'all'}[S.scope];render();toast({all:'仕事と私用の予定をすべて表示',work:'仕事の予定だけを表示',private:'私用の予定だけを表示'}[S.scope]);return}
   if(target.closest('[data-zoomreset]')){S.zoom=1;render();return}
   const dd=target.closest('[data-day]');if(dd){openDay(+dd.dataset.day);return}
@@ -1479,7 +1585,7 @@ function refreshAnyPop(){
 }
 
 /* ---- detail ---- */
-function openDetail(id,back){const t=S.tasks.get(id);if(!t)return;const keep=Pop.kind==='detail';if(keep&&!back)back=Pop.back;pageTop({title:'タスク詳細',sub:t.project,back:back||'chart',actions:`<button class="iconbtn danger" data-act="del" aria-label="削除">${ICON.trash}</button>`});openPop('detail',detailHTML(t),'fixed',{label:'タスクの詳細',keepScroll:keep})}
+function openDetail(id,back){const t=S.tasks.get(id);if(!t)return;const keep=Pop.kind==='detail';if(!keep||DT.id!==id){DT.tab='plan';DT.id=id}if(keep&&!back)back=Pop.back;pageTop({title:'タスク詳細',sub:t.project,back:back||'chart',actions:`<button class="iconbtn danger" data-act="del" aria-label="削除">${ICON.trash}</button>`});openPop('detail',detailHTML(t),'fixed',{label:'タスクの詳細',keepScroll:keep})}
 function refreshDetail(){
   const t=S.tasks.get(S.selected);if(!t){closePop();return}
   const a=document.activeElement;if(a&&popBody.contains(a)&&/INPUT|TEXTAREA|SELECT/.test(a.tagName))return;
@@ -1502,9 +1608,10 @@ function detailHTML(t){
   const hm=v=>`${pad(new Date(v).getHours())}:${pad(new Date(v).getMinutes())}`;
   const mtype=mst?`<div class="f"><span>種類</span><div class="segm"><button data-mstype="span" aria-pressed="${!t.milestone}">期間（帯）</button><button data-mstype="ms" aria-pressed="${t.milestone}">マイルストーン（◆）</button></div></div>`:'';
   if(mst&&DT.mid!==t.id){DT.mid=t.id;DT.my=yearStartOf(t.start);DT.mstep=0}
+  if(!mst&&DT.did!==t.id){DT.did=t.id;DT.dstep=0;const today=sod(Date.now());DT.dy=monday(t.start-today<21*DAY?Math.min(today,t.start):t.start)}
   const sched=mst?`${mtype}<div class="f mpf">${mpHTML({y:DT.my,a:t.start,z:mStart(t.end-1),ms:t.milestone,step:DT.mstep})}</div>`
-    :`<div class="f"><span>開始</span><div class="dt2"><input type="date" id="d-sd" value="${ymd(t.start)}" aria-label="開始日"><input type="time" id="d-stt" value="${hm(t.start)}" aria-label="開始時刻"></div></div>
-<div class="f"><span>終了</span><div class="dt2"><input type="date" id="d-ed" value="${ymd(t.end)}" aria-label="終了日"><input type="time" id="d-ett" value="${hm(t.end)}" aria-label="終了時刻"></div></div>`;
+    :`<div class="f mpf">${dpHTML({y:DT.dy,a:sod(t.start),z:sod(t.end-1),step:DT.dstep})}</div>
+<div class="f"><span>時刻</span><div class="tm2"><input type="time" id="d-stt" value="${hm(t.start)}" aria-label="開始時刻"><i>–</i><input type="time" id="d-ett" value="${hm(t.end)}" aria-label="終了時刻"></div></div>`;
   const deps=`<div class="f"><span>前工程</span><div class="chips row">${t.deps.filter(d=>S.tasks.has(d)).map(d=>`<button class="chip x" data-undep="${d}" aria-label="依存を外す">${esc(S.tasks.get(d).name)}</button>`).join('')}<select id="d-dep" style="flex:none;width:auto;max-width:160px"><option value="">＋ 追加</option>${others.map(o=>`<option value="${o.id}">${fMD(o.start)} ${esc(o.name)}</option>`).join('')}</select></div></div>`;
   const tabs=[['plan','予定'],['info','内容'],['memo','メモ'],['hist','履歴']];
   let body;
@@ -1528,7 +1635,7 @@ function histHTML(t,limit=15){
   const L={start:'開始',end:'終了',deadline:'期限',progress:'進捗',status:'状態',name:'名称',project:'PJ',kind:'分類',priority:'優先度',important:'重要',assignee:'担当',deps:'前工程',milestone:'MS',memo:'メモ'};
   return t.history.slice().reverse().slice(0,limit).map(h=>{
     let diff='';if(h.after){const ks=Object.keys(h.after).filter(k=>k!=='status'&&k!=='memo'&&k!=='progress');diff=ks.slice(0,3).map(k=>`${L[k]||k} ${f(k,h.before?.[k])}→${f(k,h.after[k])}`).join(' / ')}
-    return `<li><time>${fMD(h.at)} ${fHM(h.at)}</time><span class="by ${h.by}">${h.by==='muse'?'自動':'自分'}</span>${esc(h.action)}${diff?` <span style="color:var(--ink-2)">${esc(diff)}</span>`:''}${h.reason?`<em>${esc(h.reason)}</em>`:''}</li>`;
+    return `<li><time>${fMD(h.at)} ${fHM(h.at)}</time><span class="by ${h.by}">${h.by==='muse'?'MUSE':h.by==='auto'?'自動':'自分'}</span>${esc(h.action)}${diff?` <span style="color:var(--ink-2)">${esc(diff)}</span>`:''}${h.reason?`<em>${esc(h.reason)}</em>`:''}</li>`;
   }).join('')||'<li>履歴はありません</li>';
 }
 let nameTimer=null;
@@ -1551,6 +1658,14 @@ async function popClick(e){
     if(ns===t.start&&ne===t.end){refreshDetail();return}
     applyTimeChange(t.id,ns,ne,t.milestone?'月を変更':st.step?'始まりの月を変更':'期間を変更');return}
   if(b.dataset.mpy){DT.my=addMonths(DT.my,12*+b.dataset.mpy);refreshDetail();return}
+  if(b.dataset.dpy){DT.dy=addDays(DT.dy,14*+b.dataset.dpy);refreshDetail();return}
+  if(b.dataset.dp!=null&&!isMaster(t)){
+    // keep the times of day; the first tap moves the task to that day, a second tap stretches it to the tapped day
+    const d=+b.dataset.dp,s0=t.start-sod(t.start),e0=t.end-sod(t.end-1),dur=t.end-t.start;let ns,ne;
+    if(!DT.dstep){ns=d+s0;ne=d+e0;if(ne<=ns)ne=ns+Math.min(dur,DAY);DT.dstep=1}
+    else{const a=sod(t.start);if(d>=a){ns=t.start;ne=d+e0;if(ne<=ns)ne=ns+Math.min(dur,DAY)}else{ns=d+s0;ne=a+e0}DT.dstep=0}
+    if(ns===t.start&&ne===t.end){refreshDetail();return}
+    applyTimeChange(t.id,ns,ne,DT.dstep?'日を変更':'期間を変更');return}
   if(b.dataset.mstype){const ms=b.dataset.mstype==='ms';if(ms===t.milestone)return;DT.mstep=0;commit(t.id,ms?{milestone:true,end:addMonths(t.start,1)}:{milestone:false,end:addMonths(t.start,1)},{action:ms?'マイルストーンに変更':'期間に変更'});render();refreshDetail();return}
   if(b.dataset.wk){const k=+b.dataset.wk;applyTimeChange(t.id,addDays(t.start,7*k),addDays(t.end,7*k),k<0?'1週早める':'1週遅らせる');return}
   if(b.dataset.wn){const k=+b.dataset.wn,ne=addDays(t.end,7*k);if(ne-t.start<7*DAY)return;applyTimeChange(t.id,t.start,ne,k<0?'期間を1週短く':'期間を1週長く');return}
@@ -1566,8 +1681,8 @@ popBody.addEventListener('input',e=>{
 popBody.addEventListener('change',e=>{
   if(Pop.kind!=='detail')return otherChange(e);
   const t=S.tasks.get(S.selected);if(!t)return;const id=e.target.id,val=e.target.value;
-  if(['d-sd','d-stt','d-ed','d-ett'].includes(id)){const sd=parseDT($('#d-sd').value),ed=parseDT($('#d-ed').value),st=$('#d-stt').value,et=$('#d-ett').value;if(!sd||!ed||!st||!et)return;
-    const s=atMin(sd,hm2min(st)),en=atMin(ed,hm2min(et));
+  if(id==='d-stt'||id==='d-ett'){const st=$('#d-stt').value,et=$('#d-ett').value;if(!st||!et)return;
+    const s=atMin(sod(t.start),hm2min(st));let en=atMin(sod(t.end-1),hm2min(et));if(singleDay(t.start,t.end)&&en<=s&&hm2min(et)<hm2min(st))en=addDays(en,1);
     if((id==='d-sd'||id==='d-stt')&&s!==t.start){applyTimeChange(t.id,s,s+(t.end-t.start),'開始を変更')}else if(en>s){applyTimeChange(t.id,s,en,'終了を変更')}else{toast('終了は開始より後にしてください');refreshDetail()}return}
   if(id==='d-dl'){const d=parseDT(val);commit(t.id,{deadline:d?atMin(d,hm2min(S.settings.workEnd)):null},{action:'期限を変更'});render();refreshDetail();return}
   if(id==='d-proj'){const v=val.trim()||'未分類';commit(t.id,{project:v},{action:'プロジェクトを変更'});render();return}
@@ -1580,16 +1695,35 @@ popBody.addEventListener('change',e=>{
 popBody.addEventListener('keydown',e=>{if(e.key==='Enter'&&e.target.id==='d-name'){e.preventDefault();e.target.blur()}});
 popBody.addEventListener('focusout',()=>{setTimeout(()=>{if(Pop.kind==='detail'&&!popBody.contains(document.activeElement))refreshDetail()},220)});
 
-/* ---- 大日程の月えらび: 1年分の月を並べ、始まり→終わりの順にタップ（◆は1回） ---- */
+/* ---- 大日程の月えらび: 2年分の月を並べ、期間は「始まり→終わり」の2タップ、◆は1タップ（年をまたいでも画面は切り替わらない） ---- */
 function mpHTML(o){
-  const cur=mStart(Date.now()),fy=new Date(o.y);let cells='';
-  for(let i=0;i<12;i++){
-    const m=addMonths(o.y,i),d=new Date(m),on=o.ms?m===o.a:m>=o.a&&m<=o.z,st=on&&m===o.a,en=on&&(o.ms||m===o.z);
-    const sub=o.ms&&on?'◆':i>0&&d.getMonth()===0?String(d.getFullYear()):'';
-    cells+=`<button class="mpc${on?' on':''}${st?' s':''}${en?' e':''}${m===cur?' cur':''}" data-mp="${m}" aria-pressed="${on}" aria-label="${fYM(m)}">${d.getMonth()+1}月${sub?`<small>${sub}</small>`:''}</button>`;
+  const cur=mStart(Date.now());let body='';
+  for(let k=0;k<2;k++){
+    const ys=addMonths(o.y,12*k),fy=new Date(ys);
+    body+=`<div class="mpy">${fy.getMonth()===0?fy.getFullYear()+'年':`${fy.getFullYear()}年度（${fy.getMonth()+1}月〜）`}</div><div class="mpg">`;
+    for(let i=0;i<12;i++){
+      const m=addMonths(ys,i),d=new Date(m),on=o.ms?m===o.a:m>=o.a&&m<=o.z,st=on&&m===o.a,en=on&&(o.ms||m===o.z);
+      const sub=o.ms&&on?'◆':i>0&&d.getMonth()===0?String(d.getFullYear()):'';
+      body+=`<button class="mpc${on?' on':''}${st?' s':''}${en?' e':''}${o.ms&&on?' pms':''}${i%6===0?' c0':''}${m===cur?' cur':''}" data-mp="${m}" aria-pressed="${on}" aria-label="${fYM(m)}">${d.getMonth()+1}月${sub?`<small>${sub}</small>`:''}</button>`;
+    }
+    body+='</div>';
   }
-  const hint=o.ms?'◆を置く月をタップ':o.step?`終わりの月をタップ（始まり ${fYM(o.a)}）`:'始まりの月 → 終わりの月の順にタップ';
-  return `<div class="mp"><div class="mph"><button data-mpy="-1" aria-label="前の年">${ICON.l}</button><b>${fy.getMonth()===0?fy.getFullYear()+'年':fy.getFullYear()+'年度'}</b><button data-mpy="1" aria-label="次の年">${ICON.r}</button></div><div class="mpg">${cells}</div><p class="mpt">${hint}</p></div>`;
+  const sp={start:o.a,end:addMonths(o.z,1)};
+  const sum=o.ms?`◆ ${fYM(o.a)}`:`${masterRange(sp,true)}<small>${monthsOf(sp)}か月</small>`;
+  const hint=o.ms?'◆を置く<b>月</b>をタップ':o.step?'次に<b>終わりの月</b>をタップ':'<b>始まりの月</b> → <b>終わりの月</b> の順にタップ';
+  return `<div class="mp"><div class="mph"><button data-mpy="-1" aria-label="1年前へ">${ICON.l}</button><span class="mps">${sum}</span><button data-mpy="1" aria-label="1年先へ">${ICON.r}</button></div>${body}<p class="mpt">${hint}</p></div>`;
+}
+// tasks: four weeks of days (Mon–Sun); 1st tap = the day (times kept), 2nd tap = the last day for a span over several days
+function dpHTML(o){
+  const today=sod(Date.now());let cells='';
+  for(let i=0;i<28;i++){
+    const d=addDays(o.y,i),dt=new Date(d),on=d>=o.a&&d<=o.z,st=on&&d===o.a,en=on&&d===o.z,mk=dayMark(d),first=i===0||dt.getDate()===1;
+    cells+=`<button class="mpc dd${on?' on':''}${st?' s':''}${en?' e':''}${i%7===0?' c0':''}${isOffDay(d)?' off':''}${d===today?' cur':''}" data-dp="${d}" aria-pressed="${on}" aria-label="${fMDW(d)}"><span>${first?fMD(d):dt.getDate()}</span>${mk?`<small>${MARKS[mk].short}</small>`:''}</button>`;
+  }
+  const n=Math.round((o.z-o.a)/DAY)+1;
+  const sum=n>1?`${fMDW(o.a)}〜${fMDW(o.z)}<small>${n}日間</small>`:fMDW(o.a);
+  const hint=o.step?'次に<b>終わりの日</b>をタップ（同じ日なら1日だけ）':'<b>日</b>をタップで移動 ・ 続けて<b>終わりの日</b>で複数日';
+  return `<div class="mp"><div class="mph"><button data-dpy="-1" aria-label="2週前へ">${ICON.l}</button><span class="mps">${sum}</span><button data-dpy="1" aria-label="2週先へ">${ICON.r}</button></div><div class="mpw">${DOW.slice(1).concat(DOW[0]).map((w,i)=>`<span class="${i===5?'sat':i===6?'sun':''}">${w}</span>`).join('')}</div><div class="mpg dp">${cells}</div><p class="mpt">${hint}</p></div>`;
 }
 // one tap: ◆ → that month; 期間 → 1st tap = start (1 month), 2nd tap = end (swapped when earlier)
 function mpPick(st,m){
@@ -1600,30 +1734,64 @@ function mpPick(st,m){
 /* ---- quick add ---- */
 const QA={kind:null,dur:null,imp:false,start:null,day:null,mode:'task',wk:null,wn:2,project:null};
 function openAdd(o={}){
-  QA.kind=null;QA.dur=null;QA.imp=false;QA.start=o.start||null;QA.day=o.day||null;QA.wn=2;QA.project=o.project||null;
+  QA.kind=null;QA.dur=null;QA.imp=false;QA.start=o.start||null;QA.day=o.day!=null?sod(o.day):null;QA.tm=null;
+  if(o.start){QA.day=sod(o.start);QA.tm=Math.round((o.start-sod(o.start))/MIN);QA.start=null}QA.wn=2;QA.project=o.project||null;
   QA.mode=o.mode||(S.view==='master'?'master':'task');
   QA.wk=o.week||monday(S.view==='master'?Math.max(Date.now(),rangeOfView().from):Date.now());
   QA.ed=mStart(o.day||(S.view==='master'?Math.max(Date.now(),rangeOfView().from):Date.now()));QA.ee=QA.ed;QA.step=0;QA.my=yearStartOf(QA.ed);QA.tx='';QA.mms=!!o.mms;
-  openPop('add',addHTML(),'auto',{label:'追加'});
+  if(o.range){QA.ed=o.range[0];QA.ee=o.range[1];QA.my=yearStartOf(QA.ed);QA.mms=false}
+  openPop('add',addHTML(),'sheet',{label:'追加'});
   updateQuickPreview();
   // 大日程: keep the keyboard down so the month grid stays in view
-  if(QA.mode!=='master')setTimeout(()=>{const i=$('#qa');i&&i.focus()},260);
+  if(QA.mode!=='master'||o.range)setTimeout(()=>{const i=$('#qa');i&&i.focus()},260);
 }
+// the sheet's frame (title, mode switch, text box, preview) stays put; only #qbody changes with the mode
 function addHTML(){
   const m=QA.mode==='master';
-  const projects=[...new Set([...S.tasks.values()].map(x=>x.project))];
-  const proj=`<label class="f"><span>プロジェクト</span><input id="qproj" list="qprojlist" value="${esc(QA.project||S.lastProject||'')}" placeholder="未分類" autocomplete="off"><datalist id="qprojlist">${projects.map(p=>`<option value="${esc(p)}">`).join('')}</datalist></label>`;
-  const mproj=`<label class="f"><span>車種・PJ</span><input id="qproj" list="qprojlist" value="${esc(QA.project||'')}" placeholder="例）889・TMK" autocomplete="off"><datalist id="qprojlist">${[...new Set([...S.tasks.values()].filter(isMaster).map(x=>x.project))].map(p=>`<option value="${esc(p)}">`).join('')}</datalist></label>`;
-  return `<div class="dh"><b class="ttl">${m?'大日程に節目を追加':'タスクを追加'}</b>${XBTN}</div>
-<div class="segm big"><button data-qmode="task" aria-pressed="${!m}">タスク（日・時刻）</button><button data-qmode="master" aria-pressed="${m}">大日程の節目</button></div>
-<div class="addrow"><input id="qa" placeholder="${m?'例）号試 / 正式図面発行 ターゲット':'例）明日 治具調整 45分'}" enterkeyhint="done" autocomplete="off" aria-label="内容"><button class="btn pri" data-act="qaAdd">追加</button></div>
+  return `<div class="dh"><b class="ttl" id="qttl">${m?'大日程に追加':'タスクを追加'}</b>${XBTN}</div>
+<div class="segm big" id="qmodes"><button data-qmode="task" aria-pressed="${!m}">タスク（日・時刻）</button><button data-qmode="master" aria-pressed="${m}">大日程（月）</button></div>
+<div class="addrow"><input id="qa" placeholder="${m?'例）号試 / 正式図面発行':'例）明日 治具調整 45分'}" enterkeyhint="done" autocomplete="off" aria-label="名前"><button class="btn pri" data-act="qaAdd">追加</button></div>
 <div class="qprev" id="qprev"></div>
-${m?`<div class="segm" style="margin:8px 0"><button data-qmk="span" aria-pressed="${!QA.mms}">期間（帯）</button><button data-qmk="ms" aria-pressed="${!!QA.mms}">マイルストーン（◆）</button></div>
-<div class="fg">${mproj}<div class="f mpf" id="qmp">${qmpHTML()}</div></div>
-<p class="hint" style="margin:8px 4px 0">${QA.mms?'マイルストーンは月を1つ選ぶと、その月に◆が付きます。':'選んだ月の範囲（例：5月〜9月）がガントチャートの帯になります。'}期間とマイルストーンは別々に何個でも入れられます。「6月〜8月 据付」「5月 図面発行」と書いても選べます。</p>`
-:`<div class="fg"><div class="f"><span>分類</span><div class="chips row" id="qkind">${Object.entries(KINDS).map(([k,v])=>`<button class="chip" data-qkind="${k}" aria-pressed="false">${v.label}</button>`).join('')}</div></div>
+<div id="qbody">${addBodyHTML()}</div>`;
+}
+function addBodyHTML(){
+  if(QA.mode==='master'){
+    const mprojs=[...new Set([...S.tasks.values()].filter(isMaster).map(x=>x.project))];
+    return `<div class="segm big qtype" id="qtype"><button data-qmk="span" aria-pressed="${!QA.mms}">期間（帯）</button><button data-qmk="ms" aria-pressed="${!!QA.mms}">マイルストーン（◆）</button></div>
+<div class="fg"><label class="f"><span>車種・PJ</span><input id="qproj" list="qprojlist" value="${esc(QA.project||'')}" placeholder="例）889・TMK" autocomplete="off"><datalist id="qprojlist">${mprojs.map(p=>`<option value="${esc(p)}">`).join('')}</datalist></label><div class="f mpf" id="qmp">${qmpHTML()}</div></div>
+<p class="qhint">期間は始まり→終わりの2タップ、◆は1タップ。期間と◆は何個でも置けます。「6月〜8月 据付」と書いても選べます。</p>`;
+  }
+  const projects=[...new Set([...S.tasks.values()].filter(x=>!isMaster(x)).map(x=>x.project))];
+  return `<div class="fg"><div class="f mpf" id="qday">${qdayHTML()}</div>
+<div class="f"><span>開始</span><div class="chips row" id="qtm">${qtmHTML()}</div></div>
+<div class="f"><span>分類</span><div class="chips row" id="qkind">${Object.entries(KINDS).map(([k,v])=>`<button class="chip" data-qkind="${k}" aria-pressed="false">${v.label}</button>`).join('')}</div></div>
 <div class="f"><span>時間</span><div class="chips row" id="qdur">${[15,30,45,60,120,240].map(n=>`<button class="chip" data-qdur="${n}" aria-pressed="false">${fDur(n*MIN)}</button>`).join('')}<button class="chip" data-qimp="1" aria-pressed="false">重要</button></div></div>
-${proj}</div>`}`;
+<label class="f"><span>プロジェクト</span><input id="qproj" list="qprojlist" value="${esc(QA.project||S.lastProject||'')}" placeholder="未分類" autocomplete="off"><datalist id="qprojlist">${projects.map(p=>`<option value="${esc(p)}">`).join('')}</datalist></label></div>
+<p class="qhint">日付・開始を「自動」のままにすると、分類の条件に合う空き時間へ置きます。「明日 10時 治具調整 45分」「金曜まで 報告書 2h 重要」と書いても入ります。</p>`;
+}
+// task: the next two weeks as one tap each (tap again = back to 自動)
+function qdayHTML(){
+  const today=sod(Date.now());let cells='';
+  for(let i=0;i<14;i++){
+    const d=addDays(today,i),dt=new Date(d),on=QA.day===d,dow=dt.getDay(),mk=dayMark(d);
+    cells+=`<button class="mpc qd${on?' s e':''}${isOffDay(d)?' off':''}${i===0?' cur':''}" data-qday="${d}" aria-pressed="${on}" aria-label="${fMDW(d)}"><span>${dt.getDate()}</span><small class="${dow===0?'sun':dow===6?'sat':''}">${i===0?'今日':i===1?'明日':mk?MARKS[mk].short:DOW[dow]}</small></button>`;
+  }
+  return `<div class="mph qdh"><span class="qdl">日付</span><span class="mps">${QA.day!=null?fMDW(QA.day):'自動<small>空いている日に置く</small>'}</span></div><div class="mpg q7">${cells}</div>`;
+}
+function qtmHTML(){
+  const st=S.settings,hhmm=m=>`${pad(Math.floor(m/60))}:${pad(m%60)}`,ts=[...new Set([st.workStart,...st.breaks.map(b=>b.s),'13:00','15:00',...(QA.tm!=null?[hhmm(QA.tm)]:[])].map(x=>hhmm(hm2min(x))))].sort((a,b)=>hm2min(a)-hm2min(b));
+  return `<button class="chip" data-qtm="" aria-pressed="${QA.tm==null}">自動</button>`+ts.map(x=>`<button class="chip" data-qtm="${x}" aria-pressed="${QA.tm===hm2min(x)}">${fHM(atMin(0,hm2min(x)))}${st.breaks.some(b=>hm2min(b.s)===hm2min(x))?'<small style="font-weight:600;opacity:.7">休憩</small>':''}</button>`).join('');
+}
+function setAddMode(mode){
+  if(QA.mode===mode)return;
+  const pj=($('#qproj')||{}).value;if(pj!=null&&QA.mode==='master')QA.project=pj;
+  QA.mode=mode;const m=mode==='master';
+  $('#qttl').textContent=m?'大日程に追加':'タスクを追加';
+  document.querySelectorAll('#qmodes button').forEach(b=>b.setAttribute('aria-pressed',String(b.dataset.qmode===mode)));
+  const i=$('#qa');i.placeholder=m?'例）号試 / 正式図面発行':'例）明日 治具調整 45分';
+  $('#qbody').innerHTML=addBodyHTML();
+  if(m)syncMasterText();
+  updateQuickPreview();
 }
 function parseMaster(raw){
   let s=' '+String(raw||'').normalize('NFKC')+' ';const r={wk:null,wn:null,name:''};
@@ -1673,6 +1841,7 @@ function placeQuick(p){
   const now=Date.now();let start=null,auto=false,note='';
   const date=p.date!=null?p.date:QA.day;
   if(p.timeMin!=null){let d=date;if(d==null){d=sod(now);if(atMin(d,p.timeMin)<now-30*MIN)d=addDays(d,1)}start=atMin(d,p.timeMin)}
+  else if(QA.tm!=null){let d=date;if(d==null){d=sod(now);if(atMin(d,QA.tm)<now-30*MIN)d=addDays(d,1)}start=atMin(d,QA.tm)}
   else if(QA.start&&date==null){start=QA.start}
   else{
     const from=date!=null?Math.max(date,now):now;
@@ -1692,7 +1861,7 @@ function updateQuickPreview(){
   if(QA.mode==='master'){
     const ev=masterInput();
     const sp={start:ev.d,end:addMonths(ev.end!=null?ev.end:ev.d,1)};
-    el.textContent=`→ ${ev.proj} ・ ${ev.end!=null?`${masterRange(sp,true)}（${monthsOf(sp)}か月）`:`◆ ${fYM(ev.d)}`}${ev.name?' ・'+ev.name:''}`;el.className='qprev';return;
+    el.textContent=`→ ${ev.end!=null?`${masterRange(sp,true)}（${monthsOf(sp)}か月）`:`◆ ${fYM(ev.d)}`} ・ ${ev.proj} ・ ${ev.name||'（名前を入力）'}`;el.className='qprev';return;
   }
   const {p,pl,v}=quickState();
   document.querySelectorAll('[data-qkind]').forEach(b=>b.setAttribute('aria-pressed',String(b.dataset.qkind===pl.kind)));
@@ -1709,7 +1878,7 @@ function syncMasterText(){
   if(p.d==null&&p.wk==null){QA.tx='';return}
   const a=mStart(p.d!=null?p.d:p.wk),z=p.me!=null?mStart(p.me):p.d==null&&p.wn?mStart(addDays(p.wk,7*p.wn-1)):a,key=a+':'+z;
   if(key===QA.tx)return;QA.tx=key;
-  QA.ed=a;QA.ee=QA.mms?a:Math.max(a,z);QA.step=0;QA.my=yearStartOf(a);redrawQmp();
+  QA.ed=a;QA.ee=QA.mms?a:Math.max(a,z);QA.step=0;if(a<QA.my||QA.ee>=addMonths(QA.my,24))QA.my=yearStartOf(a);redrawQmp();
 }
 function masterInput(){
   const p=parseMaster(($('#qa')||{}).value||'');
@@ -1909,10 +2078,10 @@ function openAttDay(t,refresh){
 async function otherClick(e,b){
   if(b.dataset.act==='close')return closePop();
   if(b.dataset.act==='qaAdd')return quickAdd();
-  if(b.dataset.qmk){const v=($('#qa')||{}).value||'',pj=($('#qproj')||{}).value||'';QA.mms=b.dataset.qmk==='ms';QA.project=pj;QA.step=0;if(QA.mms)QA.ee=QA.ed;popBody.innerHTML=addHTML();$('#qa').value=v;updateQuickPreview();return}
+  if(b.dataset.qmk){const ms=b.dataset.qmk==='ms';if(ms===QA.mms)return;QA.mms=ms;QA.step=0;if(ms)QA.ee=QA.ed;document.querySelectorAll('#qtype button').forEach(x=>x.setAttribute('aria-pressed',String((x.dataset.qmk==='ms')===ms)));redrawQmp();updateQuickPreview();return}
   if(b.dataset.mp!=null&&Pop.kind==='add'){const st={a:QA.ed,z:QA.ee,ms:QA.mms,step:QA.step};mpPick(st,+b.dataset.mp);QA.ed=st.a;QA.ee=st.z;QA.step=st.step;redrawQmp();updateQuickPreview();return}
   if(b.dataset.mpy&&Pop.kind==='add'){QA.my=addMonths(QA.my,12*+b.dataset.mpy);redrawQmp();return}
-  if(b.dataset.qmode){if(QA.mode!==b.dataset.qmode){const v=($('#qa')||{}).value||'';QA.mode=b.dataset.qmode;popBody.innerHTML=addHTML();const i=$('#qa');i.value=v;updateQuickPreview();i.focus()}return}
+  if(b.dataset.qmode){setAddMode(b.dataset.qmode);return}
   if(b.dataset.qwk){QA.wk=addDays(QA.wk,7*+b.dataset.qwk);const p=parseMaster($('#qa').value);if(p.wk!=null){$('#qa').value=$('#qa').value.replace(/W\d{1,2}(\s*[-~〜]\s*W?\d{1,2})?|\d{1,2}[\/月]\d{1,2}日?(の週)?(から|〜|~)?/i,'').trim()}updateQuickPreview();return}
   if(b.dataset.qwn){QA.wn=+b.dataset.qwn;const p=parseMaster($('#qa').value);if(p.wn!=null){$('#qa').value=$('#qa').value.replace(/\d{1,2}\s*週間?/,'').trim()}updateQuickPreview();return}
   if(b.dataset.gostats){openStats();return}
@@ -1927,6 +2096,8 @@ async function otherClick(e,b){
   if(b.dataset.goset){openSettings();return}
   if(b.dataset.sample){closePop();insertSamples();return}
   if(b.dataset.qkind){QA.kind=QA.kind===b.dataset.qkind?null:b.dataset.qkind;updateQuickPreview();return}
+  if(b.dataset.qday!=null){const d=+b.dataset.qday;QA.day=QA.day===d?null:d;QA.start=null;const el=$('#qday');if(el)el.innerHTML=qdayHTML();updateQuickPreview();return}
+  if(b.dataset.qtm!=null){QA.tm=b.dataset.qtm?hm2min(b.dataset.qtm):null;QA.start=null;document.querySelectorAll('#qtm [data-qtm]').forEach(x=>x.setAttribute('aria-pressed',String(x===b)));updateQuickPreview();return}
   if(b.dataset.qdur){QA.dur=QA.dur===+b.dataset.qdur?null:+b.dataset.qdur;updateQuickPreview();return}
   if(b.dataset.qimp){QA.imp=!QA.imp;updateQuickPreview();return}
   if(b.dataset.go){const id=b.dataset.go,t=S.tasks.get(id);if(t&&t.status==='done'){S.selected=id;openDetail(id,'list');return}closePop();goToTask(id);return}
@@ -1980,11 +2151,11 @@ function shift(n){
   else if(S.view==='week')S.anchor=addDays(S.anchor,7*n);
   else if(S.view==='master'){const ys=new Date(yearStartOf(S.anchor));S.anchor=new Date(ys.getFullYear()+n,ys.getMonth(),1).getTime()}
   else{const d=new Date(S.anchor);S.anchor=new Date(d.getFullYear(),d.getMonth()+n,1).getTime()}
-  S.selected=null;S.zoom=1;scroller.scrollLeft=0;render();scrollToFocus();
+  S.selected=null;S.pick=null;S.zoom=1;scroller.scrollLeft=0;render();scrollToFocus();
 }
 $('#prevBtn').onclick=()=>shift(-1);$('#nextBtn').onclick=()=>shift(1);
 $('#datePick').addEventListener('change',e=>{const d=parseDT(e.target.value);if(d){S.anchor=sod(d);scroller.scrollLeft=0;render();scrollToFocus()}});
-document.querySelectorAll('.seg button').forEach(b=>b.onclick=()=>{if(S.view===b.dataset.view)return;S.view=b.dataset.view;S.anchor=sod(Date.now());S.zoom=1;S.selected=null;scroller.scrollLeft=0;scroller.scrollTop=0;render();scrollToFocus();LS.set('view',S.view);grid.animate&&grid.animate([{opacity:.4},{opacity:1}],{duration:140,easing:'ease-out'})});
+document.querySelectorAll('.seg button').forEach(b=>b.onclick=()=>{if(S.view===b.dataset.view)return;S.view=b.dataset.view;S.pick=null;S.anchor=sod(Date.now());S.zoom=1;S.selected=null;scroller.scrollLeft=0;scroller.scrollTop=0;render();scrollToFocus();LS.set('view',S.view);grid.animate&&grid.animate([{opacity:.4},{opacity:1}],{duration:140,easing:'ease-out'})});
 $('#moreBtn').onclick=()=>['more','attday'].includes(Pop.kind)?closePop():openMore();
 $('#setBtn').onclick=()=>Pop.kind==='settings'?closePop():openSettings();
 $('#todayBtn').onclick=()=>{if(Pop.kind)closePop();S.anchor=sod(Date.now());S.zoom=1;render();scroller.scrollTop=0;scrollToFocus()};
@@ -1995,7 +2166,10 @@ setInterval(()=>{if(G.mode!=='drag'&&document.visibilityState==='visible')render
 let hiddenAt=0;document.addEventListener('visibilitychange',()=>{if(document.visibilityState==='hidden'){hiddenAt=Date.now();return}
   // back in the app after a while (or on another day): show today again
   if(hiddenAt&&(Date.now()-hiddenAt>10*60000||sod(hiddenAt)!==sod(Date.now()))&&G.mode!=='drag'){S.anchor=sod(Date.now());S.zoom=1;scroller.scrollLeft=0;render();scrollToFocus()}else render()});
-if(window.visualViewport){const vv=window.visualViewport;const f=()=>{const kb=Math.max(0,innerHeight-vv.height-vv.offsetTop);document.documentElement.style.setProperty('--kb',kb+'px')};vv.addEventListener('resize',f);vv.addEventListener('scroll',f)}
+// keyboard height (--kb) only sizes the sheets; it is applied once per frame and only when it really changes, so nothing shivers while the keyboard slides
+if(window.visualViewport){const vv=window.visualViewport;let kb0=-1,raf=0;const f=()=>{if(raf)return;raf=requestAnimationFrame(()=>{raf=0;const kb=Math.round(Math.max(0,innerHeight-vv.height-vv.offsetTop));if(Math.abs(kb-kb0)<2)return;kb0=kb;document.documentElement.style.setProperty('--kb',kb+'px')})};vv.addEventListener('resize',f);vv.addEventListener('scroll',f)}
+// iOS can scroll the whole page to show a focused field; once typing ends, put the page back so the app never stays shifted
+document.addEventListener('focusout',()=>setTimeout(()=>{const a=document.activeElement;if(a&&/INPUT|TEXTAREA|SELECT/.test(a.tagName))return;if(window.scrollY||document.documentElement.scrollTop||document.body.scrollTop){window.scrollTo(0,0);document.documentElement.scrollTop=0;document.body.scrollTop=0}},80));
 
 /* ============ toast / dialog ============ */
 let toastTimer=null;const toastEl=$('#toast');
@@ -2007,6 +2181,7 @@ function toast(msg,actLabel,fn,ms=4500){
   toastEl.classList.toggle('top',!!Pop.kind&&popEl.dataset.size!=='page');
   toastEl.classList.add('on');clearTimeout(toastTimer);toastTimer=setTimeout(()=>toastEl.classList.remove('on'),ms);
 }
+function toastOff(){clearTimeout(toastTimer);toastEl.classList.remove('on')}
 function ask(msg,ok='OK',cancel='やめる'){
   return new Promise(res=>{
     const d=document.createElement('div');d.className='dlg';d.setAttribute('role','alertdialog');
@@ -2051,22 +2226,31 @@ function insertSamples(){
 }
 
 
-/* ============ MUSE seed: タスクリスト反映（秘書が更新する） ============ */
-const MUSE_SEED_VER=18;
-const MUSE_SEED_ATTENDANCE={'2026-11':{'2026-11-06':{in:1793919600000,out:1793959320000}}};
-const MUSE_SEED_TASKS=[{"id":"successfactors-eval","name":"SuccessFactors年間評価（能力発揮時期評価）の提出","project":"生産技術","kind":"desk","scale":"time","start":1794180600000,"end":1794213000000,"deadline":1794558600000,"milestone":false,"important":false,"priority":"mid","status":"todo","progress":0,"segs":[],"deps":[],"memo":"本人目標は11/10まで。11/10は東京出張のため実質11/9夜まで","assignee":"","sample":false,"history":[],"createdAt":1793915366156,"updatedAt":1793915366156,"rev":1},{"id":"cooler-sheet","name":"クーラー管理シートの貼り付けと課内への周知","project":"生産技術","kind":"desk","scale":"time","start":1794353400000,"end":1794385800000,"deadline":1794385800000,"milestone":false,"important":false,"priority":"mid","status":"todo","progress":0,"segs":[],"deps":[],"memo":"福岡出張から帰った最初の出社日（想定11/11）","assignee":"","sample":false,"history":[],"createdAt":1793915366156,"updatedAt":1793915366156,"rev":1},{"id":"695-proto-checksheet","name":"695試作品チェックシート","project":"695","kind":"desk","scale":"time","start":1794353400000,"end":1794385800000,"deadline":1794472200000,"milestone":false,"important":false,"priority":"mid","status":"todo","progress":0,"segs":[],"deps":[],"memo":"","assignee":"","sample":false,"history":[],"createdAt":1793915366156,"updatedAt":1793915366156,"rev":1},{"id":"695-proto-build","name":"695試作品作製","project":"695","kind":"desk","scale":"time","start":1794871800000,"end":1794904200000,"deadline":1794904200000,"milestone":false,"important":false,"priority":"mid","status":"todo","progress":0,"segs":[],"deps":[],"memo":"作成日は2026-11-17で確定（2026-11-06本人申告）。695D天井基材は11/16 10:00到着予定。部品発注は全て済み","assignee":"","sample":false,"history":[],"createdAt":1793915366156,"updatedAt":1793915366156,"rev":1},{"id":"hm-thickness","name":"HM板厚ばらつき測定","project":"生産技術","kind":"desk","scale":"time","start":1793921400000,"end":1794213000000,"deadline":1794213000000,"milestone":false,"important":false,"priority":"mid","status":"todo","progress":0,"segs":[],"deps":[],"memo":"11/6に準備、11/9に測定（いずれも仮・秘書割当）","assignee":"","sample":false,"history":[],"createdAt":1793915366156,"updatedAt":1793915366156,"rev":1},{"id":"massprod-fmea","name":"量産FMEA修正","project":"生産技術","kind":"desk","scale":"time","start":1794785400000,"end":1794817800000,"deadline":1794817800000,"milestone":false,"important":false,"priority":"mid","status":"todo","progress":0,"segs":[],"deps":[],"memo":"仮期限（秘書割当）","assignee":"","sample":false,"history":[],"createdAt":1793915366156,"updatedAt":1793915366156,"rev":1},{"id":"harness-education-pay","name":"ハーネス高所作業者教育の振り込み","project":"生産技術","kind":"desk","scale":"time","start":1794785400000,"end":1794817800000,"deadline":1794904200000,"milestone":false,"important":false,"priority":"mid","status":"todo","progress":0,"segs":[],"deps":[],"memo":"","assignee":"","sample":false,"history":[],"createdAt":1793915366156,"updatedAt":1793915366156,"rev":1},{"id":"pet-brkt-adhesion","name":"PET BRKTで接着性確認","project":"生産技術","kind":"holiday","scale":"time","start":1794094200000,"end":1794126600000,"deadline":1794126600000,"milestone":false,"important":false,"priority":"mid","status":"todo","progress":0,"segs":[],"deps":[],"memo":"日付指定あり（日曜）","assignee":"","sample":false,"history":[],"createdAt":1793915366156,"updatedAt":1793915366156,"rev":1},{"id":"intern-1103","name":"インターン対応（工程見学・座談会）","project":"生産技術","kind":"desk","scale":"time","start":1795414200000,"end":1795419000000,"deadline":1795419000000,"milestone":false,"important":false,"priority":"mid","status":"todo","progress":0,"segs":[],"deps":[],"memo":"座談会15:10〜16:30。工程見学の開始時刻は未確認","assignee":"","sample":false,"history":[],"createdAt":1793915366156,"updatedAt":1793915366156,"rev":1},{"id":"695-parts-rain","name":"695 製造部品表にレインセンサ対象を明記","project":"695","kind":"desk","scale":"time","start":1793921400000,"end":1793953800000,"deadline":1793867400000,"milestone":false,"important":false,"priority":"mid","status":"todo","progress":0,"segs":[],"deps":[],"memo":"仮期限11/5（秘書割当）。11/5休みのため11/6に実施。11/9への移動を提案中","assignee":"","sample":false,"history":[],"createdAt":1793915366156,"updatedAt":1793915366156,"rev":1},{"id":"gantt-maint","name":"ガナートメンテ","project":"生産技術","kind":"desk","scale":"time","start":1794958200000,"end":1795595400000,"deadline":1796180400000,"milestone":false,"important":false,"priority":"mid","status":"todo","progress":0,"segs":[],"deps":[],"memo":"ガナートは生準（生産準備）の日程表。調整は納期の1〜2週間前まで。納期は12/2午前","assignee":"","sample":false,"history":[],"createdAt":1793915366156,"updatedAt":1793915366156,"rev":1},{"id":"hiyari-proposal","name":"ヒヤリハット提案事例","project":"生産技術","kind":"desk","scale":"time","start":1794785400000,"end":1794904200000,"deadline":1794990600000,"milestone":false,"important":false,"priority":"mid","status":"todo","progress":0,"segs":[],"deps":[],"memo":"","assignee":"","sample":false,"history":[],"createdAt":1793915366156,"updatedAt":1793915366156,"rev":1},{"id":"889-lamp-address","name":"889トライ材料にランプアドレスを貼る","project":"889","kind":"desk","scale":"time","start":1793921400000,"end":1793953800000,"deadline":1793953800000,"milestone":false,"important":false,"priority":"mid","status":"done","progress":100,"segs":[],"deps":[],"memo":"","assignee":"","sample":false,"history":[],"createdAt":1793915366156,"updatedAt":1793971156649,"rev":1},{"id":"889-special-char-check","name":"889特殊特性チェックシート4点照合","project":"889","kind":"desk","scale":"time","start":1793921400000,"end":1793953800000,"deadline":1793953800000,"milestone":false,"important":false,"priority":"mid","status":"todo","progress":0,"segs":[],"deps":[],"memo":"照合対象4点の内訳は未確認","assignee":"","sample":false,"history":[],"createdAt":1793915366156,"updatedAt":1793915366156,"rev":1},{"id":"889-product-eval-report","name":"889製品評価報告書作成","project":"889","kind":"desk","scale":"time","start":1795044600000,"end":1795077000000,"deadline":1795163400000,"milestone":false,"important":false,"priority":"mid","status":"todo","progress":0,"segs":[],"deps":[],"memo":"仮期限（秘書割当）。報告書は車種・グループごとに分ける。内訳は確認中","assignee":"","sample":false,"history":[],"createdAt":1793915366156,"updatedAt":1793915366156,"rev":1},{"id":"980se-drawing-check","name":"980SE図データ確認","project":"980","kind":"desk","scale":"time","start":1793921400000,"end":1793953800000,"deadline":1793953800000,"milestone":false,"important":false,"priority":"mid","status":"done","progress":100,"segs":[],"deps":[],"memo":"仮期限（秘書割当）。980SEのDRは11月中旬の予定","assignee":"","sample":false,"history":[],"createdAt":1793915366156,"updatedAt":1793971156649,"rev":1},{"id":"889-backup-process-check","name":"889バックアップ工程動作確認","project":"889","kind":"desk","scale":"time","start":1794180600000,"end":1794472200000,"deadline":1794558600000,"milestone":false,"important":false,"priority":"mid","status":"todo","progress":0,"segs":[],"deps":[],"memo":"仮期限（秘書割当）。11/9に実施計画を作成し、11/9〜12に動作確認","assignee":"","sample":false,"history":[],"createdAt":1793915366156,"updatedAt":1793915366156,"rev":1},{"id":"889-all-parts-check","name":"889全システム全品番確認","project":"889","kind":"desk","scale":"time","start":1794785400000,"end":1795077000000,"deadline":1795163400000,"milestone":false,"important":false,"priority":"mid","status":"todo","progress":0,"segs":[],"deps":[],"memo":"仮期限（秘書割当）。11/16に実施計画を作成し、11/16〜19に確認","assignee":"","sample":false,"history":[],"createdAt":1793915366156,"updatedAt":1793915366156,"rev":1},{"id":"common-jig-ra","name":"全車種共通治具 作業RA","project":"全車種共通治具","kind":"desk","scale":"time","start":1795649400000,"end":1795681800000,"deadline":1796027400000,"milestone":false,"important":false,"priority":"mid","status":"todo","progress":0,"segs":[],"deps":[],"memo":"","assignee":"","sample":false,"history":[],"createdAt":1793915366156,"updatedAt":1793915366156,"rev":1},{"id":"common-jig-fmea","name":"全車種共通治具 FMEA","project":"全車種共通治具","kind":"desk","scale":"time","start":1795735800000,"end":1795768200000,"deadline":1796027400000,"milestone":false,"important":false,"priority":"mid","status":"todo","progress":0,"segs":[],"deps":[],"memo":"","assignee":"","sample":false,"history":[],"createdAt":1793915366156,"updatedAt":1793915366156,"rev":1},{"id":"sensor-replace-1106","name":"センサを変える","project":"生産技術","kind":"line","scale":"time","start":1794094200000,"end":1794126600000,"deadline":1794126600000,"milestone":false,"important":false,"priority":"mid","status":"todo","progress":0,"segs":[],"deps":[],"memo":"2026-11-06に金曜昼休憩（11/6 10:15〜11:00）から日曜日（11/8）へ変更（本人申告）。当日の時刻は未確認のため終日枠で仮置き。どのセンサかは未確認","assignee":"","sample":false,"history":[],"createdAt":1793915366156,"updatedAt":1793915366156,"rev":1},{"id":"889-peeling-qc-meeting","name":"889恒温槽での剥がれについて品管と話し合う","project":"889","kind":"desk","scale":"time","start":1793921400000,"end":1793953800000,"deadline":1793953800000,"milestone":false,"important":true,"priority":"high","status":"todo","progress":0,"segs":[],"deps":[],"memo":"仮期限（秘書割当）。品管との話し合い＝最優先。剥がれの詳細と相手は未確認","assignee":"","sample":false,"history":[],"createdAt":1793915366156,"updatedAt":1793915366156,"rev":1},{"id":"889-quality-relaxation-inquiry","name":"889品質緩和要望進捗問い合わせ","project":"889","kind":"desk","scale":"time","start":1793921400000,"end":1793953800000,"deadline":1793953800000,"milestone":false,"important":true,"priority":"high","status":"todo","progress":0,"segs":[],"deps":[],"memo":"仮期限（秘書割当）。人への問い合わせ＝最優先。問い合わせ先は未確認","assignee":"","sample":false,"history":[],"createdAt":1793915366156,"updatedAt":1793915366156,"rev":1},{"id":"wedding-chief-request","name":"結婚式の主賓をお願いする","project":"プライベート","kind":"private","scale":"time","start":1794871800000,"end":1794904200000,"deadline":1795163400000,"milestone":false,"important":true,"priority":"high","status":"todo","progress":0,"segs":[],"deps":[],"memo":"仮期限（秘書割当）。お願いする相手と結婚式の日程は未確認","assignee":"","sample":false,"history":[],"createdAt":1793915366156,"updatedAt":1793915366156,"rev":1},{"id":"eguchi-980-data","name":"江口さんへ980のデータを送る","project":"980","kind":"desk","scale":"time","start":1793575800000,"end":1793608200000,"deadline":1793608200000,"milestone":false,"important":false,"priority":"mid","status":"done","progress":100,"segs":[],"deps":[],"memo":"","assignee":"","sample":false,"history":[],"createdAt":1793915366156,"updatedAt":1793915366156,"rev":1},{"id":"fire-insurance","name":"火災保険料がいま幾らか調べる","project":"生産技術","kind":"desk","scale":"time","start":1793662200000,"end":1793694600000,"deadline":1793953800000,"milestone":false,"important":false,"priority":"mid","status":"done","progress":100,"segs":[],"deps":[],"memo":"火災保険料は2年で18,000円","assignee":"","sample":false,"history":[],"createdAt":1793915366156,"updatedAt":1793915366156,"rev":1},{"id":"funakoshi-ship","name":"舩越さんに臨時便に机上の天井機材を載せてもらう依頼","project":"生産技術","kind":"desk","scale":"time","start":1793662200000,"end":1793694600000,"deadline":1793781000000,"milestone":false,"important":false,"priority":"mid","status":"done","progress":100,"segs":[],"deps":[],"memo":"","assignee":"","sample":false,"history":[],"createdAt":1793915366156,"updatedAt":1793915366156,"rev":1},{"id":"lift-request","name":"試作管理表に、リフトの操作依頼書く","project":"生産技術","kind":"desk","scale":"time","start":1793662200000,"end":1793694600000,"deadline":1793781000000,"milestone":false,"important":false,"priority":"mid","status":"done","progress":100,"segs":[],"deps":[],"memo":"","assignee":"","sample":false,"history":[],"createdAt":1793915366156,"updatedAt":1793915366156,"rev":1},{"id":"trial-check","name":"工程検証トライチェックシートの作成","project":"生産技術","kind":"desk","scale":"time","start":1793662200000,"end":1793694600000,"deadline":1793694600000,"milestone":false,"important":false,"priority":"mid","status":"done","progress":100,"segs":[],"deps":[],"memo":"連動資料（工程FMEA／コントロールプラン／工程設計開発計画書／問題点一元管理表）の最新化状況は未確認","assignee":"","sample":false,"history":[],"createdAt":1793915366156,"updatedAt":1793915366156,"rev":1},{"id":"695d-ceil-delivery","name":"695D TB天井基材の納期に関する問い合わせ（理由・最短納期）","project":"695","kind":"desk","scale":"time","start":1793662200000,"end":1793694600000,"deadline":1793694600000,"milestone":false,"important":false,"priority":"high","status":"done","progress":100,"segs":[],"deps":[],"memo":"先方の回答（理由・最短納期）は未確認","assignee":"","sample":false,"history":[],"createdAt":1793915366156,"updatedAt":1793915366156,"rev":1},{"id":"889rr-mic-limit-followup","name":"889RRマイク追加 品番上限回答フォロー","project":"889","kind":"desk","scale":"time","start":1794439800000,"end":1794472200000,"deadline":1794472200000,"milestone":false,"important":true,"priority":"high","status":"todo","progress":0,"segs":[],"deps":[],"memo":"品番上限の回答フォロー（人へのフォロー＝最優先）。当初11/13実施予定だったが本人の振休のため11/12に前倒し。フォロー先は未確認","assignee":"","sample":false,"history":[],"createdAt":1793922647911,"updatedAt":1793922647911,"rev":1},{"id":"ceil-pickup-charter","name":"天井完成品引取り臨時便の手配","project":"695","kind":"desk","scale":"time","start":1794180600000,"end":1794213000000,"deadline":1794299400000,"milestone":false,"important":true,"priority":"high","status":"todo","progress":0,"segs":[],"deps":[],"memo":"引取りの臨時便は2026-11-17。手配期限は11/10だが当日は東京出張のため11/9に前倒し。手配先は未確認","assignee":"","sample":false,"history":[],"createdAt":1793941049019,"updatedAt":1793941049019,"rev":1},{"id":"umemura-place-order","name":"梅村への場所借用注文書の発行","project":"生産技術","kind":"desk","scale":"time","start":1794180600000,"end":1794213000000,"deadline":1794213000000,"milestone":false,"important":true,"priority":"high","status":"todo","progress":0,"segs":[],"deps":[],"memo":"優先度高（本人指定）。期限は仮（秘書割当）。借用する場所・期間・金額は未確認","assignee":"","sample":false,"history":[],"createdAt":1793941742752,"updatedAt":1793941742752,"rev":1},{"id":"980-ceil-mod-dcr","name":"980天井MOD DCR作成","project":"980","kind":"desk","scale":"time","start":1794353400000,"end":1794385800000,"deadline":1794474000000,"milestone":false,"important":true,"priority":"high","status":"todo","progress":0,"segs":[],"deps":[],"memo":"2026-11-12 18:00の980天井MOD SE DRの前にDCRを書く（本人ルール：DRの前にDCR）","assignee":"","sample":false,"history":[],"createdAt":1793949624088,"updatedAt":1793949624088,"rev":1},{"id":"yoshida-meeting-reply","name":"吉田さんへの打ち合わせ日程の回答","project":"生産技術","kind":"desk","scale":"time","start":1794180600000,"end":1794213000000,"deadline":1794213000000,"milestone":false,"important":true,"priority":"high","status":"todo","progress":0,"segs":[],"deps":[],"memo":"人への回答＝最優先。期限は仮（秘書割当）。打ち合わせの内容・候補日時は未確認","assignee":"","sample":false,"history":[],"createdAt":1793959003976,"updatedAt":1793959003976,"rev":1},{"id":"tmk-line2-drawing-target","name":"第2ライン 正式図面発行（ターゲット）","project":"TMK","kind":"desk","scale":"week","start":1811689200000,"end":1811775600000,"deadline":null,"milestone":true,"important":false,"priority":"mid","status":"todo","progress":0,"segs":[],"deps":[],"memo":"正式図面発行　5月ターゲット　8月リミット","assignee":"","sample":false,"history":[],"createdAt":1793964275570,"updatedAt":1793964275570,"rev":1},{"id":"tmk-line2-drawing-limit","name":"第2ライン 正式図面発行（リミット）","project":"TMK","kind":"desk","scale":"week","start":1819638000000,"end":1819724400000,"deadline":null,"milestone":true,"important":true,"priority":"mid","status":"todo","progress":0,"segs":[],"deps":[],"memo":"正式図面発行　5月ターゲット　8月リミット","assignee":"","sample":false,"history":[],"createdAt":1793964275570,"updatedAt":1793964275570,"rev":1}];
-(function applyMuseSeed(){
+/* ============ MUSE data (GitHub Pages 版だけ): build.py が muse-data.json を window.MUSE_DATA として index.html に入れる ============ */
+// MUSE（秘書）が muse-data.json を更新して version を上げると、次に開いたときに反映する。
+// この端末で後から変えた・追加した項目は残し、MUSE が新しく変えた項目は MUSE の内容にする（updatedAt が新しい方）。
+(function applyMuseData(){
   try{
-    if(typeof window!=='undefined'&&window.claude)return; // claude.ai版（クラウド保存）には触らない
-    if(LS.get('seedver',0)>=MUSE_SEED_VER)return;
-    LS.set('tasks',MUSE_SEED_TASKS);
+    const D=typeof window!=='undefined'&&window.MUSE_DATA;
+    if(!D||window.claude)return; // claude.ai版（クラウド保存）は MUSE がデータベースを直接更新する
+    const ver=+D.version||0;if(!ver||LS.get('seedver',0)>=ver)return;
+    const prevAt=+LS.get('seedAt',0),local=new Map(LS.get('tasks',[]).filter(t=>t&&t.id).map(t=>[String(t.id),t])),seen=new Set(),out=[];
+    for(const raw of D.tasks||[]){
+      if(!raw||!raw.id)continue;const id=String(raw.id);seen.add(id);const l=local.get(id);
+      const keepLocal=l&&prevAt&&toTime(l.updatedAt)>prevAt&&toTime(l.updatedAt)>(toTime(raw.updatedAt)||0);
+      out.push(keepLocal?l:raw);
+    }
+    // added on this device since the last MUSE update → keep; anything else MUSE no longer lists was removed by MUSE
+    for(const [id,l] of local)if(!seen.has(id)&&prevAt&&toTime(l.createdAt)>prevAt)out.push(l);
+    LS.set('tasks',out);
     LS.set('proposals',[]);
     const st={...clone(DEFAULT_SETTINGS),...LS.get('settings',{})};
-    st.days={...(st.days||{}),'2026-11-05':'off','2026-11-07':'sw','2026-11-09':'hw','2026-11-13':'sub'};
+    if(D.days&&typeof D.days==='object')st.days={...(st.days||{}),...D.days};
+    if(D.settings&&typeof D.settings==='object')Object.assign(st,D.settings);
     LS.set('settings',st);
-    LS.set('showDaily',false); // 大日程には日ごとのタスクを表示しない（本人希望 2026-11-06）
-    try{const att=LS.get('attendance',{});for(const mk in MUSE_SEED_ATTENDANCE){att[mk]={...(att[mk]||{}),...MUSE_SEED_ATTENDANCE[mk]}}LS.set('attendance',att)}catch(e){}
-    LS.set('seedver',MUSE_SEED_VER);
+    LS.set('showDaily',false);
+    if(D.attendance&&typeof D.attendance==='object'){const att=LS.get('attendance',{});for(const mk in D.attendance){att[mk]={...(att[mk]||{}),...D.attendance[mk]}}LS.set('attendance',att)}
+    LS.set('seedver',ver);LS.set('seedAt',Date.now());
   }catch(e){}
 })();
 
