@@ -2233,8 +2233,11 @@ function insertSamples(){
   try{
     const D=typeof window!=='undefined'&&window.MUSE_DATA;
     if(!D||window.claude)return; // claude.ai版（クラウド保存）は MUSE がデータベースを直接更新する
-    const ver=+D.version||0;if(!ver||LS.get('seedver',0)>=ver)return;
-    const prevAt=+LS.get('seedAt',0),local=new Map(LS.get('tasks',[]).filter(t=>t&&t.id).map(t=>[String(t.id),t])),seen=new Set(),out=[];
+    const ver=+D.version||0;if(!ver)return;
+    // first run of this merge on a device: take MUSE's latest change time as the line after which edits on the device are its own
+    let prevAt=+LS.get('seedAt',0);if(!prevAt&&LS.get('seedver',0)){prevAt=Math.max(0,...(D.tasks||[]).map(t=>toTime(t&&t.updatedAt)||0));LS.set('seedAt',prevAt)}
+    if(LS.get('seedver',0)>=ver)return;
+    const local=new Map(LS.get('tasks',[]).filter(t=>t&&t.id).map(t=>[String(t.id),t])),seen=new Set(),out=[];
     for(const raw of D.tasks||[]){
       if(!raw||!raw.id)continue;const id=String(raw.id);seen.add(id);const l=local.get(id);
       const keepLocal=l&&prevAt&&toTime(l.updatedAt)>prevAt&&toTime(l.updatedAt)>(toTime(raw.updatedAt)||0);

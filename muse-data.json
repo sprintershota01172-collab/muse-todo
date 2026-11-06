@@ -1,5 +1,5 @@
 {
-  "version": 19,
+  "version": 18,
   "updatedAt": "2026-11-07",
   "note": "MUSE（秘書）が更新するタスクデータ。GitHub Pages 版（index.html）だけが読み込みます。書き方は CLAUDE.md を参照。",
   "days": {"2026-11-05": "off", "2026-11-07": "sw", "2026-11-09": "hw", "2026-11-13": "sub"},
