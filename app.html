@@ -513,6 +513,21 @@ table.mini td{text-align:right;padding:8px 4px;border-top:1px solid var(--line-2
 .f.ftop .chips{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:5px;padding:3px 0} .f.ftop .chip{min-height:30px;height:30px;padding:0 3px;font-size:11px;letter-spacing:-.02em;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;justify-content:center}
 .f.ftop{display:grid;grid-template-columns:72px minmax(0,1fr);align-items:start;padding:4px 0} .f.ftop>span:first-child{padding-top:10px;width:auto}
 .f .segm{flex:1}
+.mp{width:100%}
+.mph{display:flex;align-items:center;justify-content:space-between;height:36px}
+.mph b{font-size:13px;font-weight:750;letter-spacing:-.01em}
+.mph button{width:44px;height:36px;display:grid;place-items:center;color:var(--ink-2);border-radius:9px}
+.mph button .ic{width:18px;height:18px}
+.mpg{display:grid;grid-template-columns:repeat(6,minmax(0,1fr));row-gap:6px}
+.mpc{position:relative;height:42px;font-size:13px;font-weight:700;color:var(--ink-2);display:flex;flex-direction:column;align-items:center;justify-content:center;line-height:1.1;font-variant-numeric:tabular-nums}
+.mpc small{font-size:9px;font-weight:700;color:var(--ink-3)}
+.mpc.on{background:var(--master-soft);color:var(--ink)}
+.mpc.s,.mpc.e{background:var(--master);color:var(--surface)} .mpc.s small,.mpc.e small{color:var(--surface);opacity:.8}
+.mpc.s{border-radius:10px 0 0 10px} .mpc.e{border-radius:0 10px 10px 0} .mpc.s.e{border-radius:10px}
+.mpc.cur::after{content:"";position:absolute;bottom:3px;left:50%;width:4px;height:4px;margin-left:-2px;border-radius:50%;background:var(--pink-ink)}
+.mpc:active{transform:scale(.94)}
+.mpt{font-size:11px;color:var(--ink-2);text-align:center;margin:6px 0 2px;font-weight:600}
+.f.mpf{padding:4px 0 8px}
 @media (prefers-reduced-motion: reduce){*{transition:none!important;animation:none!important}}
 </style>
 
@@ -1486,8 +1501,8 @@ function detailHTML(t){
   const durTxt=ev?'マイルストーン':mst?`${monthsOf(t)}か月`:fDur(t.end-t.start);
   const hm=v=>`${pad(new Date(v).getHours())}:${pad(new Date(v).getMinutes())}`;
   const mtype=mst?`<div class="f"><span>種類</span><div class="segm"><button data-mstype="span" aria-pressed="${!t.milestone}">期間（帯）</button><button data-mstype="ms" aria-pressed="${t.milestone}">マイルストーン（◆）</button></div></div>`:'';
-  const sched=ev?`${mtype}<label class="f"><span>月</span><input type="month" id="d-evd" value="${ym(t.start)}"></label>`
-    :mst?`${mtype}<label class="f"><span>開始月</span><input type="month" id="d-mss" value="${ym(t.start)}"></label><label class="f"><span>終了月</span><input type="month" id="d-mse" value="${ym(t.end-1)}"></label>`
+  if(mst&&DT.mid!==t.id){DT.mid=t.id;DT.my=yearStartOf(t.start);DT.mstep=0}
+  const sched=mst?`${mtype}<div class="f mpf">${mpHTML({y:DT.my,a:t.start,z:mStart(t.end-1),ms:t.milestone,step:DT.mstep})}</div>`
     :`<div class="f"><span>開始</span><div class="dt2"><input type="date" id="d-sd" value="${ymd(t.start)}" aria-label="開始日"><input type="time" id="d-stt" value="${hm(t.start)}" aria-label="開始時刻"></div></div>
 <div class="f"><span>終了</span><div class="dt2"><input type="date" id="d-ed" value="${ymd(t.end)}" aria-label="終了日"><input type="time" id="d-ett" value="${hm(t.end)}" aria-label="終了時刻"></div></div>`;
   const deps=`<div class="f"><span>前工程</span><div class="chips row">${t.deps.filter(d=>S.tasks.has(d)).map(d=>`<button class="chip x" data-undep="${d}" aria-label="依存を外す">${esc(S.tasks.get(d).name)}</button>`).join('')}<select id="d-dep" style="flex:none;width:auto;max-width:160px"><option value="">＋ 追加</option>${others.map(o=>`<option value="${o.id}">${fMD(o.start)} ${esc(o.name)}</option>`).join('')}</select></div></div>`;
@@ -1532,7 +1547,11 @@ async function popClick(e){
   if(b.dataset.kind){const k=b.dataset.kind;const v=validatePlacement({...t,kind:k},t.start,t.end);commit(t.id,{kind:k},{action:'分類を変更'});render();refreshDetail();if(v.blocking.length)toast(v.blocking[0]+'。時刻を見直してください');return}
   if(b.dataset.pri){commit(t.id,{priority:b.dataset.pri},{action:'優先度を変更'});render();refreshDetail();return}
   if(b.dataset.undep){commit(t.id,{deps:t.deps.filter(d=>d!==b.dataset.undep)},{action:'前工程を外す'});render();refreshDetail();return}
-  if(b.dataset.mstype){const ms=b.dataset.mstype==='ms';if(ms===t.milestone)return;commit(t.id,ms?{milestone:true,end:addMonths(t.start,1)}:{milestone:false,end:addMonths(t.start,1)},{action:ms?'マイルストーンに変更':'期間に変更'});render();refreshDetail();return}
+  if(b.dataset.mp!=null&&isMaster(t)){const st={a:t.start,z:mStart(t.end-1),ms:t.milestone,step:DT.mstep};mpPick(st,+b.dataset.mp);DT.mstep=st.step;const ns=st.a,ne=addMonths(st.z,1);
+    if(ns===t.start&&ne===t.end){refreshDetail();return}
+    applyTimeChange(t.id,ns,ne,t.milestone?'月を変更':st.step?'始まりの月を変更':'期間を変更');return}
+  if(b.dataset.mpy){DT.my=addMonths(DT.my,12*+b.dataset.mpy);refreshDetail();return}
+  if(b.dataset.mstype){const ms=b.dataset.mstype==='ms';if(ms===t.milestone)return;DT.mstep=0;commit(t.id,ms?{milestone:true,end:addMonths(t.start,1)}:{milestone:false,end:addMonths(t.start,1)},{action:ms?'マイルストーンに変更':'期間に変更'});render();refreshDetail();return}
   if(b.dataset.wk){const k=+b.dataset.wk;applyTimeChange(t.id,addDays(t.start,7*k),addDays(t.end,7*k),k<0?'1週早める':'1週遅らせる');return}
   if(b.dataset.wn){const k=+b.dataset.wn,ne=addDays(t.end,7*k);if(ne-t.start<7*DAY)return;applyTimeChange(t.id,t.start,ne,k<0?'期間を1週短く':'期間を1週長く');return}
 }
@@ -1550,13 +1569,10 @@ popBody.addEventListener('change',e=>{
   if(['d-sd','d-stt','d-ed','d-ett'].includes(id)){const sd=parseDT($('#d-sd').value),ed=parseDT($('#d-ed').value),st=$('#d-stt').value,et=$('#d-ett').value;if(!sd||!ed||!st||!et)return;
     const s=atMin(sd,hm2min(st)),en=atMin(ed,hm2min(et));
     if((id==='d-sd'||id==='d-stt')&&s!==t.start){applyTimeChange(t.id,s,s+(t.end-t.start),'開始を変更')}else if(en>s){applyTimeChange(t.id,s,en,'終了を変更')}else{toast('終了は開始より後にしてください');refreshDetail()}return}
-  if(id==='d-mss'||id==='d-mse'){const a=parseYM($('#d-mss').value),z=parseYM($('#d-mse').value);if(!a||!z)return;
-    if(id==='d-mss'){applyTimeChange(t.id,a,addMonths(a,monthsOf(t)),'開始月を変更')}else if(z>=a){applyTimeChange(t.id,a,addMonths(z,1),'終了月を変更')}else{toast('終了月は開始月以降にしてください');refreshDetail()}return}
   if(id==='d-dl'){const d=parseDT(val);commit(t.id,{deadline:d?atMin(d,hm2min(S.settings.workEnd)):null},{action:'期限を変更'});render();refreshDetail();return}
   if(id==='d-proj'){const v=val.trim()||'未分類';commit(t.id,{project:v},{action:'プロジェクトを変更'});render();return}
   if(id==='d-asg'){commit(t.id,{assignee:val.trim()},{action:'担当を変更'});return}
   if(id==='d-dep'&&val){commit(t.id,{deps:[...t.deps,val]},{action:'前工程を追加'});render();refreshDetail();const v=validatePlacement(S.tasks.get(t.id),t.start,t.end);if(v.warnings.length)toast(v.warnings[0]);return}
-  if(id==='d-evd'){const d=parseYM(e.target.value);if(d)applyTimeChange(t.id,d,addMonths(d,1),'月を変更');return}
   if(id==='d-ms'){commit(t.id,{milestone:e.target.checked},{action:'マイルストーン設定'});render();return}
   if(id==='d-memo'){commit(t.id,{memo:val},{action:'メモを更新'});return}
   if(id==='d-name'){const v=val.trim();if(v){clearTimeout(nameTimer);commit(t.id,{name:v},{action:'名称を変更'});render()}}
@@ -1564,16 +1580,34 @@ popBody.addEventListener('change',e=>{
 popBody.addEventListener('keydown',e=>{if(e.key==='Enter'&&e.target.id==='d-name'){e.preventDefault();e.target.blur()}});
 popBody.addEventListener('focusout',()=>{setTimeout(()=>{if(Pop.kind==='detail'&&!popBody.contains(document.activeElement))refreshDetail()},220)});
 
+/* ---- 大日程の月えらび: 1年分の月を並べ、始まり→終わりの順にタップ（◆は1回） ---- */
+function mpHTML(o){
+  const cur=mStart(Date.now()),fy=new Date(o.y);let cells='';
+  for(let i=0;i<12;i++){
+    const m=addMonths(o.y,i),d=new Date(m),on=o.ms?m===o.a:m>=o.a&&m<=o.z,st=on&&m===o.a,en=on&&(o.ms||m===o.z);
+    const sub=o.ms&&on?'◆':i>0&&d.getMonth()===0?String(d.getFullYear()):'';
+    cells+=`<button class="mpc${on?' on':''}${st?' s':''}${en?' e':''}${m===cur?' cur':''}" data-mp="${m}" aria-pressed="${on}" aria-label="${fYM(m)}">${d.getMonth()+1}月${sub?`<small>${sub}</small>`:''}</button>`;
+  }
+  const hint=o.ms?'◆を置く月をタップ':o.step?`終わりの月をタップ（始まり ${fYM(o.a)}）`:'始まりの月 → 終わりの月の順にタップ';
+  return `<div class="mp"><div class="mph"><button data-mpy="-1" aria-label="前の年">${ICON.l}</button><b>${fy.getMonth()===0?fy.getFullYear()+'年':fy.getFullYear()+'年度'}</b><button data-mpy="1" aria-label="次の年">${ICON.r}</button></div><div class="mpg">${cells}</div><p class="mpt">${hint}</p></div>`;
+}
+// one tap: ◆ → that month; 期間 → 1st tap = start (1 month), 2nd tap = end (swapped when earlier)
+function mpPick(st,m){
+  if(st.ms){st.a=st.z=m;st.step=0;return}
+  if(!st.step){st.a=st.z=m;st.step=1}else{if(m<st.a){st.z=st.a;st.a=m}else st.z=m;st.step=0}
+}
+
 /* ---- quick add ---- */
 const QA={kind:null,dur:null,imp:false,start:null,day:null,mode:'task',wk:null,wn:2,project:null};
 function openAdd(o={}){
   QA.kind=null;QA.dur=null;QA.imp=false;QA.start=o.start||null;QA.day=o.day||null;QA.wn=2;QA.project=o.project||null;
   QA.mode=o.mode||(S.view==='master'?'master':'task');
   QA.wk=o.week||monday(S.view==='master'?Math.max(Date.now(),rangeOfView().from):Date.now());
-  QA.ed=mStart(o.day||(S.view==='master'?Math.max(Date.now(),rangeOfView().from):Date.now()));QA.ee=null;QA.eeSet=false;if(o.mms!=null)QA.mms=o.mms;
+  QA.ed=mStart(o.day||(S.view==='master'?Math.max(Date.now(),rangeOfView().from):Date.now()));QA.ee=QA.ed;QA.step=0;QA.my=yearStartOf(QA.ed);QA.tx='';QA.mms=!!o.mms;
   openPop('add',addHTML(),'auto',{label:'追加'});
   updateQuickPreview();
-  setTimeout(()=>{const i=$('#qa');i&&i.focus()},260);
+  // 大日程: keep the keyboard down so the month grid stays in view
+  if(QA.mode!=='master')setTimeout(()=>{const i=$('#qa');i&&i.focus()},260);
 }
 function addHTML(){
   const m=QA.mode==='master';
@@ -1585,10 +1619,8 @@ function addHTML(){
 <div class="addrow"><input id="qa" placeholder="${m?'例）号試 / 正式図面発行 ターゲット':'例）明日 治具調整 45分'}" enterkeyhint="done" autocomplete="off" aria-label="内容"><button class="btn pri" data-act="qaAdd">追加</button></div>
 <div class="qprev" id="qprev"></div>
 ${m?`<div class="segm" style="margin:8px 0"><button data-qmk="span" aria-pressed="${!QA.mms}">期間（帯）</button><button data-qmk="ms" aria-pressed="${!!QA.mms}">マイルストーン（◆）</button></div>
-<div class="fg">${mproj}
-${QA.mms?`<label class="f"><span>月</span><input type="month" id="qdate" value="${ym(QA.ed)}"></label>`
-:`<label class="f"><span>開始月</span><input type="month" id="qdate" value="${ym(QA.ed)}"></label><label class="f"><span>終了月</span><input type="month" id="qend" value="${ym(QA.ee||addMonths(QA.ed,1))}"></label>`}</div>
-<p class="hint" style="margin:8px 4px 0">大日程は月単位です。号試・図面発行・SOPなどの節目を、車種・プロジェクトごとに1行で並べます。「5月 正式図面発行」「6月〜8月 据付」とも書けます。</p>`
+<div class="fg">${mproj}<div class="f mpf" id="qmp">${qmpHTML()}</div></div>
+<p class="hint" style="margin:8px 4px 0">${QA.mms?'マイルストーンは月を1つ選ぶと、その月に◆が付きます。':'選んだ月の範囲（例：5月〜9月）がガントチャートの帯になります。'}期間とマイルストーンは別々に何個でも入れられます。「6月〜8月 据付」「5月 図面発行」と書いても選べます。</p>`
 :`<div class="fg"><div class="f"><span>分類</span><div class="chips row" id="qkind">${Object.entries(KINDS).map(([k,v])=>`<button class="chip" data-qkind="${k}" aria-pressed="false">${v.label}</button>`).join('')}</div></div>
 <div class="f"><span>時間</span><div class="chips row" id="qdur">${[15,30,45,60,120,240].map(n=>`<button class="chip" data-qdur="${n}" aria-pressed="false">${fDur(n*MIN)}</button>`).join('')}<button class="chip" data-qimp="1" aria-pressed="false">重要</button></div></div>
 ${proj}</div>`}`;
@@ -1669,17 +1701,20 @@ function updateQuickPreview(){
   el.textContent=`→ ${fMDW(pl.start)} ${fHM(pl.start)}–${fHM(pl.end)}${pl.auto?' に自動で配置':''}${p.deadline?` ・期限 ${fMDW(p.deadline)}`:''}${pl.note?' ・'+pl.note:''}${v.blocking.length?' ・'+v.blocking[0]:''}`;
   el.className='qprev'+(pl.note||v.blocking.length?' warn':'');
 }
+const qmpHTML=()=>mpHTML({y:QA.my,a:QA.ed,z:QA.ee,ms:QA.mms,step:QA.step});
+function redrawQmp(){const el=$('#qmp');if(el)el.innerHTML=qmpHTML()}
+// months written in the text box (「6月〜8月 据付」「5月 図面発行」「W47-W49」) move the month grid; the last thing touched wins
+function syncMasterText(){
+  const p=parseMaster(($('#qa')||{}).value||'');
+  if(p.d==null&&p.wk==null){QA.tx='';return}
+  const a=mStart(p.d!=null?p.d:p.wk),z=p.me!=null?mStart(p.me):p.d==null&&p.wn?mStart(addDays(p.wk,7*p.wn-1)):a,key=a+':'+z;
+  if(key===QA.tx)return;QA.tx=key;
+  QA.ed=a;QA.ee=QA.mms?a:Math.max(a,z);QA.step=0;QA.my=yearStartOf(a);redrawQmp();
+}
 function masterInput(){
-  const p=parseMaster(($('#qa')||{}).value||''),di=parseYM(($('#qdate')||{}).value),ei=parseYM(($('#qend')||{}).value);
-  // by month: 「6月〜8月 据付」 / 「5月 図面発行」 / 「W47-W49」 (weeks → the months they touch); d = first month, end = last month (null = ◆)
-  const txt=p.d!=null||p.wk!=null;
-  const d=mStart(p.d!=null?p.d:p.wk!=null?p.wk:di||QA.ed);
-  let end=null;
-  if(!QA.mms){
-    end=p.me!=null?p.me:p.d==null&&p.wk!=null&&p.wn?mStart(addDays(p.wk,7*p.wn-1)):QA.eeSet&&ei?ei:txt?addMonths(d,1):ei||addMonths(d,1);
-    if(end<d)end=d;
-  }
-  return {name:p.name,d,end,proj:(($('#qproj')||{}).value||'').trim()||'未分類'};
+  const p=parseMaster(($('#qa')||{}).value||'');
+  // d = first month, end = last month (null = ◆)
+  return {name:p.name,d:QA.ed,end:QA.mms?null:Math.max(QA.ed,QA.ee),proj:(($('#qproj')||{}).value||'').trim()||'未分類'};
 }
 function quickAdd(){
   const raw=($('#qa')||{}).value||'';
@@ -1874,7 +1909,9 @@ function openAttDay(t,refresh){
 async function otherClick(e,b){
   if(b.dataset.act==='close')return closePop();
   if(b.dataset.act==='qaAdd')return quickAdd();
-  if(b.dataset.qmk){const v=($('#qa')||{}).value||'',pj=($('#qproj')||{}).value||'',dv=parseYM(($('#qdate')||{}).value);QA.mms=b.dataset.qmk==='ms';QA.project=pj;if(dv)QA.ed=dv;popBody.innerHTML=addHTML();$('#qa').value=v;updateQuickPreview();return}
+  if(b.dataset.qmk){const v=($('#qa')||{}).value||'',pj=($('#qproj')||{}).value||'';QA.mms=b.dataset.qmk==='ms';QA.project=pj;QA.step=0;if(QA.mms)QA.ee=QA.ed;popBody.innerHTML=addHTML();$('#qa').value=v;updateQuickPreview();return}
+  if(b.dataset.mp!=null&&Pop.kind==='add'){const st={a:QA.ed,z:QA.ee,ms:QA.mms,step:QA.step};mpPick(st,+b.dataset.mp);QA.ed=st.a;QA.ee=st.z;QA.step=st.step;redrawQmp();updateQuickPreview();return}
+  if(b.dataset.mpy&&Pop.kind==='add'){QA.my=addMonths(QA.my,12*+b.dataset.mpy);redrawQmp();return}
   if(b.dataset.qmode){if(QA.mode!==b.dataset.qmode){const v=($('#qa')||{}).value||'';QA.mode=b.dataset.qmode;popBody.innerHTML=addHTML();const i=$('#qa');i.value=v;updateQuickPreview();i.focus()}return}
   if(b.dataset.qwk){QA.wk=addDays(QA.wk,7*+b.dataset.qwk);const p=parseMaster($('#qa').value);if(p.wk!=null){$('#qa').value=$('#qa').value.replace(/W\d{1,2}(\s*[-~〜]\s*W?\d{1,2})?|\d{1,2}[\/月]\d{1,2}日?(の週)?(から|〜|~)?/i,'').trim()}updateQuickPreview();return}
   if(b.dataset.qwn){QA.wn=+b.dataset.qwn;const p=parseMaster($('#qa').value);if(p.wn!=null){$('#qa').value=$('#qa').value.replace(/\d{1,2}\s*週間?/,'').trim()}updateQuickPreview();return}
@@ -1908,7 +1945,7 @@ async function otherClick(e,b){
   if(b.dataset.copyjson){const data=JSON.stringify({tasks:[...S.tasks.values()],settings:S.settings,attendance:S.attendance,proposals:[...S.proposals.values()]},null,1);
     try{await navigator.clipboard.writeText(data);toast('全データをコピーしました')}catch{const ta=document.createElement('textarea');ta.value=data;ta.style.cssText='width:100%;height:160px;margin-top:8px';b.after(ta);ta.select();toast('選択した内容をコピーしてください')}return}
 }
-function otherInput(e){if(e.target.id==='qend'){QA.eeSet=true;QA.ee=parseYM(e.target.value)||null}if(['qa','qdate','qend','qproj'].includes(e.target.id))updateQuickPreview()}
+function otherInput(e){if(e.target.id==='qa'&&QA.mode==='master')syncMasterText();if(['qa','qproj'].includes(e.target.id))updateQuickPreview()}
 function otherChange(e){
   const t=e.target;
   if(t.id==='ad-in'||t.id==='ad-out'){const v=t.value;setAtt(ATTD,t.id==='ad-in'?'in':'out',v?atMin(ATTD,hm2min(v)):null);const sm=$('#adSum');if(sm)sm.innerHTML=attDaySum();const rec=(S.attendance[monthKey(ATTD)]||{})[ymd(ATTD)]||{},cb=$('#adClear');if(cb)cb.hidden=!(rec.in||rec.out);return}
