@@ -2339,7 +2339,7 @@ const MUSE_SEED_TASKS=[{"id": "successfactors-eval", "name": "SuccessFactors年�
     LS.set('tasks',MUSE_SEED_TASKS);
     LS.set('proposals',[]);
     const st={...clone(DEFAULT_SETTINGS),...LS.get('settings',{})};
-    st.days={...(st.days||{}),'2026-11-05':'off','2026-11-13':'sub'};
+    st.days={...(st.days||{}),'2026-11-05':'off','2026-11-07':'sw','2026-11-09':'hw','2026-11-13':'sub'};
     LS.set('settings',st);
     LS.set('showDaily',false); // 大日程には日ごとのタスクを表示しない（本人希望 2026-11-06）
     try{const att=LS.get('attendance',{});for(const mk in MUSE_SEED_ATTENDANCE){att[mk]={...(att[mk]||{}),...MUSE_SEED_ATTENDANCE[mk]}}LS.set('attendance',att)}catch(e){}
