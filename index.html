@@ -15,7 +15,8 @@
 </head><body>
 <title>MUSE GANTT</title>
 <style>
-/* Layout: one screen — slim date bar, full-bleed gantt ruled like a process sheet (every row and day has its line), tab bar; details float as centered cards */
+
+/* Layout: one screen — slim date bar, full-bleed gantt ruled like a process sheet, tab bar. Pages sit between the bars; every editor slides up as a sheet over them. */
 :root{
   --bg:#E8E4DC; --surface:#FAF8F4; --surface-2:#F0EDE7; --surface-3:#E4E0D8;
   --ink:#1E211F; --ink-2:#585B56; --ink-3:#8C8B84;
@@ -30,6 +31,13 @@
   --scrim:rgba(16,18,17,.40); --shadow:0 22px 60px rgba(16,20,18,.28),0 2px 8px rgba(16,20,18,.10);
   --font:-apple-system,BlinkMacSystemFont,"SF Pro Text","SF Pro Display","Hiragino Sans","Hiragino Kaku Gothic ProN","Noto Sans JP",system-ui,sans-serif;
   --row:38px; --axis:30px; --fs:10px; --nw:120px; --kb:0px;
+  /* design tokens — one scale for type, weight, control size, corners and spacing on every screen */
+  --t-xs:10.5px; --t-s:11.5px; --t-m:13px; --t-ui:14px; --t-l:16px; --t-xl:20px; --t-num:18px;
+  --w-med:600; --w-semi:650; --w-bold:700; --w-heavy:800;
+  --h-chip:32px; --h-ctl:38px; --h-btn:40px; --h-row:46px; --h-bar:52px; --h-field-lg:46px; --ic:20px;
+  --r-s:6px; --r-m:10px; --r-l:12px; --r-xl:16px; --lbl:84px;
+  --sp1:4px; --sp2:8px; --sp3:12px; --sp4:16px;
+  --hair:inset 0 0 0 1px var(--line-2); --shadow-sm:0 1px 3px rgba(0,0,0,.12); --ease:cubic-bezier(.2,.9,.25,1);
 }
 @media (prefers-color-scheme: dark){:root:not([data-theme="light"]){
   --bg:#101211; --surface:#181B1A; --surface-2:#202423; --surface-3:#2A2F2D;
@@ -52,35 +60,49 @@
   --off:rgba(0,0,0,.26); --wkend:rgba(255,255,255,.03); --today:rgba(93,170,140,.11); --grp-tint:rgba(255,255,255,.035); --pink:rgba(232,128,150,.16); --pink-ink:#E88AA0;
   --scrim:rgba(0,0,0,.6); --shadow:0 22px 60px rgba(0,0,0,.6); color-scheme:dark}
 
+/* ===================== base ===================== */
 /* manipulation: no double-tap zoom (and no tap delay waiting for one) */
 html{box-sizing:border-box;height:100%;height:100dvh;overflow:hidden;overscroll-behavior:none;touch-action:manipulation}
 *,*::before,*::after{box-sizing:inherit}
-body{height:100%;overflow:hidden;background:var(--bg);color:var(--ink);font:13px/1.35 var(--font);
+body{height:100%;overflow:hidden;background:var(--bg);color:var(--ink);font:500 var(--t-m)/1.4 var(--font);
   -webkit-tap-highlight-color:transparent;-webkit-text-size-adjust:100%;-webkit-user-select:none;user-select:none;-webkit-touch-callout:none;
-  font-variant-numeric:tabular-nums;overscroll-behavior:none}
+  font-variant-numeric:tabular-nums;overscroll-behavior:none;-webkit-font-smoothing:antialiased}
 button{font:inherit;color:inherit;background:none;border:0;padding:0;margin:0;cursor:pointer}
-button:focus-visible,input:focus-visible,textarea:focus-visible,select:focus-visible,[role=button]:focus-visible{outline:2px solid var(--green);outline-offset:2px}
+button:focus-visible,[role=button]:focus-visible{outline:2px solid var(--green);outline-offset:2px}
+/* a field in use is marked quietly from inside (no ring that changes its outline) */
+input:focus,textarea:focus,select:focus{outline:none;box-shadow:inset 0 0 0 1.5px var(--green)!important}
+.title-in:focus{box-shadow:0 2px 0 var(--green)!important}
+/* 16px keeps iOS from zooming into a field */
 input,textarea,select{font:inherit;font-size:16px;color:var(--ink);-webkit-user-select:text;user-select:text}
-.ic{width:22px;height:22px;stroke:currentColor;fill:none;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round;flex:none}
-
+.ic{width:var(--ic);height:var(--ic);stroke:currentColor;fill:none;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round;flex:none}
 #app{height:100%;display:grid;grid-template-rows:auto minmax(0,1fr) auto}
+@keyframes pulse{50%{opacity:.35}}
+@keyframes fadein{from{opacity:0}}
 
-/* ---- top bar: date + period ---- */
+/* ===================== top bar (date + view) ===================== */
 .top{display:flex;align-items:center;gap:2px;height:50px;padding-left:max(6px,env(safe-area-inset-left,0px));padding-right:max(8px,env(safe-area-inset-right,0px))}
-.nav-arrow{width:32px;height:44px;flex:none;display:grid;place-items:center;color:var(--ink-2);border-radius:10px}
-.nav-arrow .ic{width:20px;height:20px}
+.chbar,.pgbar{display:flex;align-items:center;gap:2px;flex:1;min-width:0;height:100%}
+.top.pg .chbar{display:none} .top:not(.pg) .pgbar{display:none}
+.top.pg .pgbar,.top:not(.pg) .chbar{animation:fadein .18s ease}
+/* the back slot is always reserved so a page title sits exactly where the chart's date does */
+.pgbar #pgBack[hidden]{display:grid!important;visibility:hidden}
+.nav-arrow{width:34px;height:44px;flex:none;display:grid;place-items:center;color:var(--ink-2);border-radius:var(--r-m)}
 .datebox{position:relative;display:flex;flex-direction:column;justify-content:center;flex:1;min-width:0;height:44px;padding:0 2px}
-.datebox b{font-size:15px;font-weight:700;letter-spacing:-.015em;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-.datebox small{font-size:var(--fs);color:var(--ink-2);white-space:nowrap;display:flex;align-items:center;gap:5px;font-weight:600}
+.datebox b{font-size:var(--t-l);font-weight:var(--w-bold);letter-spacing:-.015em;line-height:1.25;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.datebox small{font-size:var(--t-s);color:var(--ink-2);font-weight:var(--w-med);line-height:1.3;white-space:nowrap;display:flex;align-items:center;gap:5px}
 .datebox input{position:absolute;inset:0;opacity:0;width:100%;height:100%;font-size:16px}
 .sync{width:6px;height:6px;border-radius:50%;background:var(--ink-3);flex:none}
 .sync.saved{background:var(--green)} .sync.saving{background:var(--brass);animation:pulse 1s infinite} .sync.error{background:var(--late)}
 .sync.local{background:transparent;box-shadow:inset 0 0 0 1.2px var(--ink-3)}
-@keyframes pulse{50%{opacity:.35}}
-.seg{display:flex;flex:none;background:var(--surface-3);border-radius:10px;padding:2px;height:34px}
-.seg button{min-width:34px;padding:0 7px;font-size:12px;font-weight:700;color:var(--ink-2);border-radius:8px;height:30px;position:relative;white-space:nowrap}
-.seg button::before{content:"";position:absolute;inset:-6px 0}
-.seg button[aria-selected=true]{background:var(--surface);color:var(--ink);box-shadow:0 1px 3px rgba(0,0,0,.12)}
+.seg{display:flex;flex:none;background:var(--surface-3);border-radius:var(--r-m);padding:2px;height:32px}
+.seg button{position:relative;min-width:34px;height:28px;padding:0 9px;border-radius:8px;font-size:12.5px;font-weight:var(--w-bold);color:var(--ink-2);white-space:nowrap}
+.seg button::before{content:"";position:absolute;inset:-8px 0}
+.seg button[aria-selected=true]{background:var(--surface);color:var(--ink);box-shadow:var(--shadow-sm)}
+.pgact{display:flex;align-items:center;gap:6px;flex:none}
+.pgact .chip-s{height:30px;padding:0 12px;font-size:var(--t-s)}
+.pgact .iconbtn{height:40px;min-width:40px}
+.amn{display:flex;align-items:center;gap:2px} .amn b{font-size:var(--t-l);font-weight:var(--w-heavy);min-width:44px;text-align:center}
+.amn button{width:36px;height:36px;border-radius:var(--r-m);display:grid;place-items:center;color:var(--ink-2)} .amn button .ic{width:18px;height:18px}
 
 /* ---- chart ---- */
 .chart{position:relative;min-height:0;background:var(--surface);border-top:1px solid var(--line-3);border-bottom:1px solid var(--line-3)}
@@ -92,13 +114,6 @@ input,textarea,select{font:inherit;font-size:16px;color:var(--ink);-webkit-user-
 .chip-s{height:22px;padding:0 8px;border-radius:12px;background:var(--surface-2);box-shadow:inset 0 0 0 1px var(--line-2);font-size:var(--fs);font-weight:700;color:var(--ink-2);display:flex;align-items:center;gap:3px;position:relative;white-space:nowrap}
 .chip-s::before{content:"";position:absolute;inset:-8px -3px}
 .chip-s[aria-pressed=true]{background:var(--ink);color:var(--surface);box-shadow:none}
-.corner.stack{flex-direction:column;align-items:flex-start;justify-content:center;gap:3px}
-.corner.stack{gap:2px}
-.corner.stack .mseg,.corner.stack .chip-s{height:17px}
-.mseg{display:flex;height:24px;border-radius:12px;background:var(--surface-2);box-shadow:inset 0 0 0 1px var(--line-2);padding:2px;position:relative}
-.mseg::before{content:"";position:absolute;inset:-8px -2px}
-.mseg button{position:relative;min-width:24px;padding:0 6px;border-radius:10px;font-size:10.5px;font-weight:800;color:var(--ink-2)}
-.mseg button[aria-pressed=true]{background:var(--ink);color:var(--surface)}
 .ticks{position:relative;flex:none;height:100%;overflow:hidden}
 .tk{position:absolute;top:0;height:100%;transform:translateX(-50%);display:flex;flex-direction:column;align-items:center;justify-content:center;font-size:var(--fs);font-weight:600;color:var(--ink-2);white-space:nowrap;line-height:1.05}
 .tk i{display:block;font-style:normal;font-size:var(--fs);font-weight:600;color:var(--ink-3);margin-top:1px}
@@ -108,15 +123,6 @@ input,textarea,select{font:inherit;font-size:16px;color:var(--ink);-webkit-user-
 .tk.hm{font-size:calc(var(--fs) * .85);color:var(--ink-3);font-weight:600}
 .ticks .hf{position:absolute;top:0;bottom:0;background:var(--pink);box-shadow:inset 0 -2px 0 var(--pink-ink)}
 .tl{position:absolute;top:0;bottom:0;width:0;border-left:1px solid var(--line-2)} .tl.w{border-left-color:var(--line-3)} .tl.tick{top:auto;height:5px;border-left-color:var(--line)}
-.mb{position:absolute;top:0;height:19px;box-shadow:inset 0 -1px 0 transparent;border-left:1.5px solid var(--ink-3);font-size:var(--fs);font-weight:800;line-height:18px;padding-left:5px;white-space:nowrap;overflow:hidden;color:var(--ink)}
-.mb::after{content:"";position:absolute;left:0;right:0;top:19px;border-top:1px solid var(--line-3)}
-.mb.alt{background:var(--wkend)} .mb.first{border-left:0}
-.mb.one{line-height:38px;text-align:center;padding:0}
-.mb.one::after{display:none}
-.mb.one.cur{color:var(--green)}
-.tk.wk{top:19px;height:auto;bottom:0}
-.tl.lo{top:19px}
-.nowp{position:absolute;top:7px;transform:translateX(-50%);background:var(--ink);color:var(--surface);font-size:var(--fs);font-weight:700;padding:2px 6px;border-radius:7px;z-index:2}
 .body{position:relative}
 .bg{position:absolute;top:0;bottom:0;left:var(--nw);pointer-events:none;overflow:hidden}
 .bg i{position:absolute;top:0;bottom:0;display:block}
@@ -181,7 +187,6 @@ input,textarea,select{font:inherit;font-size:16px;color:var(--ink);-webkit-user-
 .gn .ic{width:calc(var(--fs) * 1.1);height:calc(var(--fs) * 1.1);stroke-width:2.4;color:var(--ink-2);transition:transform .2s}
 .grp.col .gn .ic{transform:rotate(-90deg)}
 .gt{position:absolute;top:0;bottom:0;left:var(--nw);background:var(--grp-tint)}
-.span{position:absolute;top:11px;height:8px;border-radius:4px;background:var(--line-3)}
 .deps{position:absolute;top:0;left:var(--nw);pointer-events:none;overflow:visible;z-index:2}
 .deps path{fill:none;stroke:var(--ink);stroke-width:1.5;stroke-dasharray:3 3}
 .nfill{position:sticky;left:0;top:0;width:var(--nw);height:0;z-index:3}
@@ -192,224 +197,11 @@ input,textarea,select{font:inherit;font-size:16px;color:var(--ink);-webkit-user-
 .tip{position:fixed;z-index:50;transform:translate(-50%,-50%);font-size:15px!important;padding:9px 14px!important;border-radius:12px!important;box-shadow:0 6px 20px rgba(0,0,0,.18);background:var(--ink);color:var(--surface);font-size:12.5px;font-weight:700;padding:6px 10px;border-radius:9px;pointer-events:none;white-space:nowrap;display:none}
 .tip.warn{background:var(--late);color:#fff}
 
-/* ---- tab bar ---- */
-.nav{display:grid;grid-template-columns:repeat(5,1fr);height:56px;align-items:center;padding-left:max(6px,env(safe-area-inset-left,0px));padding-right:max(6px,env(safe-area-inset-right,0px))}
-.nav>button{position:relative;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px;height:50px;font-size:10px;font-weight:700;color:var(--ink-2)}
-.nav>button .ic{width:22px;height:22px}
-.nav .add{display:grid;place-items:center;width:56px;height:40px;border-radius:13px;background:var(--ink);color:var(--surface)}
-.nav .add .ic{width:22px;height:22px;stroke-width:2.3}
-.badge{position:absolute;top:2px;left:calc(50% + 6px);min-width:18px;height:18px;padding:0 5px;border-radius:9px;background:var(--brass);color:#fff;font-size:10.5px;font-weight:800;display:grid;place-items:center}
 
-/* ---- centered card (details, add, MUSE, lists) ---- */
-.scrim{position:fixed;inset:0;z-index:40;background:var(--scrim);opacity:0;pointer-events:none;transition:opacity .18s}
-.scrim.on{opacity:1;pointer-events:auto}
-.pop{position:fixed;z-index:41;left:50%;
-  top:calc(env(safe-area-inset-top,0px) + (100% - env(safe-area-inset-top,0px) - env(safe-area-inset-bottom,0px) - var(--kb)) / 2);
-  width:min(calc(100% - 24px),440px);max-height:calc(100% - env(safe-area-inset-top,0px) - env(safe-area-inset-bottom,0px) - var(--kb) - 20px);
-  transform:translate(-50%,-50%) scale(.96);opacity:0;pointer-events:none;transition:opacity .16s ease,transform .2s cubic-bezier(.2,.9,.3,1);
-  background:var(--surface-2);border-radius:20px;box-shadow:var(--shadow);display:flex;flex-direction:column;overflow:hidden}
-.pop.open{opacity:1;transform:translate(-50%,-50%);pointer-events:auto}
-/* full-screen page (list, MUSE, details, settings…): sits under the date bar area down to the tab bar */
-.pop[data-size=page]{left:0;right:0;top:calc(env(safe-area-inset-top,0px) + 50px);bottom:calc(54px + env(safe-area-inset-bottom,0px));width:auto;max-height:none;border-radius:0;box-shadow:none;
-  border-top:1px solid var(--line-3);background:var(--bg);transform:translateX(24px);border-bottom:1px solid var(--line-3)}
-.pop[data-size=page]{transform:none;transition:opacity .12s ease} .pop[data-size=page].open{transform:none}
-.pop[data-size=page] .sc{padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px))}
-.pop[data-size=page] .dh{background:var(--bg);margin-left:calc(-1 * max(16px,env(safe-area-inset-left,0px)));margin-right:calc(-1 * max(16px,env(safe-area-inset-right,0px)))}
-.pop[data-size=page] .sc.chat{background:var(--surface)}
-.pop[data-size=page] .mh{background:var(--bg)}
-.nav>button.on{color:var(--ink)}
-.nav>button.on::after{content:"";position:absolute;bottom:1px;left:calc(50% - 10px);width:20px;height:3px;border-radius:2px;background:var(--ink)}
+/* chart: labels, markers and day types */
 .bar .bl.nmi{left:7px;right:7px;overflow:hidden;text-overflow:ellipsis;color:var(--ink);font-weight:700}
 .bar .bl.out{color:var(--ink);font-weight:700}
 .msl{position:absolute;top:0;line-height:var(--row);font-size:var(--fs);font-weight:700;color:var(--ink);white-space:nowrap;pointer-events:none;z-index:2}
-/* add sheet: pinned just under the date bar with a fixed height, so typing, switching modes or the keyboard never moves it */
-.pop[data-size=sheet]{top:calc(env(safe-area-inset-top,0px) + 54px);transform:translate(-50%,-10px);
-  height:min(640px,calc(100% - env(safe-area-inset-top,0px) - env(safe-area-inset-bottom,0px) - var(--kb) - 62px));max-height:none}
-.pop[data-size=sheet].open{transform:translate(-50%,0)}
-.pop[data-size=sheet] .sc{overflow-anchor:none}
-.pop[data-size=fixed]{height:min(560px,calc(100% - env(safe-area-inset-top,0px) - env(safe-area-inset-bottom,0px) - var(--kb) - 20px))}
-.pop[data-size=tall]{height:calc(100% - env(safe-area-inset-top,0px) - env(safe-area-inset-bottom,0px) - var(--kb) - 20px)}
-.sc{flex:1;min-height:0;overflow:auto;overscroll-behavior:contain;padding:0 16px 18px}
-.sc.chat{display:flex;flex-direction:column;overflow:hidden;padding:0;background:var(--surface)}
-.dh{position:sticky;top:0;z-index:3;display:flex;align-items:center;gap:6px;min-height:50px;margin:0 -16px 4px;padding:6px 6px 4px 16px;background:var(--surface-2)}
-.dh.dh2{flex-direction:column;align-items:stretch;gap:2px;padding:6px 16px 8px}
-.dhr{display:flex;align-items:center;gap:6px;min-height:44px;margin-right:-10px}
-.segm.tabs button small{font-size:10.5px;font-weight:800;opacity:.65;margin-left:3px}
-.chips.row{flex-wrap:nowrap;overflow-x:auto;scrollbar-width:none;min-width:0;margin-right:-12px;padding-right:12px}
-.chips.row::-webkit-scrollbar{display:none}
-.chips.row>*{flex:none}
-.iconbtn.danger{color:var(--late)}
-/* every control answers the finger at once */
-.btn,.chip,.chip-s,.seg button,.segm button,.mseg button,.nav>button,.menu-li,.xbtn,.iconbtn,.step button,.nav-arrow,.ck{transition:transform .08s,opacity .08s}
-.btn:active,.chip:active,.chip-s:active,.seg button:active,.segm button:active,.mseg button:active,.nav>button:active,.menu-li:active,.xbtn:active,.iconbtn:active,.step button:active,.nav-arrow:active{transform:scale(.95);opacity:.7}
-.dh .ttl{font-size:17px;font-weight:750;flex:1;letter-spacing:-.01em}
-.dh .proj{font-size:12px;color:var(--ink-2);font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;flex:1;min-width:0}
-.xbtn{width:44px;height:44px;display:grid;place-items:center;flex:none;color:var(--ink-2)}
-.xbtn::before{content:"";grid-area:1/1;width:30px;height:30px;border-radius:50%;background:var(--surface-3)}
-.xbtn svg{grid-area:1/1;width:16px;height:16px;stroke:currentColor;stroke-width:2.4;fill:none;stroke-linecap:round;z-index:1}
-.btn{height:42px;padding:0 14px;border-radius:11px;background:var(--surface);box-shadow:inset 0 0 0 1px var(--line-2);font-weight:700;font-size:13.5px;display:inline-flex;align-items:center;justify-content:center;gap:6px;white-space:nowrap}
-.btn.pri{background:var(--green);color:var(--on-green);box-shadow:none}
-.btn.ink{background:var(--ink);color:var(--surface);box-shadow:none}
-.btn.danger{color:var(--late);box-shadow:inset 0 0 0 1px var(--late-soft)}
-.btn.wide{width:100%}
-.btn.sm{height:34px;font-size:12.5px;padding:0 11px}
-.btn[disabled]{opacity:.4;pointer-events:none}
-.iconbtn{min-width:44px;height:36px;display:grid;place-items:center;color:var(--ink-2);font-size:12px;font-weight:700;border-radius:9px;padding:0 6px}
-.kchip{font-size:10.5px;font-weight:800;padding:3px 8px;border-radius:6px;background:var(--surface);box-shadow:inset 0 0 0 1px var(--line-2);color:var(--ink-2);white-space:nowrap}
-.kchip.k-line,.kchip.k-stop{background:var(--brass-soft);color:var(--brass);box-shadow:none} .kchip.k-private{background:var(--priv-soft);color:var(--priv);box-shadow:none} .kchip.k-holiday{background:var(--late-soft);color:var(--late);box-shadow:none}
-.kchip.k-master{background:var(--master);color:var(--surface);box-shadow:none}
-.tag{font-size:10px;font-weight:800;color:var(--ink-3);border:1px solid var(--line-2);border-radius:5px;padding:1px 5px;white-space:nowrap}
-.title-in{width:100%;border:0;background:transparent;font-size:20px;font-weight:750;padding:2px 0 4px;letter-spacing:-.015em;outline:none}
-.title-in:focus{box-shadow:0 2px 0 var(--green)}
-.when{display:flex;align-items:center;gap:8px;flex-wrap:wrap;font-size:14px;margin:0 0 10px}
-.when b{font-weight:700}
-.when span{color:var(--ink-2);font-weight:600}
-.pill{font-size:10.5px;font-weight:800;padding:2px 8px;border-radius:10px}
-.pill.late{background:var(--late-soft);color:var(--late)} .pill.imp{background:var(--brass-soft);color:var(--brass)} .pill.run{background:var(--green-soft);color:var(--green)}
-.acts{display:flex;gap:8px;margin-bottom:10px}
-.acts .btn{flex:1;min-width:0}
-.actual{font-size:11.5px;color:var(--ink-2);min-height:16px;font-weight:500;margin-bottom:8px}
-.sect{font-size:11px;font-weight:800;letter-spacing:.06em;color:var(--ink-2);margin:20px 4px 6px}
-.fg{background:var(--surface);border-radius:13px;box-shadow:inset 0 0 0 1px var(--line-2);padding:0 12px}
-.f{display:flex;align-items:center;gap:10px;min-height:46px;border-bottom:1px solid var(--line-2)}
-.fg>.f:last-child{border-bottom:0}
-.f>span:first-child{width:78px;flex:none;font-size:13px;color:var(--ink-2);font-weight:600}
-.f input:not([type=checkbox]):not([type=range]),.f select{flex:1;min-width:0;height:36px;border:0;background:var(--surface-2);border-radius:8px;padding:0 10px}
-.f input[type=checkbox]{width:22px;height:22px;accent-color:var(--green);margin-left:auto;flex:none}
-.f>span.wide{width:auto;flex:1}
-.f .chips select{min-width:0;max-width:100%}
-.f.col{flex-direction:column;align-items:stretch;gap:6px;padding:10px 0}
-.f textarea{width:100%;border:0;background:var(--surface-2);border-radius:8px;padding:8px 10px;resize:vertical;min-height:72px}
-.step{display:flex;align-items:center;flex:1;min-width:0;gap:4px}
-.step b{flex:1;text-align:center;font-size:14px;font-weight:700}
-.step b small{display:block;font-size:10.5px;color:var(--ink-2);font-weight:600}
-.step button{width:40px;height:36px;border-radius:9px;background:var(--surface-2);display:grid;place-items:center;flex:none}
-.step button .ic{width:18px;height:18px}
-.chips{display:flex;flex-wrap:wrap;gap:6px;align-items:center;flex:1;padding:6px 0}
-.chip{height:34px;padding:0 12px;border-radius:17px;background:var(--surface);box-shadow:inset 0 0 0 1px var(--line-2);font-size:12.5px;font-weight:700;color:var(--ink-2);display:inline-flex;align-items:center;gap:4px;white-space:nowrap}
-.fg .chip{background:var(--surface-2);box-shadow:none}
-.chip[aria-pressed=true]{background:var(--ink);color:var(--surface);box-shadow:none}
-.chip.x::after{content:"×";margin-left:2px;opacity:.6}
-.chip.alert{background:var(--late-soft);color:var(--late);box-shadow:none}
-.segm{display:flex;background:var(--surface-2);border-radius:9px;padding:2px}
-.segm button{min-width:44px;height:32px;border-radius:7px;font-weight:700;color:var(--ink-2);padding:0 10px}
-.segm button[aria-pressed=true]{background:var(--surface);color:var(--ink);box-shadow:0 1px 3px rgba(0,0,0,.12)}
-.segm.big{margin:2px 0 10px}
-.dh2 .segm.big{margin:0}
-.segm.big button{flex:1;height:34px}
-.hist{list-style:none;padding:0;margin:0}
-.hist li{font-size:12px;padding:8px 0;border-bottom:1px solid var(--line-2);color:var(--ink);line-height:1.5}
-.hist li:last-child{border-bottom:0}
-.hist time{color:var(--ink-3);margin-right:6px}
-.hist em{display:block;font-style:normal;color:var(--ink-2);font-size:11.5px}
-.by{font-size:10px;font-weight:800;padding:1px 5px;border-radius:4px;background:var(--surface-2);color:var(--ink-2);margin-right:4px}
-.by.muse{background:var(--green-soft);color:var(--green)}
-.hint{font-size:12px;color:var(--ink-2);line-height:1.6;margin:8px 4px 0}
-.addrow{display:flex;gap:8px;margin:2px 0 6px}
-.addrow input{flex:1;min-width:0;height:48px;border:0;border-radius:12px;background:var(--surface);box-shadow:inset 0 0 0 1px var(--line-2);padding:0 12px}
-.addrow .btn{height:48px}
-.qprev{font-size:12.5px;color:var(--green);font-weight:700;height:2.7em;line-height:1.35;margin:4px 4px 6px;display:-webkit-box;-webkit-box-orient:vertical;-webkit-line-clamp:2;overflow:hidden;word-break:break-all}
-.qtype{margin:2px 0 8px}
-.mpg.q7{grid-template-columns:repeat(7,minmax(0,1fr));column-gap:3px}
-.mpc.qd{border-radius:10px} .mpc.qd span{font-size:14px;font-weight:750} .mpc.qd small{font-size:9px;margin-top:2px}
-.mpc.qd small.sun{color:var(--late)} .mpc.qd small.sat{color:var(--priv)}
-.mpc.qd.off:not(.s){background:var(--wkend);color:var(--ink-3)}
-.mpc.qd.s small{color:var(--surface)}
-.mpw{display:grid;grid-template-columns:repeat(7,minmax(0,1fr));height:18px;line-height:18px;font-size:10px;font-weight:700;color:var(--ink-3);text-align:center}
-.mpw .sun{color:var(--late)} .mpw .sat{color:var(--priv)}
-.mpg.dp{grid-template-columns:repeat(7,minmax(0,1fr));row-gap:3px}
-.mpc.dd{height:36px} .mpc.dd span{font-size:13.5px;font-weight:750} .mpc.dd small{font-size:8.5px}
-.mpc.dd.off:not(.on){background:var(--wkend);color:var(--ink-3)}
-.mpc.dd.on.c0:not(.s){border-radius:0}
-.tm2{flex:1;min-width:0;display:grid;grid-template-columns:minmax(0,1fr) auto minmax(0,1fr);gap:6px;align-items:center}
-.tm2 input{width:100%;min-width:0;height:38px;border:0;background:var(--surface-2);border-radius:8px;padding:0 8px;font-size:16px;font-variant-numeric:tabular-nums}
-.tm2 i{font-style:normal;color:var(--ink-3);font-weight:700}
-.qdh .qdl{width:72px;flex:none;font-size:12px;color:var(--ink-2);font-weight:600}
-.qdh .mps{text-align:left;font-size:13px}
-.qhint{font-size:11px;color:var(--ink-2);line-height:1.55;margin:8px 4px 0;font-weight:500}
-.qprev.warn{color:var(--late)}
-.list-h{display:flex;align-items:center;justify-content:space-between;margin:16px 4px 6px;min-height:28px}
-.list-h b{font-size:12px;font-weight:800;color:var(--ink-2);letter-spacing:.04em}
-.list-h small{color:var(--ink-3);font-weight:600}
-.li{display:flex;align-items:center;gap:6px;min-height:48px;border-bottom:1px solid var(--line-2)}
-.fg>.li:last-child{border-bottom:0}
-.li .nt{background:none;padding:4px 0;text-align:left}
-.li .nt b{font-size:13.5px}
-.li .nt small{font-size:11.5px}
-.li .ck{height:44px;margin-left:-6px}
-.menu-li{display:flex;align-items:center;gap:10px;min-height:52px;width:100%;border-bottom:1px solid var(--line-2);font-size:14.5px;font-weight:650;text-align:left}
-.fg>.menu-li:last-child{border-bottom:0}
-.menu-li span{flex:1}
-.menu-li small{color:var(--ink-2);font-size:12px;font-weight:600}
-.menu-li .ic{width:18px;height:18px;color:var(--ink-3)}
-.stat{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px;margin:8px 0}
-.stat div{background:var(--surface);box-shadow:inset 0 0 0 1px var(--line-2);border-radius:12px;padding:10px 12px}
-.stat small{display:block;font-size:11px;color:var(--ink-2);font-weight:600}
-.stat b{font-size:21px;font-weight:800;letter-spacing:-.02em}
-.stat b span{font-size:12px;font-weight:700;color:var(--ink-2);margin-left:2px}
-.att{display:grid;grid-template-columns:minmax(0,1fr) auto minmax(0,1fr) auto;gap:6px;align-items:end;padding:10px 0}
-.att label{min-width:0;display:flex;flex-direction:column;gap:3px;font-size:11px;color:var(--ink-2);font-weight:600}
-.att .btn{padding:0 10px}
-.att input{height:42px;border:0;border-radius:9px;background:var(--surface-2);padding:0 6px;width:100%;min-width:0}
-table.mini{width:100%;border-collapse:collapse;font-size:12px}
-table.mini th{font-weight:700;color:var(--ink-3);text-align:right;padding:7px 4px;font-size:10.5px}
-table.mini th:first-child,table.mini td:first-child{text-align:left}
-table.mini td{text-align:right;padding:8px 4px;border-top:1px solid var(--line-2)}
-.ratio.hi{color:var(--late);font-weight:800} .ratio.ok{color:var(--green);font-weight:800}
-.tbl-wrap{overflow-x:auto}
-.keyrow{display:flex;gap:8px;align-items:center;padding:8px 0}
-.keyrow input{flex:1;min-width:0;height:40px;border:0;background:var(--surface-2);border-radius:9px;padding:0 10px}
-
-/* ---- MUSE ---- */
-.mh{display:flex;align-items:center;gap:4px;padding:6px 6px 6px 16px;border-bottom:1px solid var(--line-2);background:var(--surface-2);flex:none}
-.mh .t{flex:1;display:flex;flex-direction:column}
-.mh .t b{font-size:16px;letter-spacing:.12em;font-weight:800}
-.mh .t small{font-size:11px;color:var(--ink-2);font-weight:600}
-.msgs{flex:1;min-height:0;overflow:auto;overscroll-behavior:contain;padding:14px;display:flex;flex-direction:column;gap:10px;-webkit-user-select:text;user-select:text}
-.msg{max-width:88%;font-size:14px;line-height:1.6;white-space:pre-wrap;word-break:break-word}
-.msg.u{align-self:flex-end;background:var(--ink);color:var(--surface);padding:8px 12px;border-radius:15px 15px 4px 15px}
-.msg.a{align-self:flex-start;color:var(--ink)}
-.msg.a .err{display:block;color:var(--late);font-size:12px;margin-top:4px}
-.msg.a .think{color:var(--ink-3)}
-.acts-log{font-size:11.5px;color:var(--ink-3);display:flex;flex-direction:column;gap:2px;margin-bottom:4px}
-.intro{color:var(--ink-2);font-size:13px;line-height:1.7;padding:2px}
-.intro b{color:var(--ink)}
-.prop{border-radius:13px;background:var(--surface-2);box-shadow:inset 0 0 0 1px var(--line-2);padding:11px 12px;align-self:stretch;-webkit-user-select:none;user-select:none}
-.prop .ph{display:flex;align-items:baseline;gap:8px}
-.prop .ph b{font-size:11px;letter-spacing:.08em;color:var(--green);font-weight:800}
-.prop .ph span{flex:1;font-weight:750;font-size:14px}
-.prop .ph em{font-style:normal;font-size:11px;font-weight:800;color:var(--ink-3)}
-.prop.approved .ph em{color:var(--green)} .prop.rejected{opacity:.6}
-.prop ul{list-style:none;margin:8px 0 0;padding:0;font-size:12.5px;line-height:1.5}
-.prop li{padding:5px 0;border-top:1px solid var(--line-2)}
-.prop li i{font-style:normal;color:var(--ink-2)}
-.prop .why{font-size:12px;color:var(--ink-2);margin:6px 0 0}
-.prop .wn{font-size:12px;color:var(--brass);margin:6px 0 0}
-.prop .pa{display:flex;gap:8px;margin-top:10px}
-.prop .pa .btn{flex:1}
-.prop .pa .btn.see{flex:none;padding:0 12px}
-.mchips{display:flex;gap:6px;overflow-x:auto;padding:8px 12px 2px;scrollbar-width:none;flex:none}
-.mchips::-webkit-scrollbar{display:none}
-.mchips .chip{flex:none}
-.composer{display:flex;gap:8px;align-items:flex-end;padding:8px 12px 12px;flex:none}
-.composer textarea{flex:1;min-width:0;border:0;border-radius:14px;background:var(--surface-2);box-shadow:inset 0 0 0 1px var(--line-2);padding:10px 12px;resize:none;max-height:120px;line-height:1.4}
-.composer .btn{height:44px}
-
-.toast{position:fixed;left:12px;right:12px;margin:0 auto;width:fit-content;bottom:calc(64px + env(safe-area-inset-bottom,0px) + var(--kb));z-index:60;transform:translateY(20px);opacity:0;pointer-events:none;transition:opacity .2s,transform .2s;
-  background:var(--ink);color:var(--surface);border-radius:13px;padding:0 6px 0 14px;min-height:46px;display:flex;align-items:center;gap:8px;font-size:13px;font-weight:700;max-width:440px;box-shadow:var(--shadow)}
-.toast.top{top:calc(env(safe-area-inset-top,0px) + 8px);bottom:auto;transform:translateY(-20px)}
-.toast.on{opacity:1;transform:none;pointer-events:auto}
-.toast span{padding:10px 0}
-.toast button{height:38px;padding:0 10px;color:var(--brass-soft);font-weight:800;white-space:nowrap}
-.toast.noact{padding-right:14px}
-.dlg{position:fixed;inset:0;z-index:70;display:grid;place-items:center;background:var(--scrim);padding:24px}
-.dlg>div{background:var(--surface);border-radius:18px;padding:18px;max-width:340px;width:100%;box-shadow:var(--shadow)}
-.dlg p{margin:0 0 14px;font-size:14.5px;line-height:1.6;white-space:pre-wrap;font-weight:600}
-.dlg .row2{display:flex;gap:8px}
-.dlg .row2 .btn{flex:1}
-/* short screens (iPhone SE in Safari): tighten the detail page so every tab fits without scrolling */
-@media (max-height:600px){.dh0{margin:4px 0 2px}.pop[data-size=page] .f{min-height:38px}.menu-li{min-height:44px}.sect{margin:12px 4px 4px}.att{padding:6px 0}.att input{height:38px}.f{min-height:41px}.title-in{font-size:18px;padding:0 0 2px}.acts .btn{height:38px}.dh{min-height:44px}.when{margin-bottom:6px}.segm.big{margin-bottom:8px}}
-/* day types: 休み / 振替休日 / 休日出勤 / 振替出勤 */
 .hc{position:absolute;top:0;bottom:0}
 .ticks .tk,.ticks .tl,.ticks .mb,.ticks .mkb{pointer-events:none}
 .mkb{position:absolute;bottom:2px;height:3px;border-radius:2px}
@@ -420,119 +212,7 @@ table.mini td{text-align:right;padding:8px 4px;border-top:1px solid var(--line-2
 .bg .mc.off,.bg .mc.sub{background:repeating-linear-gradient(135deg,var(--late-soft) 0 5px,transparent 5px 10px)}
 .bg .mc.hw{background:var(--brass-soft)} .bg .mc.sw{background:var(--green-soft)}
 .chip-s.dt{color:var(--ink)} .chip-s.dt.off,.chip-s.dt.sub{color:var(--late)} .chip-s.dt.hw{color:var(--brass)} .chip-s.dt.sw{color:var(--green)}
-.dgrid{display:grid;grid-template-columns:1fr 1fr;gap:8px}
-.dbtn{min-height:64px;border-radius:13px;background:var(--surface);box-shadow:inset 0 0 0 1px var(--line-2);display:flex;flex-direction:column;align-items:flex-start;justify-content:center;gap:2px;padding:8px 12px;text-align:left;transition:transform .08s}
-.dbtn:active{transform:scale(.96)}
-.dbtn b{font-size:15px;font-weight:800} .dbtn small{font-size:10.5px;color:var(--ink-2);font-weight:600;line-height:1.35}
-.dbtn[aria-pressed=true]{color:#fff;box-shadow:none} .dbtn[aria-pressed=true] small{color:#fff;opacity:.85}
-.dbtn:disabled{opacity:.35}
-.fk-ok{color:var(--green);font-weight:800;white-space:nowrap} .fk-ng{color:var(--late);font-weight:800;white-space:nowrap}
 #moreBtn.alert::before,#listBtn.alert::before{content:"";position:absolute;top:5px;left:calc(50% + 8px);width:9px;height:9px;border-radius:50%;background:var(--late);box-shadow:0 0 0 2px var(--bg)}
-/* ---- one chrome for every tab: same header (title + subtitle + actions) and same tab bar ---- */
-.chbar,.pgbar{display:flex;align-items:center;gap:2px;flex:1;min-width:0;height:100%}
-.top.pg .chbar{display:none} .top:not(.pg) .pgbar{display:none}
-/* the back slot is always reserved so the title sits exactly where the chart's date does */
-.pgbar #pgBack[hidden]{display:grid!important;visibility:hidden}
-.pgact{display:flex;align-items:center;gap:6px;flex:none}
-.pgact .chip-s{height:28px;padding:0 11px;font-size:11px}
-.pgact .iconbtn{height:40px;min-width:40px}
-.pop[data-size=page] .sc{padding-top:4px}
-.tabsbar{position:sticky;top:0;z-index:3;background:var(--bg);margin:0 -16px;padding:8px 16px}
-.dh0{display:flex;align-items:center;gap:6px;margin:8px 0 6px}
-.dh0 .proj{font-size:11px;color:var(--ink-2);font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;flex:1;min-width:0}
-/* refined type scale: 10 / 11 / 12.5 / 15 */
-.top{height:50px}
-.datebox b{font-size:15px;font-weight:700;letter-spacing:-.01em}
-.seg{height:30px;border-radius:9px}
-.seg button{height:26px;font-size:11.5px;min-width:32px;border-radius:7px}
-.nav{height:54px}
-.nav>button{font-size:9.5px;font-weight:600;gap:3px;height:48px}
-.nav>button .ic{width:20px;height:20px}
-.nav .add{width:46px;height:34px;border-radius:10px}
-.nav>button.on::after{bottom:2px;width:4px;height:4px;border-radius:50%;left:calc(50% - 2px)}
-.sect{font-size:10px;letter-spacing:.08em;color:var(--ink-3);margin:18px 4px 6px;font-weight:700}
-.fg{border-radius:12px}
-.f{min-height:42px} .f>span:first-child{font-size:12px;width:72px}
-.menu-li{min-height:44px;font-size:13px;font-weight:600} .menu-li small{font-size:11px}
-.btn{height:36px;border-radius:9px;font-size:12.5px} .btn.sm{height:30px;font-size:11.5px}
-.chip{height:30px;font-size:11.5px;padding:0 10px;border-radius:15px}
-.segm.big button{height:30px;font-size:12px}
-.att{grid-template-columns:minmax(0,1fr) auto minmax(0,1fr) auto;align-items:center;padding:8px 0}
-.att label{flex-direction:row;align-items:center;gap:6px;font-size:11px;white-space:nowrap}
-.att label input{flex:1;min-width:0}
-.att input{height:34px;border-radius:8px;text-align:center}
-.att input::-webkit-calendar-picker-indicator{display:none}
-.att .btn{height:34px;padding:0 11px}
-.title-in{font-size:18px} .when{font-size:12.5px} .actual{font-size:11px}
-.li .nt b{font-size:12.5px} .li .nt small{font-size:10.5px}
-.hint{font-size:11px}
-.stat b{font-size:18px} .stat small{font-size:10px}
-.dh .ttl{font-size:15px}
-.kchip{font-size:10px}
-.mcard{background:var(--bg);border-radius:12px;box-shadow:inset 0 0 0 1px var(--line-2);padding:10px 12px;display:flex;flex-direction:column;gap:6px;align-items:flex-start}
-.mct{display:flex;flex-direction:column;gap:1px} .mct b{font-size:13px} .mct small{font-size:10.5px;color:var(--ink-2)}
-.mrow{display:flex;align-items:center;gap:8px;width:100%;min-height:34px;border-top:1px solid var(--line-2);text-align:left;font-size:12.5px;font-weight:600}
-.mrow i{font-style:normal;width:18px;height:18px;border-radius:50%;background:var(--ink);color:var(--surface);font-size:10px;font-weight:800;display:grid;place-items:center;flex:none}
-.mrow span:not(.mtag){flex:1;min-width:0;line-height:1.3;padding:4px 0}
-.mtag{font-size:10px;font-weight:800;padding:2px 6px;border-radius:6px;background:var(--surface-2);color:var(--ink-2);flex:none} .mtag.late{background:var(--late-soft);color:var(--late)} .mtag.imp{background:var(--brass-soft);color:var(--brass)}
-/* 一覧 uses the chart's text size */
-.pop .li{min-height:var(--row);gap:4px}
-.pop .li .nt b{font-size:var(--fs);font-weight:700;line-height:1.2}
-.pop .li .nt small{font-size:var(--fs)}
-.pop .li .ck{height:var(--row);width:22px}
-.pop .li .pill{font-size:var(--fs);padding:1px 6px}
-/* 勤怠 */
-.attpg{display:flex;flex-direction:column;gap:6px;height:100%;min-height:0;padding-bottom:4px}
-.attpg .att{padding:0;flex:none} .attpg .att input{height:36px}
-.attpg .tiles{flex:none} .attpg .tiles div{padding:5px 8px}
-.attpg .tiles b{font-size:16px}
-.atab{flex:1;min-height:0;display:grid;grid-template-columns:1fr 1fr;gap:6px}
-.acol{display:grid;min-height:0;background:var(--surface);border-radius:11px;box-shadow:inset 0 0 0 1px var(--line-2);overflow:hidden}
-.ah,.ar{display:grid;grid-template-columns:30px minmax(0,1fr) 36px;align-items:center;font-size:10.5px;padding:0 6px 0 4px;min-height:0}
-.ah{font-size:9px;font-weight:700;color:var(--ink-3);padding-top:4px;padding-bottom:3px;border-bottom:1px solid var(--line-2)}
-.ah span:last-child,.ar .o{text-align:right}
-.ar{border-top:1px solid var(--line);text-align:left;font-variant-numeric:tabular-nums;font-weight:600;color:var(--ink)}
-.ah+.ar{border-top:0}
-.ar .d{font-weight:800;display:flex;align-items:baseline;gap:1px} .ar .d i{font-style:normal;font-size:8.5px;font-weight:700;color:var(--ink-3)}
-.ar .d.sun,.ar .d.sun i{color:var(--late)} .ar .d.sat,.ar .d.sat i{color:var(--priv)}
-.ar .t{white-space:nowrap;overflow:hidden;letter-spacing:-.01em} .ar .q{color:var(--ink-3);font-weight:500}
-.ar .o b{font-weight:800} .ar .o .ot{color:var(--late)} .ar .o .ho{color:var(--brass)}
-.ar.off{background:var(--wkend)} .ar.td{background:var(--pink);box-shadow:inset 3px 0 0 var(--pink-ink)}
-.ar em.mk{font-style:normal;font-weight:800;color:#fff;border-radius:4px;padding:0 4px;font-size:9.5px}
-.ar em.mk.off,.ar em.mk.sub{background:var(--late)} .ar em.mk.hw{background:var(--brass)} .ar em.mk.sw{background:var(--green)}
-.amn{display:flex;align-items:center;gap:2px} .amn b{font-size:15px;font-weight:800;min-width:44px;text-align:center}
-.amn button{width:34px;height:34px;border-radius:9px;display:grid;place-items:center;color:var(--ink-2)} .amn button .ic{width:18px;height:18px}
-.fkline{flex:none;display:flex;align-items:center;justify-content:space-between;gap:8px;padding:6px 10px;border-radius:10px;background:var(--late-soft);color:var(--late);font-size:12px;font-weight:800}
-.fkline small{font-size:10px;font-weight:700;opacity:.85}
-.mrow5{flex:none;display:flex;gap:5px}
-.mrow5 button{flex:1;min-width:0;height:38px;border-radius:10px;background:var(--surface);box-shadow:inset 0 0 0 1px var(--line-2);font-size:11px;font-weight:700;display:flex;flex-direction:column;align-items:center;justify-content:center;line-height:1.15;white-space:nowrap}
-.mrow5 button small{font-size:9px;font-weight:700;color:var(--late)} .mrow5 button small.ok{color:var(--green)}
-.pop[data-size=page] .sc:has(> .attpg){overflow:hidden}
-.mnav{display:flex;align-items:center;justify-content:space-between;margin:6px 0 4px}
-.mnav b{font-size:15px;font-weight:750}
-.mnav button{width:40px;height:34px;border-radius:9px;display:grid;place-items:center;color:var(--ink-2)}
-.mnav button .ic{width:18px;height:18px}
-.tiles{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:6px}
-.tiles div{background:var(--surface);box-shadow:inset 0 0 0 1px var(--line-2);border-radius:11px;padding:7px 8px}
-.tiles small{display:block;font-size:10px;color:var(--ink-2);font-weight:700}
-.tiles b{font-size:17px;font-weight:800;letter-spacing:-.02em}
-.tiles b span{font-size:10px;font-weight:700;color:var(--ink-2);margin-left:1px}
-.tiles .ot b{color:var(--late)} .tiles .ho b{color:var(--brass)}
-.achart{position:relative;display:grid;gap:2px;height:104px;align-items:end;padding:0 0 2px;margin-top:8px}
-.ab{position:relative;height:100%;display:flex;flex-direction:column-reverse;border-radius:3px;background:var(--surface-2);overflow:hidden;padding:0}
-.ab i{display:block;flex:none}
-.ab .n{height:var(--h);background:var(--green)} .ab .o{height:var(--o);background:var(--late)} .ab .x{height:var(--x);background:var(--brass)}
-.ab.off{background:var(--wkend)} .ab.td{box-shadow:0 0 0 1.5px var(--ink)}
-.astd{position:absolute;left:0;right:0;border-top:1px dashed var(--ink-3);pointer-events:none}
-.astd span{position:absolute;right:0;top:-13px;font-size:9px;color:var(--ink-3);font-weight:700}
-.adays{display:grid;gap:2px;font-size:9px;color:var(--ink-3);text-align:center;font-weight:600}
-.alegend{display:flex;gap:10px;font-size:10px;color:var(--ink-2);margin:4px 0 0;font-weight:600}
-.alegend i{display:inline-block;width:8px;height:8px;border-radius:2px;margin-right:3px;vertical-align:-1px}
-.mgrid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:5px}
-.mgrid button{min-height:44px;border-radius:11px;background:var(--surface);box-shadow:inset 0 0 0 1px var(--line-2);font-size:11px;font-weight:700;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:1px;padding:4px;line-height:1.2}
-.mgrid button small{font-size:9.5px;color:var(--ink-2);font-weight:600}
-.mgrid button.warn small{color:var(--late)}
-.evl{position:absolute;font-size:var(--fs);font-weight:700;color:var(--ink);white-space:nowrap;z-index:2}
 .msl.cut{overflow:hidden;text-overflow:ellipsis}
 .gms{position:absolute;top:50%;width:calc(var(--fs) * .6);height:calc(var(--fs) * .6);margin:calc(var(--fs) * -.3) 0 0 calc(var(--fs) * -.3);transform:rotate(45deg);border-radius:2px;background:var(--ink-2);pointer-events:none}
 .gms.late{background:var(--late)} .gms.imp{background:var(--brass)}
@@ -541,43 +221,273 @@ table.mini td{text-align:right;padding:8px 4px;border-top:1px solid var(--line-2
 .pk::after{content:attr(data-l);position:absolute;left:0;right:0;top:50%;transform:translateY(-50%);text-align:center;font-size:var(--fs);font-weight:800;color:var(--green);white-space:nowrap}
 @keyframes pkin{from{opacity:0;transform:scale(.8)}}
 .gadd{margin-left:auto;flex:none;width:28px;height:28px;border-radius:8px;display:grid;place-items:center;color:var(--ink-2)} .gadd .ic{width:calc(var(--fs) * 1.2);height:calc(var(--fs) * 1.2)}
-.bar.evb .bl{top:0}
 .evx{position:absolute;z-index:3;top:calc((var(--row) - 22px) / 2);height:22px;display:block;padding:0 8px;line-height:22px;text-align:left;border-radius:7px;background:var(--surface-2);box-shadow:inset 0 0 0 1px var(--line-2);font-size:var(--fs);font-weight:700;color:var(--ink-2);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .cnl{font-size:var(--fs);font-weight:700;color:var(--ink-3);padding-left:4px}
 .ck.mk0{cursor:default}
 .ck.mk0::after{width:calc(var(--fs) * .62);height:calc(var(--fs) * .62);border-radius:2px;transform:rotate(45deg);background:var(--ink-3);box-shadow:none;grid-area:1/1}
 .ck.mk0:not(.ev)::after{width:calc(var(--fs) * .9);height:calc(var(--fs) * .4);border-radius:3px;transform:none}
-@media (max-height:600px){#popBody .f{min-height:39px} .acts{margin-bottom:8px}}
-/* detail: calmer, roomier form */
-.pop[data-kind=detail] .title-in,#popBody .title-in{display:block;resize:none;font-family:inherit;line-height:1.3;min-height:0;height:auto;max-height:2.7em;overflow:hidden;color:var(--ink)}
-.dt2{flex:1;min-width:0;display:grid;grid-template-columns:minmax(0,1.25fr) minmax(0,1fr);gap:6px}
-.dt2 input{width:100%;min-width:0;height:38px!important;border:0;background:var(--surface-2);border-radius:8px;padding:0 8px;font-size:16px;font-variant-numeric:tabular-nums}
-.f input[type=date],.f input[type=time]{font-size:16px;font-variant-numeric:tabular-nums}
-.f input::-webkit-calendar-picker-indicator{display:none}
-.f.ftop .chips{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:5px;padding:3px 0} .f.ftop .chip{min-height:30px;height:30px;padding:0 3px;font-size:11px;letter-spacing:-.02em;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;justify-content:center}
-.f.ftop{display:grid;grid-template-columns:72px minmax(0,1fr);align-items:start;padding:4px 0} .f.ftop>span:first-child{padding-top:10px;width:auto}
+
+/* ===================== tab bar ===================== */
+.nav{display:grid;grid-template-columns:repeat(5,1fr);height:54px;align-items:center;padding-left:max(6px,env(safe-area-inset-left,0px));padding-right:max(6px,env(safe-area-inset-right,0px))}
+.nav>button{position:relative;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:3px;height:48px;font-size:10px;font-weight:var(--w-med);color:var(--ink-2)}
+.nav>button .ic{width:22px;height:22px}
+.nav>button.on{color:var(--ink)}
+.nav>button.on::after{content:"";position:absolute;bottom:2px;left:calc(50% - 2px);width:4px;height:4px;border-radius:50%;background:var(--ink)}
+.nav .add{display:grid;place-items:center;width:48px;height:34px;border-radius:var(--r-m);background:var(--ink);color:var(--surface)}
+.nav .add .ic{stroke-width:2.2}
+
+/* ===================== pages (一覧・勤怠・設定・実績): between the date bar and the tab bar ===================== */
+.pop{position:fixed;z-index:41;left:0;right:0;top:calc(env(safe-area-inset-top,0px) + 50px);
+  bottom:calc(54px + env(safe-area-inset-bottom,0px));
+  display:flex;flex-direction:column;overflow:hidden;background:var(--bg);border-top:1px solid var(--line-3);border-bottom:1px solid var(--line-3);
+  opacity:0;transform:translateY(8px);visibility:hidden;pointer-events:none;
+  transition:opacity .16s ease,transform .22s var(--ease),visibility 0s linear .22s}
+.pop.open{opacity:1;transform:none;visibility:visible;pointer-events:auto;transition:opacity .16s ease,transform .22s var(--ease),visibility 0s}
+/* a page makes room for the keyboard only while one of its own fields is in use (an editor sheet above it never resizes it) */
+.kbp .pop{bottom:max(calc(54px + env(safe-area-inset-bottom,0px)),var(--kb))}
+.sc{flex:1;min-height:0;overflow:auto;overscroll-behavior:contain;-webkit-overflow-scrolling:touch;overflow-anchor:none;
+  padding:4px max(var(--sp4),env(safe-area-inset-right,0px)) 24px max(var(--sp4),env(safe-area-inset-left,0px))}
+.sc:has(> .attpg){overflow:hidden}
+.tabsbar{position:sticky;top:-4px;z-index:3;background:var(--bg);margin:-4px calc(-1 * max(var(--sp4),env(safe-area-inset-left,0px))) 0;padding:10px max(var(--sp4),env(safe-area-inset-left,0px)) 4px}
+
+/* ===================== edit sheet: slides up over the chart or a page; the screen underneath is frozen ===================== */
+.shscrim{position:fixed;inset:0;z-index:44;background:var(--scrim);opacity:0;pointer-events:none;transition:opacity .24s ease}
+.shscrim.on{opacity:1;pointer-events:auto}
+.shlock #app,.shlock #pop{pointer-events:none}
+.sheet{position:fixed;z-index:45;left:0;right:0;top:calc(env(safe-area-inset-top,0px) + 10px);bottom:var(--kb);max-width:600px;margin:0 auto;
+  display:flex;flex-direction:column;overflow:hidden;background:var(--bg);border-radius:var(--r-xl) var(--r-xl) 0 0;box-shadow:var(--shadow);
+  transform:translateY(calc(100% + 24px));visibility:hidden;contain:layout paint;
+  transition:transform .3s var(--ease),visibility 0s linear .3s}
+.sheet.open{transform:none;visibility:visible;transition:transform .32s var(--ease),visibility 0s}
+.sheet.quick{transition:visibility 0s}
+.sheet.fit{top:auto;max-height:calc(100% - env(safe-area-inset-top,0px) - 10px)}
+.shbar{position:relative;flex:none;display:grid;grid-template-columns:minmax(84px,auto) minmax(0,1fr) minmax(84px,auto);align-items:center;height:var(--h-bar);padding:0 6px;border-bottom:1px solid var(--line-2);background:var(--bg)}
+.shbtn{height:44px;padding:0 10px;font-size:15px;font-weight:var(--w-med);color:var(--ink-2);border-radius:var(--r-m);white-space:nowrap}
+#shCancel{justify-self:start} #shDone{justify-self:end}
+.shbtn.pri{color:var(--green);font-weight:var(--w-bold)}
+.shtt{display:flex;flex-direction:column;align-items:center;justify-content:center;min-width:0;line-height:1.25}
+.shtt b{max-width:100%;font-size:15px;font-weight:var(--w-bold);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.shtt small{max-width:100%;font-size:var(--t-xs);font-weight:var(--w-med);color:var(--ink-3);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.shtt small:empty{display:none}
+.shbody{flex:1;min-height:0;overflow:auto;overscroll-behavior:contain;-webkit-overflow-scrolling:touch;overflow-anchor:none;
+  padding:var(--sp3) max(var(--sp4),env(safe-area-inset-right,0px)) calc(28px + env(safe-area-inset-bottom,0px)) max(var(--sp4),env(safe-area-inset-left,0px))}
+.sheet.fit .shbody{flex:0 1 auto}
+
+/* ===================== components ===================== */
+/* every control answers the finger at once, lightly */
+.btn,.chip,.chip-s,.seg button,.segm button,.nav>button,.iconbtn,.nav-arrow,.shbtn,.mpc,.dbtn,.amn button,.mph button{transition:transform .1s ease,opacity .1s ease,background-color .14s ease,color .14s ease}
+.btn:active,.chip:active,.chip-s:active,.seg button:active,.segm button:active,.nav>button:active,.iconbtn:active,.nav-arrow:active,.shbtn:active,.mpc:active,.dbtn:active,.amn button:active,.mph button:active{transform:scale(.96);opacity:.72}
+.ar:active,.li .nt:active{opacity:.6}
+/* buttons */
+.btn{height:var(--h-btn);padding:0 var(--sp4);border-radius:var(--r-l);background:var(--surface);box-shadow:var(--hair);
+  display:inline-flex;align-items:center;justify-content:center;gap:6px;font-size:var(--t-ui);font-weight:var(--w-bold);color:var(--ink);white-space:nowrap}
+.btn.pri{background:var(--green);color:var(--on-green);box-shadow:none}
+.btn.ink{background:var(--ink);color:var(--surface);box-shadow:none}
+.btn.danger{color:var(--late);box-shadow:inset 0 0 0 1px var(--late-soft)}
+.btn.wide{width:100%}
+.btn.sm{height:var(--h-chip);padding:0 var(--sp3);border-radius:var(--r-m);font-size:var(--t-m)}
+.btn[disabled]{opacity:.4;pointer-events:none}
+.iconbtn{min-width:40px;height:40px;padding:0 6px;border-radius:var(--r-m);display:grid;place-items:center;color:var(--ink-2);font-size:var(--t-s);font-weight:var(--w-bold)}
+.iconbtn.danger{color:var(--late)}
+.xbtn{width:44px;height:44px;flex:none;display:grid;place-items:center;color:var(--ink-2)}
+.xbtn::before{content:"";grid-area:1/1;width:30px;height:30px;border-radius:50%;background:var(--surface-3)}
+.xbtn svg{grid-area:1/1;width:16px;height:16px;stroke:currentColor;stroke-width:2.4;fill:none;stroke-linecap:round;z-index:1}
+/* chips (choices) */
+.chips{display:flex;flex-wrap:wrap;gap:6px;align-items:center;flex:1;min-width:0;padding:7px 0}
+.chips.row{flex-wrap:nowrap;overflow-x:auto;scrollbar-width:none;margin-right:calc(-1 * var(--sp3));padding-right:var(--sp3)}
+.chips.row::-webkit-scrollbar{display:none}
+.chips.row>*{flex:none}
+.chip{height:var(--h-chip);padding:0 var(--sp3);border-radius:999px;background:var(--surface);box-shadow:var(--hair);
+  display:inline-flex;align-items:center;gap:4px;font-size:var(--t-m);font-weight:var(--w-semi);color:var(--ink-2);white-space:nowrap}
+.fg .chip{background:var(--surface-2);box-shadow:none}
+.chip[aria-pressed=true]{background:var(--ink);color:var(--surface);box-shadow:none}
+.chip small{font-size:var(--t-xs);font-weight:var(--w-med);opacity:.75}
+.chip.x::after{content:"×";margin-left:2px;opacity:.6}
+/* segmented control */
+.segm{display:flex;gap:2px;padding:2px;border-radius:var(--r-m);background:var(--surface-3)}
+.fg .segm{background:var(--surface-2)}
+.segm button{flex:1;min-width:44px;height:30px;padding:0 10px;border-radius:8px;font-size:var(--t-m);font-weight:var(--w-bold);color:var(--ink-2);white-space:nowrap}
+.segm button[aria-pressed=true]{background:var(--surface);color:var(--ink);box-shadow:var(--shadow-sm)}
+.segm.big{margin:0 0 var(--sp3)}
+.segm.tabs button small{font-size:var(--t-xs);font-weight:var(--w-heavy);opacity:.6;margin-left:3px}
+/* cards and their rows */
+.fg{background:var(--surface);border-radius:var(--r-l);box-shadow:var(--hair);padding:0 14px}
+.f{display:flex;align-items:center;gap:10px;min-height:var(--h-row);border-bottom:1px solid var(--line-2)}
+.fg>.f:last-child,.fg>label.f:last-child{border-bottom:0}
+.f>span:first-child{width:var(--lbl);flex:none;font-size:var(--t-m);font-weight:var(--w-med);color:var(--ink-2);white-space:nowrap}
+.f>span.wide{width:auto;flex:1}
+.f.col{flex-direction:column;align-items:stretch;gap:6px;padding:10px 0}
+.f.ftop{display:grid;grid-template-columns:var(--lbl) minmax(0,1fr);align-items:start;padding:4px 0} .f.ftop>span:first-child{padding-top:12px;width:auto}
+.f.ftop .chips{display:grid;grid-template-columns:repeat(auto-fill,minmax(104px,1fr));gap:6px;padding:6px 0}
+.f.ftop .chip{padding:0 4px;justify-content:center;font-size:12px;letter-spacing:-.02em;overflow:hidden;text-overflow:ellipsis}
 .f .segm{flex:1}
+.f .chips select{min-width:0;max-width:100%}
+/* fields: one height, one background, no borders (inside a card) */
+.f input:not([type=checkbox]):not([type=range]),.f select,.tm2 input,.att input{height:var(--h-ctl);border:0;border-radius:var(--r-m);background:var(--surface-2);padding:0 var(--sp3);font-size:16px;font-variant-numeric:tabular-nums}
+.f input:not([type=checkbox]):not([type=range]),.f select{flex:1;min-width:0}
+.f input::-webkit-calendar-picker-indicator,.att input::-webkit-calendar-picker-indicator{display:none}
+.f input[type=checkbox]{width:24px;height:24px;accent-color:var(--green);margin-left:auto;flex:none}
+.f textarea{width:100%;min-height:120px;border:0;border-radius:var(--r-m);background:var(--surface-2);padding:10px var(--sp3);line-height:1.55;resize:none}
+.tm2{flex:1;min-width:0;display:grid;grid-template-columns:minmax(0,1fr) auto minmax(0,1fr);gap:8px;align-items:center}
+.tm2 input{width:100%;min-width:0}
+.tm2 i{font-style:normal;color:var(--ink-3);font-weight:var(--w-bold)}
+/* text helpers */
+.sect{margin:20px 4px 6px;font-size:var(--t-xs);font-weight:var(--w-bold);letter-spacing:.06em;color:var(--ink-3)}
+.hint,.qhint{margin:8px 4px 0;font-size:var(--t-s);font-weight:500;line-height:1.6;color:var(--ink-2)}
+.list-h{display:flex;align-items:center;justify-content:space-between;min-height:24px;margin:18px 4px 6px}
+.tabsbar+.list-h{margin-top:6px}
+.list-h b{font-size:var(--t-s);font-weight:var(--w-bold);letter-spacing:.03em;color:var(--ink-2)}
+.list-h small{font-size:var(--t-s);font-weight:var(--w-med);color:var(--ink-3)}
+/* labels */
+.kchip,.tag{padding:3px 8px;border-radius:var(--r-s);font-size:var(--t-xs);font-weight:var(--w-bold);line-height:1.2;white-space:nowrap}
+.kchip{background:var(--surface);box-shadow:var(--hair);color:var(--ink-2)}
+.kchip.k-line,.kchip.k-stop{background:var(--brass-soft);color:var(--brass);box-shadow:none} .kchip.k-private{background:var(--priv-soft);color:var(--priv);box-shadow:none} .kchip.k-holiday{background:var(--late-soft);color:var(--late);box-shadow:none}
+.kchip.k-master{background:var(--master);color:var(--surface);box-shadow:none}
+.tag{color:var(--ink-3);box-shadow:var(--hair)}
+.pill{padding:2px 8px;border-radius:999px;font-size:var(--t-xs);font-weight:var(--w-bold);line-height:1.35;white-space:nowrap}
+.pill.late{background:var(--late-soft);color:var(--late)} .pill.imp{background:var(--brass-soft);color:var(--brass)} .pill.run{background:var(--green-soft);color:var(--green)}
+/* number tiles: the figure is what the eye should land on */
+.tiles,.stat{display:grid;gap:6px}
+.tiles{grid-template-columns:repeat(4,minmax(0,1fr))}
+.stat{grid-template-columns:repeat(2,minmax(0,1fr));gap:var(--sp2);margin:var(--sp2) 0 var(--sp3)}
+.tiles div,.stat div{background:var(--surface);box-shadow:var(--hair);border-radius:var(--r-l);padding:8px 10px}
+.tiles small,.stat small{display:block;font-size:var(--t-xs);font-weight:var(--w-bold);color:var(--ink-2)}
+.tiles b,.stat b{font-size:var(--t-num);font-weight:var(--w-heavy);letter-spacing:-.02em;font-variant-numeric:tabular-nums}
+.tiles b span,.stat b span{margin-left:1px;font-size:var(--t-xs);font-weight:var(--w-bold);color:var(--ink-2)}
+.tiles .ot b{color:var(--late)} .tiles .ho b{color:var(--brass)}
+/* tables (実績) */
+table.mini{width:100%;border-collapse:collapse;font-size:var(--t-s)}
+table.mini th{padding:8px 4px;text-align:right;font-size:var(--t-xs);font-weight:var(--w-bold);color:var(--ink-3)}
+table.mini th:first-child,table.mini td:first-child{text-align:left}
+table.mini td{padding:9px 4px;text-align:right;border-top:1px solid var(--line-2)}
+.ratio.hi{color:var(--late);font-weight:var(--w-heavy)} .ratio.ok{color:var(--green);font-weight:var(--w-heavy)}
+.tbl-wrap{overflow-x:auto}
+/* toast & dialog */
+.toast{position:fixed;left:12px;right:12px;bottom:calc(64px + env(safe-area-inset-bottom,0px) + var(--kb));z-index:60;margin:0 auto;width:fit-content;max-width:440px;min-height:46px;
+  display:flex;align-items:center;gap:8px;padding:0 6px 0 14px;border-radius:var(--r-l);background:var(--ink);color:var(--surface);box-shadow:var(--shadow);
+  font-size:var(--t-m);font-weight:var(--w-bold);opacity:0;transform:translateY(16px);pointer-events:none;transition:opacity .2s ease,transform .24s var(--ease)}
+.toast.insheet{bottom:calc(20px + env(safe-area-inset-bottom,0px) + var(--kb))}
+.toast.on{opacity:1;transform:none;pointer-events:auto}
+.toast span{padding:11px 0;line-height:1.4}
+.toast button{height:38px;padding:0 10px;color:var(--brass-soft);font-weight:var(--w-heavy);white-space:nowrap}
+.toast.noact{padding-right:14px}
+.dlg{position:fixed;inset:0;z-index:70;display:grid;place-items:center;padding:24px;background:var(--scrim);animation:fadein .16s ease}
+.dlg>div{width:100%;max-width:340px;padding:18px;border-radius:var(--r-xl);background:var(--surface);box-shadow:var(--shadow)}
+.dlg p{margin:0 0 14px;font-size:var(--t-ui);font-weight:var(--w-semi);line-height:1.6;white-space:pre-wrap}
+.dlg .row2{display:flex;gap:var(--sp2)}
+.dlg .row2 .btn{flex:1}
+
+/* ===================== screens ===================== */
+/* edit sheet — task / 大日程: what is being edited sits on top in large type */
+.dhead{margin:2px 0 var(--sp3)}
+.dh0{display:flex;align-items:center;gap:6px;min-height:22px;margin:0 0 6px}
+.dh0 .proj{flex:1;min-width:0;font-size:var(--t-s);font-weight:var(--w-med);color:var(--ink-2);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.title-in{display:block;width:100%;height:calc(var(--t-xl) * 1.3 * 2);margin:0 0 6px;padding:0;border:0;background:transparent;resize:none;outline:none;overflow:hidden;
+  font-family:inherit;font-size:var(--t-xl);font-weight:var(--w-bold);line-height:1.3;letter-spacing:-.015em;color:var(--ink)}
+.title-in:focus{box-shadow:0 2px 0 var(--green)}
+.when{display:flex;align-items:baseline;gap:8px;min-height:22px;white-space:nowrap;overflow:hidden}
+.when b{font-size:var(--t-ui);font-weight:var(--w-bold)}
+.when span{font-size:var(--t-m);font-weight:var(--w-med);color:var(--ink-2)}
+.acts{display:flex;gap:var(--sp2);margin:0 0 var(--sp3)}
+.acts .btn{flex:1;min-width:0}
+.actual{min-height:18px;margin:0 4px var(--sp2);font-size:var(--t-s);font-weight:500;color:var(--ink-2);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.dfoot{display:flex;flex-direction:column;gap:var(--sp2);margin-top:20px}
+.hist{list-style:none;padding:0;margin:0}
+.hist li{padding:9px 0;border-bottom:1px solid var(--line-2);font-size:var(--t-s);line-height:1.5;color:var(--ink)}
+.hist li:last-child{border-bottom:0}
+.hist time{margin-right:6px;color:var(--ink-3)}
+.hist em{display:block;font-style:normal;font-size:var(--t-s);color:var(--ink-2)}
+.by{margin-right:4px;padding:1px 5px;border-radius:4px;background:var(--surface-2);font-size:var(--t-xs);font-weight:var(--w-heavy);color:var(--ink-2)}
+.by.muse{background:var(--green-soft);color:var(--green)}
+/* edit sheet — add */
+.addrow{display:flex;gap:var(--sp2);margin:0 0 2px}
+.addrow input{flex:1;min-width:0;height:var(--h-field-lg);padding:0 14px;border:0;border-radius:var(--r-l);background:var(--surface);box-shadow:var(--hair);font-size:16px}
+.qprev{height:2.8em;margin:6px 4px var(--sp2);display:-webkit-box;-webkit-box-orient:vertical;-webkit-line-clamp:2;overflow:hidden;word-break:break-all;
+  font-size:var(--t-m);font-weight:var(--w-bold);line-height:1.4;color:var(--green)}
+.qprev.warn{color:var(--late)}
+.qtype{margin:0 0 var(--sp3)}
+/* month / day pickers (2-tap ranges) */
 .mp{width:100%}
-.mph{display:flex;align-items:center;height:40px;gap:2px}
-.mph button{width:40px;height:40px;flex:none;display:grid;place-items:center;color:var(--ink-2);border-radius:9px}
+.f.mpf{display:block;padding:4px 0 10px}
+.mph{display:flex;align-items:center;gap:2px;height:40px}
+.mph button{width:40px;height:40px;flex:none;display:grid;place-items:center;color:var(--ink-2);border-radius:var(--r-m)}
 .mph button .ic{width:18px;height:18px}
-.mps{flex:1;min-width:0;text-align:center;font-size:14px;font-weight:750;letter-spacing:-.01em;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-.mps small{font-size:11.5px;font-weight:650;color:var(--ink-2);margin-left:5px}
-.mpy{font-size:10.5px;font-weight:750;color:var(--ink-3);letter-spacing:.03em;height:20px;line-height:20px;padding-left:2px}
+.mps{flex:1;min-width:0;text-align:center;font-size:var(--t-ui);font-weight:var(--w-bold);letter-spacing:-.01em;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.mps small{margin-left:5px;font-size:var(--t-s);font-weight:var(--w-semi);color:var(--ink-2)}
+.qdh .qdl{width:var(--lbl);flex:none;font-size:var(--t-m);font-weight:var(--w-med);color:var(--ink-2)}
+.qdh .mps{text-align:left;font-size:var(--t-m)}
+.mpy{height:20px;padding-left:2px;line-height:20px;font-size:var(--t-xs);font-weight:var(--w-bold);letter-spacing:.03em;color:var(--ink-3)}
 .mpg{display:grid;grid-template-columns:repeat(6,minmax(0,1fr));row-gap:4px}
 .mpg+.mpy{margin-top:6px}
-@media (max-height:700px){.mpc{height:34px}.mpc.dd{height:33px}.mpy{height:18px;line-height:18px}.pop[data-size=sheet] .addrow input,.pop[data-size=sheet] .addrow .btn{height:44px}.pop[data-size=sheet] .dh{min-height:44px}.qhint{margin-top:6px}}
-.mpc{position:relative;height:38px;font-size:13px;font-weight:700;color:var(--ink-2);display:flex;flex-direction:column;align-items:center;justify-content:center;line-height:1.05;font-variant-numeric:tabular-nums;transition:background-color .12s}
-.mpc small{font-size:8.5px;font-weight:700;color:var(--ink-3);margin-top:1px}
+.mpg.q7{grid-template-columns:repeat(7,minmax(0,1fr));column-gap:3px}
+.mpg.dp{grid-template-columns:repeat(7,minmax(0,1fr));row-gap:3px}
+.mpw{display:grid;grid-template-columns:repeat(7,minmax(0,1fr));height:18px;line-height:18px;text-align:center;font-size:var(--t-xs);font-weight:var(--w-bold);color:var(--ink-3)}
+.mpw .sun{color:var(--late)} .mpw .sat{color:var(--priv)}
+.mpc{position:relative;height:38px;display:flex;flex-direction:column;align-items:center;justify-content:center;line-height:1.05;font-size:var(--t-m);font-weight:var(--w-bold);color:var(--ink-2);font-variant-numeric:tabular-nums}
+.mpc small{margin-top:1px;font-size:8.5px;font-weight:var(--w-bold);color:var(--ink-3)}
 .mpc.on{background:var(--master-soft);color:var(--ink)}
 .mpc.s,.mpc.e{background:var(--master);color:var(--surface)} .mpc.s small,.mpc.e small{color:var(--surface);opacity:.8}
-.mpc.s{border-radius:10px 0 0 10px} .mpc.e{border-radius:0 10px 10px 0} .mpc.s.e{border-radius:10px}
-.mpc.on.c0:not(.s){border-radius:0} .mpc.pms{border-radius:10px}
+.mpc.s{border-radius:var(--r-m) 0 0 var(--r-m)} .mpc.e{border-radius:0 var(--r-m) var(--r-m) 0} .mpc.s.e,.mpc.pms{border-radius:var(--r-m)}
+.mpc.on.c0:not(.s){border-radius:0}
 .mpc.cur::after{content:"";position:absolute;bottom:3px;left:50%;width:4px;height:4px;margin-left:-2px;border-radius:50%;background:var(--pink-ink)}
-.mpc:active{transform:scale(.94)}
-.mpt{height:18px;line-height:18px;font-size:11px;color:var(--ink-2);text-align:center;margin:6px 0 0;font-weight:650;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-.mpt b{color:var(--ink);font-weight:800}
-.f.mpf{display:block;padding:2px 0 8px}
+.mpc.qd{border-radius:var(--r-m)} .mpc.qd span{font-size:var(--t-ui);font-weight:var(--w-bold)} .mpc.qd small{margin-top:2px;font-size:9px}
+.mpc.qd small.sun{color:var(--late)} .mpc.qd small.sat{color:var(--priv)}
+.mpc.qd.off:not(.s){background:var(--wkend);color:var(--ink-3)}
+.mpc.qd.s small{color:var(--surface)}
+.mpc.dd{height:36px} .mpc.dd span{font-size:13.5px;font-weight:var(--w-bold)}
+.mpc.dd.off:not(.on){background:var(--wkend);color:var(--ink-3)}
+.mpc.dd.on.c0:not(.s){border-radius:0}
+.mpt{height:18px;margin:6px 0 0;line-height:18px;text-align:center;font-size:var(--t-s);font-weight:var(--w-semi);color:var(--ink-2);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.mpt b{color:var(--ink);font-weight:var(--w-heavy)}
+/* 一覧: rows follow the chart's text-size setting, names a step larger than their details */
+.li{display:flex;align-items:center;gap:4px;min-height:calc(var(--row) + 6px);border-bottom:1px solid var(--line-2)}
+.fg>.li:last-child{border-bottom:0}
+.li .nt{padding:6px 0;background:none;text-align:left}
+.li .nt b{max-height:none;font-size:calc(var(--fs) * 1.3);font-weight:var(--w-bold);line-height:1.3}
+.li .nt small{font-size:calc(var(--fs) * 1.1)}
+.li .ck{width:24px;height:calc(var(--row) + 6px);margin-left:-4px}
+.li .pill{font-size:calc(var(--fs) * 1.05)}
+.li.editing{margin:0 -14px;padding:0 14px;background:var(--today)}
+/* 勤怠 */
+.attpg{display:flex;flex-direction:column;gap:6px;height:100%;min-height:0;padding:6px 0 4px}
+.att{display:grid;grid-template-columns:minmax(0,1fr) auto minmax(0,1fr) auto;gap:6px;align-items:center;padding:var(--sp2) 0}
+.attpg .att{flex:none;padding:0}
+.att label{min-width:0;display:flex;align-items:center;gap:6px;font-size:var(--t-s);font-weight:var(--w-med);color:var(--ink-2);white-space:nowrap}
+.att label input{flex:1;min-width:0;width:100%;text-align:center}
+.att.two{grid-template-columns:1fr 1fr;gap:12px}
+.att .btn{height:var(--h-ctl);padding:0 var(--sp3)}
+.attpg .tiles{flex:none} .attpg .tiles div{padding:6px 8px} .attpg .tiles b{font-size:17px}
+.atab{flex:1;min-height:0;display:grid;grid-template-columns:1fr 1fr;gap:6px}
+.acol{display:grid;min-height:0;overflow:hidden;background:var(--surface);border-radius:var(--r-l);box-shadow:var(--hair)}
+.ah,.ar{display:grid;grid-template-columns:30px minmax(0,1fr) 36px;align-items:center;min-height:0;padding:0 6px 0 4px;font-size:10.5px}
+.ah{padding-top:4px;padding-bottom:3px;border-bottom:1px solid var(--line-2);font-size:9px;font-weight:var(--w-bold);color:var(--ink-3)}
+.ah span:last-child,.ar .o{text-align:right}
+.ar{border-top:1px solid var(--line);text-align:left;font-weight:var(--w-med);color:var(--ink);font-variant-numeric:tabular-nums}
+.ah+.ar{border-top:0}
+.ar .d{display:flex;align-items:baseline;gap:1px;font-weight:var(--w-heavy)} .ar .d i{font-style:normal;font-size:8.5px;font-weight:var(--w-bold);color:var(--ink-3)}
+.ar .d.sun,.ar .d.sun i{color:var(--late)} .ar .d.sat,.ar .d.sat i{color:var(--priv)}
+.ar .t{white-space:nowrap;overflow:hidden;letter-spacing:-.01em} .ar .q{font-weight:500;color:var(--ink-3)}
+.ar .o b{font-weight:var(--w-heavy)} .ar .o .ot{color:var(--late)} .ar .o .ho{color:var(--brass)}
+.ar.off{background:var(--wkend)} .ar.td{background:var(--pink);box-shadow:inset 3px 0 0 var(--pink-ink)}
+.ar em.mk{padding:0 4px;border-radius:4px;font-style:normal;font-size:9.5px;font-weight:var(--w-heavy);color:#fff}
+.ar em.mk.off,.ar em.mk.sub{background:var(--late)} .ar em.mk.hw{background:var(--brass)} .ar em.mk.sw{background:var(--green)}
+.fkline{flex:none;display:flex;align-items:center;justify-content:space-between;gap:8px;padding:6px 10px;border-radius:var(--r-m);background:var(--late-soft);color:var(--late);font-size:var(--t-s);font-weight:var(--w-heavy)}
+.fkline small{font-size:var(--t-xs);font-weight:var(--w-bold);opacity:.85}
+.fk-ok{color:var(--green);font-weight:var(--w-heavy);white-space:nowrap} .fk-ng{color:var(--late);font-weight:var(--w-heavy);white-space:nowrap}
+/* 休み・休日出勤 (small sheet) */
+.dgrid{display:grid;grid-template-columns:1fr 1fr;gap:var(--sp2)}
+.dbtn{min-height:64px;display:flex;flex-direction:column;align-items:flex-start;justify-content:center;gap:2px;padding:8px 12px;border-radius:var(--r-l);background:var(--surface);box-shadow:var(--hair);text-align:left}
+.dbtn b{font-size:var(--t-ui);font-weight:var(--w-heavy)} .dbtn small{font-size:var(--t-xs);font-weight:var(--w-med);line-height:1.35;color:var(--ink-2)}
+.dbtn[aria-pressed=true]{color:#fff;box-shadow:none} .dbtn[aria-pressed=true] small{color:#fff;opacity:.85}
+.dbtn:disabled{opacity:.35}
+.empty .btn{pointer-events:auto;margin-top:10px}
+
+/* short screens (iPhone SE in Safari): a little tighter, nothing removed */
+@media (max-height:700px){
+  :root{--h-row:44px;--h-btn:38px;--h-field-lg:44px}
+  .mpc{height:34px}.mpc.dd{height:33px}.mpy{height:18px;line-height:18px}
+  .title-in{--t-xl:18px}.dhead{margin-bottom:10px}.sect{margin-top:16px}
+}
 @media (prefers-reduced-motion: reduce){*{transition:none!important;animation:none!important}}
 </style>
 
@@ -610,8 +520,12 @@ table.mini td{text-align:right;padding:8px 4px;border-top:1px solid var(--line-2
     <button id="setBtn"><svg class="ic" viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/><path d="M12 2.8v2.6M12 18.6v2.6M21.2 12h-2.6M5.4 12H2.8M18.5 5.5l-1.8 1.8M7.3 16.7l-1.8 1.8M18.5 18.5l-1.8-1.8M7.3 7.3L5.5 5.5"/></svg>設定</button>
   </nav>
 </div>
-<div class="scrim" id="scrim"></div>
-<section class="pop" id="pop" role="dialog" aria-modal="true"><div class="sc" id="popBody"></div></section>
+<section class="pop" id="pop" aria-live="polite"><div class="sc" id="popBody"></div></section>
+<div class="shscrim" id="shScrim"></div>
+<section class="sheet" id="sheet" role="dialog" aria-modal="true" aria-labelledby="shTitle">
+  <header class="shbar"><button class="shbtn" id="shCancel" type="button">キャンセル</button><div class="shtt"><b id="shTitle"></b><small id="shSub"></small></div><button class="shbtn pri" id="shDone" type="button">完了</button></header>
+  <div class="shbody" id="shBody"></div>
+</section>
 <div class="toast" id="toast"><span id="toastMsg"></span><button id="toastAct"></button></div>
 <div class="tip" id="tip"></div>
 
@@ -932,7 +846,7 @@ const Store={
     },()=>{});
     db.collection('attendance').onSnapshot(snap=>{
       for(const d of snap.docs)if(!S.dirty.has('att:'+d.id))S.attendance[d.id]=d.data().days||{};
-      cacheLocal();if(Pop.kind==='stats')openStats(true);
+      cacheLocal();if(Pop.kind==='stats')openStats(true);if(Pop.kind==='more')openMore(true);if(Sh.kind==='attday')refreshAttDay();
     },()=>{});
   },
   migrate(remote){
@@ -987,7 +901,7 @@ const Store={
 let pendingRemote=null;
 // a short note about outside changes, with a jump to the item when it is just one (never while a sheet or drag is in use)
 let noteTimer=null;
-function remoteNote(msg,id){clearTimeout(noteTimer);noteTimer=setTimeout(()=>{if(G.mode==='drag'||(Pop.kind&&Pop.kind!=='detail'&&Pop.kind!=='list'))return;toast(msg,id&&S.tasks.has(id)?'見る':null,id?()=>goToTask(id):null,5000)},400)}
+function remoteNote(msg,id){clearTimeout(noteTimer);noteTimer=setTimeout(()=>{if(G.mode==='drag'||(Sh.kind&&Sh.kind!=='detail'))return;toast(msg,id&&S.tasks.has(id)&&!Sh.kind?'見る':null,id?()=>{if(Pop.kind)closePop();showOnChart(id)}:null,5000)},400)}
 function applyRemoteTasks(m){
   if(G.mode==='drag'){pendingRemote=m;return}
   // changes that did not come from this device: name them once (MUSE's own edits carry by:'muse' in their history)
@@ -1003,8 +917,8 @@ function applyRemoteTasks(m){
     if(flag==='del')m.delete(id);else if(S.tasks.has(id))m.set(id,S.tasks.get(id));
   }
   S.tasks=m;cacheLocal();render();
-  if(Pop.kind==='detail'){if(S.tasks.has(S.selected))refreshDetail();else closePop()}
-  else if(Pop.kind==='list')openList(true);
+  if(Sh.kind==='detail'){if(S.tasks.has(DT.id))refreshDetail();else closeSheet()}
+  if(Pop.kind==='list')openList(true);
 }
 
 /* ============ mutations ============ */
@@ -1527,13 +1441,27 @@ document.addEventListener('touchstart',e=>{
 },{passive:false,capture:true});
 document.addEventListener('touchend',e=>{
   const g=G.edge;G.edge=null;if(!g)return;const t=e.changedTouches[0];
-  if(t&&Math.hypot(t.clientX-g.x,t.clientY-g.y)<10&&!scroller.contains(g.el)){const b=g.el.closest&&g.el.closest('button,#scrim');if(b)b.click()}
+  if(t&&Math.hypot(t.clientX-g.x,t.clientY-g.y)<10&&!scroller.contains(g.el)){const b=g.el.closest&&g.el.closest('button,#shScrim');if(b)b.click()}
 },{capture:true});
 scroller.addEventListener('contextmenu',e=>e.preventDefault());
 scroller.addEventListener('keydown',e=>{if(e.key==='Enter'||e.key===' '){const el=e.target.closest('[data-mscale],[data-daily],[data-ck],[data-id],[data-grp],[data-scope],[data-zoomreset],[data-sample]');if(el){e.preventDefault();tap(el)}}});
 
 /* ============ selection / jumping ============ */
 function select(id){S.selected=id;render();openDetail(id);ensureVisible(id)}
+// put a task in view on the chart (right view, right day/year, its group open) and select it
+function showOnChart(id){
+  const t=S.tasks.get(id);if(!t)return;
+  if(isMaster(t)&&S.view==='day')S.view='week';
+  if(!isMaster(t)&&!t.milestone&&S.view==='master')S.view='week';
+  if(isMaster(t))S.view='master';
+  LS.set('view',S.view);
+  const day=sod(Math.max(t.start,Math.min(Date.now(),t.end-1)));
+  if(S.view==='day')S.anchor=sod(t.start)<=day&&day<t.end?day:sod(t.start);
+  else S.anchor=sod(t.start);
+  if(!scopeOk(t))S.scope='all';
+  S.collapsed.delete(t.project);S.collapsed.delete('m:'+t.project);
+  S.zoom=1;scroller.scrollLeft=0;S.selected=id;render();ensureVisible(id);
+}
 function ensureVisible(id){
   requestAnimationFrame(()=>{
     const row=grid.querySelector(`[data-row="${CSS.escape(id)}"]`);if(!row)return;
@@ -1542,76 +1470,129 @@ function ensureVisible(id){
     const t=S.tasks.get(id);if(t&&scroller.scrollWidth>scroller.clientWidth){const x=spanOf(t).l+S.nw;const vis=scroller.scrollLeft+S.nw;if(x<vis||x>scroller.scrollLeft+scroller.clientWidth-40)scroller.scrollLeft=Math.max(0,x-S.nw-24)}
   });
 }
-function goToTask(id){
-  const t=S.tasks.get(id);if(!t)return;
-  if(isMaster(t)&&S.view==='day')S.view='week';
-  if(!isMaster(t)&&!t.milestone&&S.view==='master')S.view='week';
-  LS.set('view',S.view);
-  const day=sod(Math.max(t.start,Math.min(Date.now(),t.end-1)));
-  if(S.view==='day')S.anchor=sod(t.start)<=day&&day<t.end?day:sod(t.start);
-  else S.anchor=sod(t.start);
-  if(!scopeOk(t))S.scope='all';
-  S.collapsed.delete(t.project);
-  S.zoom=1;scroller.scrollLeft=0;
-  select(id);
-}
+function goToTask(id){showOnChart(id);openDetail(id)}
 function toggleDone(id){
   const t=S.tasks.get(id);if(!t||isMaster(t))return;
   const done=t.status!=='done';
   setStatus(id,done?'done':'reopen');
   if(done&&S.selected===id)S.selected=null;
-  const row=!Pop.kind&&done&&grid.querySelector(`[data-row="${CSS.escape(id)}"]`);
+  const row=!Pop.kind&&!Sh.kind&&done&&grid.querySelector(`[data-row="${CSS.escape(id)}"]`);
   const fin=()=>{render();refreshAnyPop()};
   if(row&&row.animate&&!matchMedia('(prefers-reduced-motion: reduce)').matches)row.animate([{opacity:1,transform:'none'},{opacity:0,transform:'translateX(24px)'}],{duration:200,easing:'ease-in',fill:'forwards'}).finished.then(fin,fin);else fin();
   toast(done?`「${t.name}」を完了 → 一覧の「完了」へ`:'未完了に戻しました・チャートに戻ります','元に戻す',doUndo);
 }
 
-/* ============ centered card ============ */
+/* ============ pages (一覧・勤怠・設定・実績) ============ */
+// Pages are places you go to from the tab bar. Editing never happens by replacing a page: every editor opens in the sheet below,
+// on top of whatever is on screen, so the page (and its scroll position) under it is never rebuilt.
 const Pop={kind:null};
-const popEl=$('#pop'),popBody=$('#popBody'),scrim=$('#scrim');
-// every screen with tabs (and everything reached from the tab bar) opens as a page; only quick add stays a card
-const PAGES=['list','more','settings','stats','detail','attday'];
-function markNav(){const k=Pop.kind,on={list:'listBtn',more:'moreBtn',settings:'setBtn',stats:'listBtn',attday:'moreBtn'}[k]||(!k||k==='detail'||k==='add'?'todayBtn':'');
+const popEl=$('#pop'),popBody=$('#popBody');
+const PAGES=['list','more','settings','stats'];
+function markNav(){const k=Pop.kind,on={list:'listBtn',more:'moreBtn',settings:'setBtn',stats:'listBtn'}[k]||(!k?'todayBtn':'');
   document.querySelectorAll('.nav>button').forEach(b=>b.classList.toggle('on',b.id===on))}
 function pageTop(o){
   Pop.back=o.back||null;$('#pgTitle').textContent=o.title||'';$('#pgSub').textContent=o.sub||'';$('#pgAct').innerHTML=o.actions||'';$('#pgBack').hidden=!o.back;
 }
-function openPop(kind,html,size='auto',opts={}){
-  Pop.kind=kind;popBody.className='sc'+(opts.chat?' chat':'');popBody.innerHTML=html;
-  if(PAGES.includes(kind))size='page';
-  popEl.dataset.size=size;popEl.classList.add('open');popEl.setAttribute('aria-label',opts.label||'');
-  $('.top').classList.toggle('pg',size==='page');
-  scrim.classList.toggle('on',size!=='page');markNav();
-  if(!opts.keepScroll)popBody.scrollTop=0;
+function openPop(kind,html,size,opts={}){
+  const same=Pop.kind===kind;
+  Pop.kind=kind;popBody.innerHTML=html;
+  popEl.classList.add('open');popEl.setAttribute('aria-label',opts.label||'');
+  $('.top').classList.add('pg');markNav();
+  if(!same&&!opts.keepScroll)popBody.scrollTop=0;
 }
 function closePop(){
   if(!Pop.kind)return;
-  // leaving 一覧・勤怠・設定・MUSE… returns the chart to today (a task's details keep your place)
-  if(['list','more','settings','stats','attday'].includes(Pop.kind)){S.anchor=sod(Date.now());S.zoom=1;S.selected=null;scroller.scrollLeft=0;requestAnimationFrame(scrollToFocus)}
-  Pop.kind=null;popEl.classList.remove('open');scrim.classList.remove('on');markNav();$('.top').classList.remove('pg');
+  if(Sh.kind)closeSheet(true);
+  // leaving 一覧・勤怠・設定 returns the chart to today
+  S.anchor=sod(Date.now());S.zoom=1;S.selected=null;scroller.scrollLeft=0;requestAnimationFrame(scrollToFocus);
+  Pop.kind=null;popEl.classList.remove('open');markNav();$('.top').classList.remove('pg');
   if(document.activeElement&&popEl.contains(document.activeElement))document.activeElement.blur();
   render();
 }
-scrim.addEventListener('click',closePop);
-document.addEventListener('keydown',e=>{if(e.key==='Escape'&&Pop.kind&&!document.querySelector('.dlg'))closePop()});
+// a page refreshed by data changes keeps its scroll position (a rebuild that resets it is what made pages jump)
+function setPageHTML(html){const st=popBody.scrollTop;popBody.innerHTML=html;popBody.scrollTop=st}
 function refreshAnyPop(){
   const k=Pop.kind;
-  if(k==='detail')refreshDetail();else if(k==='list')openList(true);else if(k==='stats')openStats(true);else if(k==='more')openMore(true);else if(k==='attday')openAttDay(ATTD,true);else if(k==='settings')openSettings(true);
+  if(k==='list')openList(true);else if(k==='stats')openStats(true);else if(k==='more')openMore(true);else if(k==='settings')openSettings(true);
+  if(Sh.kind==='detail')refreshDetail();else if(Sh.kind==='attday')refreshAttDay();
 }
 
-/* ---- detail ---- */
-function openDetail(id,back){const t=S.tasks.get(id);if(!t)return;const keep=Pop.kind==='detail';if(!keep||DT.id!==id){DT.tab='plan';DT.id=id}if(keep&&!back)back=Pop.back;pageTop({title:'タスク詳細',sub:t.project,back:back||'chart',actions:`<button class="iconbtn danger" data-act="del" aria-label="削除">${ICON.trash}</button>`});openPop('detail',detailHTML(t),'fixed',{label:'タスクの詳細',keepScroll:keep})}
-function refreshDetail(){
-  const t=S.tasks.get(S.selected);if(!t){closePop();return}
-  const a=document.activeElement;if(a&&popBody.contains(a)&&/INPUT|TEXTAREA|SELECT/.test(a.tagName))return;
-  const st=popBody.scrollTop;popBody.innerHTML=detailHTML(t);popBody.scrollTop=st;
+/* ============ edit sheet: slides up over the chart or a page; キャンセル / title / 完了 ============ */
+const Sh={kind:null,on:{}};
+const sheetEl=$('#sheet'),shBody=$('#shBody'),shScrim=$('#shScrim');
+function openSheet(kind,o){
+  const was=Sh.kind;
+  Sh.kind=kind;Sh.on={cancel:o.onCancel||null,done:o.onDone||null,dismiss:o.onDismiss||null};
+  $('#shTitle').textContent=o.title||'';$('#shSub').textContent=o.sub||'';
+  const c=$('#shCancel'),d=$('#shDone');
+  c.textContent=o.cancel||'キャンセル';c.style.visibility=o.cancel===null?'hidden':'';d.textContent=o.done||'完了';
+  sheetEl.classList.toggle('fit',!!o.fit);sheetEl.dataset.kind=kind;sheetEl.setAttribute('aria-label',o.label||o.title||'');
+  if(o.html!=null){shBody.innerHTML=o.html;shBody.scrollTop=0}
+  if(!was){
+    document.documentElement.classList.add('shlock');           // the screen underneath is frozen while editing
+    sheetEl.classList.add('open');shScrim.classList.add('on');
+  }
 }
+function closeSheet(quick){
+  if(!Sh.kind)return;
+  const a=document.activeElement;if(a&&sheetEl.contains(a))a.blur();
+  Sh.kind=null;Sh.on={};
+  sheetEl.classList.toggle('quick',!!quick);sheetEl.classList.remove('open');shScrim.classList.remove('on');
+  document.documentElement.classList.remove('shlock');
+  if(S.selected&&DT.id===S.selected&&Pop.kind){S.selected=null}
+  render();if(Pop.kind==='list')openList(true);
+}
+const shAct=k=>{const f=Sh.on[k];if(f)f();else closeSheet()};
+$('#shCancel').addEventListener('click',()=>shAct('cancel'));
+$('#shDone').addEventListener('click',()=>shAct('done'));
+shScrim.addEventListener('click',()=>Sh.on.dismiss?Sh.on.dismiss():shAct('done'));
+shScrim.addEventListener('touchmove',e=>e.preventDefault(),{passive:false});
+document.addEventListener('keydown',e=>{if(e.key!=='Escape'||document.querySelector('.dlg'))return;if(Sh.kind){Sh.on.dismiss?Sh.on.dismiss():shAct('done')}else if(Pop.kind)closePop()});
+// a region is rebuilt only when its content changed, and never while you are typing in it (no re-mount, no lost input, no jump)
+function patchRegion(id,html){
+  const el=document.getElementById(id);if(!el)return;
+  if(el._h===html&&!el._pend)return;
+  const a=document.activeElement;if(a&&el.contains(a)&&/INPUT|TEXTAREA|SELECT/.test(a.tagName)){el._pend=html;return}
+  el.innerHTML=html;el._h=html;el._pend=null;
+}
+
+/* ---- detail (edit sheet) ---- */
 const DT={tab:'plan'};
-function detailHTML(t){
+function openDetail(id){
+  const t=S.tasks.get(id);if(!t)return;
+  const fresh=Sh.kind!=='detail'||DT.id!==id;
+  if(fresh){DT.tab='plan';DT.id=id;DT.snap=clone(t);DT.mid=DT.did=null}
+  S.selected=id;
+  openSheet('detail',{title:isMaster(t)?(t.milestone?'節目の編集':'大日程の編集'):'タスクの編集',sub:'変更はすぐ保存されます',cancel:'キャンセル',done:'完了',
+    onCancel:cancelDetail,onDone:()=>closeSheet(),label:'タスクの編集',
+    html:fresh?`<div class="dhead"><div class="dh0" id="dChips"></div><textarea id="d-name" class="title-in" rows="2" aria-label="名前" enterkeyhint="done" autocomplete="off"></textarea><div class="when" id="dWhen"></div></div>
+<div id="dActs"></div><div class="segm big tabs" id="dTabs"></div><div id="dBody"></div><div class="dfoot" id="dFoot"></div>`:null});
+  if(fresh)$('#d-name').value=t.name;
+  refreshDetail();
+  if(Pop.kind==='list')openList(true);
+}
+function refreshDetail(){
+  if(Sh.kind!=='detail')return;
+  const t=S.tasks.get(DT.id);if(!t){closeSheet();return}
+  const p=detailParts(t);
+  patchRegion('dChips',p.chips);patchRegion('dWhen',p.when);patchRegion('dActs',p.acts);patchRegion('dTabs',p.tabs);patchRegion('dBody',p.body);patchRegion('dFoot',p.foot);
+  const n=$('#d-name');if(n&&document.activeElement!==n&&n.value!==t.name)n.value=t.name;
+}
+async function cancelDetail(){
+  const t=S.tasks.get(DT.id),s=DT.snap,keys=[...TRACKED,'segs'];
+  const changed=t&&s&&keys.some(k=>JSON.stringify(t[k])!==JSON.stringify(s[k]));
+  if(changed){
+    if(!await ask('この画面で変えた内容を取り消して閉じますか？','取り消して閉じる','編集を続ける'))return;
+    const f={};for(const k of keys)f[k]=s[k];commit(t.id,f,{action:'編集を取り消し'});toast('変更を取り消しました');
+  }
+  closeSheet();refreshAnyPop();
+}
+function detailParts(t){
   const now=Date.now(),late=isLate(t,now),same=singleDay(t.start,t.end),mst=isMaster(t);
-  const sb={todo:`<button class="btn pri" data-act="start">開始</button><button class="btn" data-act="done">完了</button>`,
-    doing:`<button class="btn" data-act="pause">中断</button><button class="btn pri" data-act="done">完了</button>`,
-    paused:`<button class="btn pri" data-act="resume">再開</button><button class="btn" data-act="done">完了</button>`,
+  // 「完了にする」 = mark the task done; the sheet's own 「完了」 only closes the editor
+  const sb={todo:`<button class="btn pri" data-act="start">開始</button><button class="btn" data-act="done">完了にする</button>`,
+    doing:`<button class="btn" data-act="pause">中断</button><button class="btn pri" data-act="done">完了にする</button>`,
+    paused:`<button class="btn pri" data-act="resume">再開</button><button class="btn" data-act="done">完了にする</button>`,
     done:`<button class="btn" data-act="reopen">未完了に戻す</button>`}[t.status];
   const worked=workedMs(t,now);
   const actual=t.segs.length?`実績 ${fMD(t.segs[0].s)} ${fHM(t.segs[0].s)}開始${t.status==='done'&&t.segs[t.segs.length-1].e?` → ${fMD(t.segs[t.segs.length-1].e)} ${fHM(t.segs[t.segs.length-1].e)}終了`:''} ・ 作業 ${fDur(worked)}${mst?'':`（予定 ${fDur(t.end-t.start)}）`}`:'実績はまだありません。開始を押すと記録します';
@@ -1621,30 +1602,34 @@ function detailHTML(t){
   const whenTxt=ev?'◆ '+fYM(t.start):mst?masterRange(t,true):`${fMDW(t.start)} ${fHM(t.start)}–${same?fHM(t.end):fMDW(t.end)+' '+fHM(t.end)}`;
   const durTxt=ev?'マイルストーン':mst?`${monthsOf(t)}か月`:fDur(t.end-t.start);
   const hm=v=>`${pad(new Date(v).getHours())}:${pad(new Date(v).getMinutes())}`;
-  const mtype=mst?`<div class="f"><span>種類</span><div class="segm"><button data-mstype="span" aria-pressed="${!t.milestone}">期間（帯）</button><button data-mstype="ms" aria-pressed="${t.milestone}">マイルストーン（◆）</button></div></div>`:'';
+  const mtype=mst?`<div class="segm big qtype"><button data-mstype="span" aria-pressed="${!t.milestone}">期間（帯）</button><button data-mstype="ms" aria-pressed="${t.milestone}">マイルストーン（◆）</button></div>`:'';
   if(mst&&DT.mid!==t.id){DT.mid=t.id;DT.my=yearStartOf(t.start);DT.mstep=0}
   if(!mst&&DT.did!==t.id){DT.did=t.id;DT.dstep=0;const today=sod(Date.now());DT.dy=monday(t.start-today<21*DAY?Math.min(today,t.start):t.start)}
-  const sched=mst?`${mtype}<div class="f mpf">${mpHTML({y:DT.my,a:t.start,z:mStart(t.end-1),ms:t.milestone,step:DT.mstep})}</div>`
+  const sched=mst?`<div class="f mpf">${mpHTML({y:DT.my,a:t.start,z:mStart(t.end-1),ms:t.milestone,step:DT.mstep})}</div>`
     :`<div class="f mpf">${dpHTML({y:DT.dy,a:sod(t.start),z:sod(t.end-1),step:DT.dstep})}</div>
 <div class="f"><span>時刻</span><div class="tm2"><input type="time" id="d-stt" value="${hm(t.start)}" aria-label="開始時刻"><i>–</i><input type="time" id="d-ett" value="${hm(t.end)}" aria-label="終了時刻"></div></div>`;
-  const deps=`<div class="f"><span>前工程</span><div class="chips row">${t.deps.filter(d=>S.tasks.has(d)).map(d=>`<button class="chip x" data-undep="${d}" aria-label="依存を外す">${esc(S.tasks.get(d).name)}</button>`).join('')}<select id="d-dep" style="flex:none;width:auto;max-width:160px"><option value="">＋ 追加</option>${others.map(o=>`<option value="${o.id}">${fMD(o.start)} ${esc(o.name)}</option>`).join('')}</select></div></div>`;
+  const deps=`<div class="f"><span>前工程</span><div class="chips row">${t.deps.filter(d=>S.tasks.has(d)).map(d=>`<button class="chip x" data-undep="${d}" aria-label="依存を外す">${esc(S.tasks.get(d).name)}</button>`).join('')}<select id="d-dep" style="flex:none;width:auto;max-width:170px"><option value="">＋ 追加</option>${others.map(o=>`<option value="${o.id}">${fMD(o.start)} ${esc(o.name)}</option>`).join('')}</select></div></div>`;
   const tabs=[['plan','予定'],['info','内容'],['memo','メモ'],['hist','履歴']];
   let body;
   if(DT.tab==='info')body=`<div class="fg">${mst?'':`<div class="f ftop"><span>分類</span><div class="chips">${Object.entries(KINDS).map(([k,v])=>`<button class="chip" data-kind="${k}" aria-pressed="${t.kind===k}">${v.label}</button>`).join('')}</div></div>`}
-<div class="f"><span>優先度</span><div class="segm">${[['high','高'],['mid','中'],['low','低']].map(([k,l])=>`<button data-pri="${k}" aria-pressed="${t.priority===k}">${l}</button>`).join('')}</div><button class="chip" data-act="imp" aria-pressed="${t.important}" style="margin-left:auto">重要</button>${mst?'':`<button class="chip" data-act="msk" aria-pressed="${t.milestone}" aria-label="マイルストーン（◆で表示）">◆</button>`}</div>
+<div class="f"><span>優先度</span><div class="segm">${[['high','高'],['mid','中'],['low','低']].map(([k,l])=>`<button data-pri="${k}" aria-pressed="${t.priority===k}">${l}</button>`).join('')}</div></div>
+<div class="f"><span>しるし</span><div class="chips"><button class="chip" data-act="imp" aria-pressed="${t.important}">重要</button>${mst?'':`<button class="chip" data-act="msk" aria-pressed="${t.milestone}">◆ マイルストーン</button>`}</div></div>
 <label class="f"><span>プロジェクト</span><input id="d-proj" list="projlist" value="${esc(t.project)}" autocomplete="off"><datalist id="projlist">${projects.map(p=>`<option value="${esc(p)}">`).join('')}</datalist></label>
 <label class="f"><span>担当</span><input id="d-asg" value="${esc(t.assignee)}" placeholder="自分" autocomplete="off"></label></div>`;
-  else if(DT.tab==='memo')body=`<div class="fg"><div class="f col"><textarea id="d-memo" rows="6" placeholder="段取り、注意点など">${esc(t.memo)}</textarea></div></div>`;
-  else if(DT.tab==='hist')body=`<div class="fg"><ol class="hist">${histHTML(t,6)}</ol></div>${t.history.length>6?`<p class="hint" style="text-align:center">最新6件を表示（全${t.history.length}件）</p>`:''}`;
-  else body=`${mst?'':`<div class="actual">${actual}</div>`}<div class="fg">${sched}${mst?'':`<label class="f"><span>期限</span><input type="date" id="d-dl" value="${t.deadline?ymd(t.deadline):''}"></label>`}${deps}</div>`;
-  return `<div class="dh0">${mst?'<span class="kchip k-master">大日程</span>':`<span class="kchip k-${t.kind}">${KINDS[t.kind].label}</span>`}<span class="proj">${esc(t.project)}</span>${t.sample?'<span class="tag">サンプル</span>':''}</div>
-<textarea id="d-name" class="title-in" rows="2" aria-label="名前" enterkeyhint="done" autocomplete="off">${esc(t.name)}</textarea>
-<div class="when"><b>${whenTxt}</b><span>${durTxt}</span>${late?'<span class="pill late">遅延</span>':''}${t.status==='doing'?'<span class="pill run">作業中</span>':''}${t.important?'<span class="pill imp">重要</span>':''}</div>
-${mst?'':`<div class="acts">${sb}${t.status!=='done'?'<button class="btn" data-act="ext" aria-label="終了を30分延ばす">+30分</button>':''}</div>
-`}
-<div class="segm big tabs">${tabs.map(([k,l])=>`<button data-dtab="${k}" aria-pressed="${DT.tab===k}">${l}${k==='hist'&&t.history.length?`<small>${t.history.length}</small>`:''}</button>`).join('')}</div>
-${body}${mst?`<div style="margin-top:12px"><button class="btn danger wide" data-act="del">この${t.milestone?'節目':'大日程'}を削除</button></div><p class="hint" style="text-align:center;margin-top:6px">大日程は完了にせず、不要になったら削除します</p>`:''}`;
+  else if(DT.tab==='memo')body=`<div class="fg"><div class="f col"><textarea id="d-memo" rows="7" placeholder="段取り、注意点など">${esc(t.memo)}</textarea></div></div><p class="hint">入力欄から離れると保存されます。</p>`;
+  else if(DT.tab==='hist')body=`<div class="fg"><ol class="hist">${histHTML(t,8)}</ol></div>${t.history.length>8?`<p class="hint" style="text-align:center">最新8件を表示（全${t.history.length}件）</p>`:''}`;
+  else body=`${mst?mtype:`<div class="actual">${actual}</div>`}<div class="fg">${sched}${mst?'':`<label class="f"><span>期限</span><input type="date" id="d-dl" value="${t.deadline?ymd(t.deadline):''}"></label>`}${deps}</div>`;
+  const kind=mst?'大日程':KINDS[t.kind].label;
+  return {
+    chips:`${mst?'<span class="kchip k-master">大日程</span>':`<span class="kchip k-${t.kind}">${kind}</span>`}<span class="proj">${esc(t.project)}</span>${t.sample?'<span class="tag">サンプル</span>':''}`,
+    when:`<b>${whenTxt}</b><span>${durTxt}</span>${late?'<span class="pill late">遅延</span>':''}${t.status==='doing'?'<span class="pill run">作業中</span>':''}${t.important?'<span class="pill imp">重要</span>':''}`,
+    acts:mst?'':`<div class="acts">${sb}${t.status!=='done'?'<button class="btn" data-act="ext" aria-label="終了を30分延ばす">+30分</button>':''}</div>`,
+    tabs:tabs.map(([k,l])=>`<button data-dtab="${k}" aria-pressed="${DT.tab===k}">${l}${k==='hist'&&t.history.length?`<small>${t.history.length}</small>`:''}</button>`).join(''),
+    body,
+    foot:`${Pop.kind?`<button class="btn wide" data-act="chart">チャートで表示</button>`:''}<button class="btn danger wide" data-act="del">この${mst?(t.milestone?'節目':'大日程'):'タスク'}を削除</button>${mst?'<p class="hint" style="text-align:center;margin-top:0">大日程は完了にせず、不要になったら削除します</p>':''}`
+  };
 }
+
 function histHTML(t,limit=15){
   const f=(k,v)=>v==null||v===''?'なし':(k==='start'||k==='end')?(isMaster(t)?fYM(k==='end'?v-1:v):`${fMD(v)} ${fHM(v)}`):k==='deadline'?fMD(v):k==='kind'?KINDS[v].label:k==='deps'?(v.length+'件'):typeof v==='boolean'?(v?'あり':'なし'):String(v).slice(0,20);
   const L={start:'開始',end:'終了',deadline:'期限',progress:'進捗',status:'状態',name:'名称',project:'PJ',kind:'分類',priority:'優先度',important:'重要',assignee:'担当',deps:'前工程',milestone:'MS',memo:'メモ'};
@@ -1654,19 +1639,17 @@ function histHTML(t,limit=15){
   }).join('')||'<li>履歴はありません</li>';
 }
 let nameTimer=null;
-async function popClick(e){
-  const b=e.target.closest('button');if(!b)return;
-  if(['list','stats','settings','add','more','day','attday'].includes(Pop.kind))return otherClick(e,b);
-  const t=S.tasks.get(S.selected);if(!t)return;
-  if(b.dataset.dtab){DT.tab=b.dataset.dtab;refreshDetail();return}
+async function detailClick(e,b){
+  const t=S.tasks.get(DT.id);if(!t)return;
+  if(b.dataset.dtab){if(DT.tab!==b.dataset.dtab){DT.tab=b.dataset.dtab;refreshDetail()}return}
   const act=b.dataset.act;
-  if(act==='close')return closePop();
-  if(['start','pause','resume','done','reopen'].includes(act)){setStatus(t.id,act);render();refreshDetail();toast({start:'作業を開始しました',pause:'中断しました',resume:'再開しました',done:'完了にしました・チャートから外れ、一覧の「完了」へ移ります',reopen:'未完了に戻しました・チャートに戻ります'}[act],'元に戻す',doUndo);return}
+  if(['start','pause','resume','done','reopen'].includes(act)){setStatus(t.id,act);render();refreshDetail();refreshAnyPop();toast({start:'作業を開始しました',pause:'中断しました',resume:'再開しました',done:'完了にしました・チャートから外れ、一覧の「完了」へ移ります',reopen:'未完了に戻しました・チャートに戻ります'}[act],'元に戻す',doUndo);return}
   if(act==='ext'){applyTimeChange(t.id,t.start,t.end+30*MIN,'延長（+30分）');return}
-  if(act==='imp'){commit(t.id,{important:!t.important});render();refreshDetail();return}
+  if(act==='imp'){commit(t.id,{important:!t.important},{action:t.important?'重要を外す':'重要にする'});render();refreshDetail();return}
   if(act==='msk'){commit(t.id,{milestone:!t.milestone},{action:t.milestone?'マイルストーンを解除':'マイルストーンに設定'});render();refreshDetail();return}
-  if(act==='del'){if(await ask(`「${t.name}」を削除しますか？`,'削除','やめる')){S.undo={items:snapshotFor([t.id])};removeTask(t.id);closePop();toast('削除しました','元に戻す',doUndo)}return}
-  if(b.dataset.kind){const k=b.dataset.kind;const v=validatePlacement({...t,kind:k},t.start,t.end);commit(t.id,{kind:k},{action:'分類を変更'});render();refreshDetail();if(v.blocking.length)toast(v.blocking[0]+'。時刻を見直してください');return}
+  if(act==='chart'){const id=t.id;closeSheet(true);closePop();showOnChart(id);return}
+  if(act==='del'){if(await ask(`「${t.name}」を削除しますか？`,'削除','やめる')){S.undo={items:snapshotFor([t.id])};removeTask(t.id);closeSheet();refreshAnyPop();toast('削除しました','元に戻す',doUndo)}return}
+  if(b.dataset.kind){const k=b.dataset.kind;if(k===t.kind)return;const v=validatePlacement({...t,kind:k},t.start,t.end);commit(t.id,{kind:k},{action:'分類を変更'});render();refreshDetail();if(v.blocking.length)toast(v.blocking[0]+'。時刻を見直してください');return}
   if(b.dataset.pri){commit(t.id,{priority:b.dataset.pri},{action:'優先度を変更'});render();refreshDetail();return}
   if(b.dataset.undep){commit(t.id,{deps:t.deps.filter(d=>d!==b.dataset.undep)},{action:'前工程を外す'});render();refreshDetail();return}
   if(b.dataset.mp!=null&&isMaster(t)){const st={a:t.start,z:mStart(t.end-1),ms:t.milestone,step:DT.mstep};mpPick(st,+b.dataset.mp);DT.mstep=st.step;const ns=st.a,ne=addMonths(st.z,1);
@@ -1681,34 +1664,39 @@ async function popClick(e){
     else{const a=sod(t.start);if(d>=a){ns=t.start;ne=d+e0;if(ne<=ns)ne=ns+Math.min(dur,DAY)}else{ns=d+s0;ne=a+e0}DT.dstep=0}
     if(ns===t.start&&ne===t.end){refreshDetail();return}
     applyTimeChange(t.id,ns,ne,DT.dstep?'日を変更':'期間を変更');return}
-  if(b.dataset.mstype){const ms=b.dataset.mstype==='ms';if(ms===t.milestone)return;DT.mstep=0;commit(t.id,ms?{milestone:true,end:addMonths(t.start,1)}:{milestone:false,end:addMonths(t.start,1)},{action:ms?'マイルストーンに変更':'期間に変更'});render();refreshDetail();return}
-  if(b.dataset.wk){const k=+b.dataset.wk;applyTimeChange(t.id,addDays(t.start,7*k),addDays(t.end,7*k),k<0?'1週早める':'1週遅らせる');return}
-  if(b.dataset.wn){const k=+b.dataset.wn,ne=addDays(t.end,7*k);if(ne-t.start<7*DAY)return;applyTimeChange(t.id,t.start,ne,k<0?'期間を1週短く':'期間を1週長く');return}
+  if(b.dataset.mstype){const ms=b.dataset.mstype==='ms';if(ms===t.milestone)return;DT.mstep=0;commit(t.id,ms?{milestone:true,end:addMonths(t.start,1)}:{milestone:false,end:addMonths(t.start,1)},{action:ms?'マイルストーンに変更':'期間に変更'});render();refreshDetail();$('#shTitle').textContent=ms?'節目の編集':'大日程の編集';return}
 }
-popBody.addEventListener('click',popClick);
-$('#pgAct').addEventListener('click',popClick);
-$('#pgBack').addEventListener('click',()=>Pop.back==='more'?openMore():Pop.back==='list'?openList():closePop());
-popBody.addEventListener('input',e=>{
-  if(Pop.kind!=='detail')return otherInput(e);
-  const t=S.tasks.get(S.selected);if(!t)return;
-  if(e.target.id==='d-name'){clearTimeout(nameTimer);const v=e.target.value.trim();nameTimer=setTimeout(()=>{if(v){commit(t.id,{name:v},{action:'名称を変更'});render()}},500)}
-});
-popBody.addEventListener('change',e=>{
-  if(Pop.kind!=='detail')return otherChange(e);
-  const t=S.tasks.get(S.selected);if(!t)return;const id=e.target.id,val=e.target.value;
+function detailInput(e){
+  const t=S.tasks.get(DT.id);if(!t)return;
+  if(e.target.id==='d-name'){clearTimeout(nameTimer);const v=e.target.value.trim();nameTimer=setTimeout(()=>{if(v&&Sh.kind==='detail'&&DT.id===t.id){commit(t.id,{name:v},{action:'名称を変更'});render();refreshAnyPop()}},500)}
+}
+function detailChange(e){
+  const t=S.tasks.get(DT.id);if(!t)return;const id=e.target.id,val=e.target.value;
   if(id==='d-stt'||id==='d-ett'){const st=$('#d-stt').value,et=$('#d-ett').value;if(!st||!et)return;
     const s=atMin(sod(t.start),hm2min(st));let en=atMin(sod(t.end-1),hm2min(et));if(singleDay(t.start,t.end)&&en<=s&&hm2min(et)<hm2min(st))en=addDays(en,1);
-    if((id==='d-sd'||id==='d-stt')&&s!==t.start){applyTimeChange(t.id,s,s+(t.end-t.start),'開始を変更')}else if(en>s){applyTimeChange(t.id,s,en,'終了を変更')}else{toast('終了は開始より後にしてください');refreshDetail()}return}
+    if(id==='d-stt'&&s!==t.start){applyTimeChange(t.id,s,s+(t.end-t.start),'開始を変更')}else if(en>s){applyTimeChange(t.id,s,en,'終了を変更')}else{toast('終了は開始より後にしてください');refreshDetail()}return}
   if(id==='d-dl'){const d=parseDT(val);commit(t.id,{deadline:d?atMin(d,hm2min(S.settings.workEnd)):null},{action:'期限を変更'});render();refreshDetail();return}
-  if(id==='d-proj'){const v=val.trim()||'未分類';commit(t.id,{project:v},{action:'プロジェクトを変更'});render();return}
+  if(id==='d-proj'){const v=val.trim()||'未分類';commit(t.id,{project:v},{action:'プロジェクトを変更'});render();refreshDetail();return}
   if(id==='d-asg'){commit(t.id,{assignee:val.trim()},{action:'担当を変更'});return}
   if(id==='d-dep'&&val){commit(t.id,{deps:[...t.deps,val]},{action:'前工程を追加'});render();refreshDetail();const v=validatePlacement(S.tasks.get(t.id),t.start,t.end);if(v.warnings.length)toast(v.warnings[0]);return}
-  if(id==='d-ms'){commit(t.id,{milestone:e.target.checked},{action:'マイルストーン設定'});render();return}
   if(id==='d-memo'){commit(t.id,{memo:val},{action:'メモを更新'});return}
-  if(id==='d-name'){const v=val.trim();if(v){clearTimeout(nameTimer);commit(t.id,{name:v},{action:'名称を変更'});render()}}
+  if(id==='d-name'){const v=val.trim();clearTimeout(nameTimer);if(v){commit(t.id,{name:v},{action:'名称を変更'});render();refreshAnyPop()}else{e.target.value=t.name}}
+}
+shBody.addEventListener('click',e=>{const b=e.target.closest('button');if(!b)return;if(Sh.kind==='detail')detailClick(e,b);else otherClick(e,b)});
+shBody.addEventListener('input',e=>{if(Sh.kind==='detail')detailInput(e);else otherInput(e)});
+shBody.addEventListener('change',e=>{if(Sh.kind==='detail')detailChange(e);else otherChange(e)});
+shBody.addEventListener('keydown',e=>{
+  if(e.key!=='Enter'||e.isComposing)return;
+  if(e.target.id==='d-name'){e.preventDefault();e.target.blur()}
+  else if(e.target.id==='qa'){e.preventDefault();quickAdd()}
 });
-popBody.addEventListener('keydown',e=>{if(e.key==='Enter'&&e.target.id==='d-name'){e.preventDefault();e.target.blur()}});
-popBody.addEventListener('focusout',()=>{setTimeout(()=>{if(Pop.kind==='detail'&&!popBody.contains(document.activeElement))refreshDetail()},220)});
+// leaving a field applies whatever was held back while typing
+shBody.addEventListener('focusout',()=>{setTimeout(()=>{if(shBody.contains(document.activeElement))return;if(Sh.kind==='detail')refreshDetail();else if(Sh.kind==='attday')refreshAttDay()},180)});
+popBody.addEventListener('click',e=>{const b=e.target.closest('button');if(b)otherClick(e,b)});
+$('#pgAct').addEventListener('click',e=>{const b=e.target.closest('button');if(b)otherClick(e,b)});
+$('#pgBack').addEventListener('click',()=>Pop.back==='more'?openMore():Pop.back==='list'?openList():closePop());
+popBody.addEventListener('input',otherInput);
+popBody.addEventListener('change',otherChange);
 
 /* ---- 大日程の月えらび: 2年分の月を並べ、期間は「始まり→終わり」の2タップ、◆は1タップ（年をまたいでも画面は切り替わらない） ---- */
 function mpHTML(o){
@@ -1755,17 +1743,28 @@ function openAdd(o={}){
   QA.wk=o.week||monday(S.view==='master'?Math.max(Date.now(),rangeOfView().from):Date.now());
   QA.ed=mStart(o.day||(S.view==='master'?Math.max(Date.now(),rangeOfView().from):Date.now()));QA.ee=QA.ed;QA.step=0;QA.my=yearStartOf(QA.ed);QA.tx='';QA.mms=!!o.mms;
   if(o.range){QA.ed=o.range[0];QA.ee=o.range[1];QA.my=yearStartOf(QA.ed);QA.mms=false}
-  openPop('add',addHTML(),'sheet',{label:'追加'});
+  // closed by tapping outside (not キャンセル) within 30 min: everything typed and picked comes back as it was
+  const d=QA.draft,plain=!o.start&&o.day==null&&!o.range&&!o.project&&!o.mode,restore=d&&plain&&Date.now()-d.at<30*60000;
+  if(restore)Object.assign(QA,d.qa);
+  openSheet('add',{title:QA.mode==='master'?'大日程に追加':'タスクを追加',sub:restore?'入力の途中から':'',cancel:'キャンセル',done:'追加',label:'追加',
+    onCancel:()=>{QA.draft=null;closeSheet()},onDone:quickAdd,onDismiss:()=>{saveAddDraft();closeSheet()},html:addHTML()});
+  if(restore){$('#qa').value=d.text;const pj=$('#qproj');if(pj&&d.proj!=null)pj.value=d.proj}
   updateQuickPreview();
   // 大日程: keep the keyboard down so the month grid stays in view
-  if(QA.mode!=='master'||o.range)setTimeout(()=>{const i=$('#qa');i&&i.focus()},260);
+  if(QA.mode!=='master'||o.range)setTimeout(()=>{const i=$('#qa');if(i&&Sh.kind==='add')i.focus()},320);
+}
+const QA_KEYS=['mode','kind','dur','imp','day','tm','start','ed','ee','step','my','mms','project','tx'];
+function saveAddDraft(){
+  const text=(($('#qa')||{}).value||'').trim(),proj=($('#qproj')||{}).value;
+  if(!text){QA.draft=null;return}
+  const qa={};for(const k of QA_KEYS)qa[k]=QA[k];
+  QA.draft={at:Date.now(),text,proj,qa};
 }
 // the sheet's frame (title, mode switch, text box, preview) stays put; only #qbody changes with the mode
 function addHTML(){
   const m=QA.mode==='master';
-  return `<div class="dh"><b class="ttl" id="qttl">${m?'大日程に追加':'タスクを追加'}</b>${XBTN}</div>
-<div class="segm big" id="qmodes"><button data-qmode="task" aria-pressed="${!m}">タスク（日・時刻）</button><button data-qmode="master" aria-pressed="${m}">大日程（月）</button></div>
-<div class="addrow"><input id="qa" placeholder="${m?'例）号試 / 正式図面発行':'例）明日 治具調整 45分'}" enterkeyhint="done" autocomplete="off" aria-label="名前"><button class="btn pri" data-act="qaAdd">追加</button></div>
+  return `<div class="segm big" id="qmodes"><button data-qmode="task" aria-pressed="${!m}">タスク（日・時刻）</button><button data-qmode="master" aria-pressed="${m}">大日程（月）</button></div>
+<div class="addrow"><input id="qa" placeholder="${m?'名前（例：号試 / 正式図面発行）':'名前（例：明日 治具調整 45分）'}" enterkeyhint="done" autocomplete="off" aria-label="名前"></div>
 <div class="qprev" id="qprev"></div>
 <div id="qbody">${addBodyHTML()}</div>`;
 }
@@ -1801,9 +1800,9 @@ function setAddMode(mode){
   if(QA.mode===mode)return;
   const pj=($('#qproj')||{}).value;if(pj!=null&&QA.mode==='master')QA.project=pj;
   QA.mode=mode;const m=mode==='master';
-  $('#qttl').textContent=m?'大日程に追加':'タスクを追加';
+  $('#shTitle').textContent=m?'大日程に追加':'タスクを追加';
   document.querySelectorAll('#qmodes button').forEach(b=>b.setAttribute('aria-pressed',String(b.dataset.qmode===mode)));
-  const i=$('#qa');i.placeholder=m?'例）号試 / 正式図面発行':'例）明日 治具調整 45分';
+  const i=$('#qa');i.placeholder=m?'名前（例：号試 / 正式図面発行）':'名前（例：明日 治具調整 45分）';
   $('#qbody').innerHTML=addBodyHTML();
   if(m)syncMasterText();
   updateQuickPreview();
@@ -1906,7 +1905,7 @@ function quickAdd(){
     const ev=masterInput();if(!ev.name){toast('節目の名前を入力してください');$('#qa').focus();return}
     const id=uid();
     commit(id,ev.end!=null?{name:ev.name,project:ev.proj,kind:'desk',scale:'week',start:ev.d,end:addMonths(ev.end,1)}:{name:ev.name,project:ev.proj,kind:'desk',scale:'week',milestone:true,start:ev.d,end:addMonths(ev.d,1)},{action:'作成（大日程の節目）'});
-    S.undo={items:[{id,prev:null}]};closePop();
+    S.undo={items:[{id,prev:null}]};QA.draft=null;closeSheet();
     if(S.view!=='master'){S.view='master';LS.set('view','master')}
     const r=rangeOfView();if(!(ev.d>=r.from&&ev.d<r.to))S.anchor=ev.d;
     S.selected=id;render();
@@ -1916,8 +1915,8 @@ function quickAdd(){
   if(!p.name&&!raw.trim()){toast('タスク名を入力してください');$('#qa').focus();return}
   const id=uid(),proj=(($('#qproj')||{}).value||'').trim()||QA.project||S.lastProject||'未分類';S.lastProject=proj;
   commit(id,{name:p.name||raw.trim(),kind:pl.kind,start:pl.start,end:pl.end,deadline:p.deadline,important:QA.imp||p.important,project:proj},{action:'作成'});
-  S.undo={items:[{id,prev:null}]};
-  closePop();
+  S.undo={items:[{id,prev:null}]};QA.draft=null;
+  closeSheet();
   if(S.view==='master'){S.view='day';LS.set('view','day')}
   S.anchor=sod(pl.start);S.selected=id;S.collapsed.delete(proj);render();ensureVisible(id);
   toast(`${fMDW(pl.start)} ${fHM(pl.start)} に追加しました`,'元に戻す',doUndo);
@@ -1933,7 +1932,8 @@ function openList(refresh){
   const up=ts.filter(t=>open(t)&&!isMaster(t)&&t.start>=addDays(today,1)).sort(by);
   const mst=ts.filter(t=>open(t)&&isMaster(t)).sort(by);
   const doneAll=ts.filter(t=>t.status==='done').sort((a,b)=>b.updatedAt-a.updatedAt),done=doneAll.slice(0,80);
-  const li=t=>isMaster(t)?`<div class="li"><span class="ck mk0${t.milestone?' ev':''}" aria-hidden="true"></span><button class="nt" data-go="${t.id}"><b>${esc(t.name)}</b><small>${masterRange(t,true)} · ${esc(t.project)}</small></button></div>`:`<div class="li"><button class="ck s-${t.status}${isLate(t,now)?' late':''}${isMaster(t)?' mst':''}" data-lck="${t.id}" aria-label="${t.status==='done'?'未完了に戻す':'完了にする'}">${ICON.check}</button><button class="nt" data-go="${t.id}"><b>${esc(t.name)}</b><small>${t.status==='done'?`完了 ${fMDW(t.updatedAt)}`:isMaster(t)?masterRange(t,true)+`（${monthsOf(t)}か月）`:fMDW(t.start)+' '+fHM(t.start)} · ${esc(t.project)}${t.deadline?` · 期限${fMD(t.deadline)}`:''}</small></button>${t.important?'<span class="pill imp">重要</span>':''}</div>`;
+  const ed=Sh.kind==='detail'?DT.id:null;
+  const li=t=>isMaster(t)?`<div class="li${ed===t.id?' editing':''}"><span class="ck mk0${t.milestone?' ev':''}" aria-hidden="true"></span><button class="nt" data-go="${t.id}"><b>${esc(t.name)}</b><small>${masterRange(t,true)} · ${esc(t.project)}</small></button></div>`:`<div class="li${ed===t.id?' editing':''}"><button class="ck s-${t.status}${isLate(t,now)?' late':''}${isMaster(t)?' mst':''}" data-lck="${t.id}" aria-label="${t.status==='done'?'未完了に戻す':'完了にする'}">${ICON.check}</button><button class="nt" data-go="${t.id}"><b>${esc(t.name)}</b><small>${t.status==='done'?`完了 ${fMDW(t.updatedAt)}`:isMaster(t)?masterRange(t,true)+`（${monthsOf(t)}か月）`:fMDW(t.start)+' '+fHM(t.start)} · ${esc(t.project)}${t.deadline?` · 期限${fMD(t.deadline)}`:''}</small></button>${t.important?'<span class="pill imp">重要</span>':''}</div>`;
   const grp=(title,arr,extra='')=>arr.length?`<div class="list-h"><b>${title}</b>${extra||`<small>${arr.length}件</small>`}</div><div class="fg">${arr.map(li).join('')}</div>`:'';
   const cnt={today:late.length+doing.length+tod.length,up:up.length,mst:mst.length,done:doneAll.length};
   const none=m=>`<p class="hint" style="text-align:center;margin:28px 0">${m}</p>`;
@@ -1945,7 +1945,7 @@ function openList(refresh){
   pageTop({title:'一覧',sub:`遅延 ${late.length}件・今日 ${tod.length+doing.length}件`,actions:`<button class="chip-s" data-gostats="1">実績</button><button class="chip-s" data-lscope="1">${{all:'すべて',work:'仕事だけ',private:'私用だけ'}[S.scope]}</button>`});
   const html=`<div class="tabsbar"><div class="segm big tabs">${[['today','今日'],['up','これから'],['mst','大日程'],['done','完了']].map(([k,l])=>`<button data-ltab="${k}" aria-pressed="${LT.tab===k}">${l}${cnt[k]?`<small>${cnt[k]}</small>`:''}</button>`).join('')}</div></div>
 ${body}`;
-  if(refresh&&Pop.kind==='list'){const st=popBody.scrollTop;popBody.innerHTML=html;popBody.scrollTop=st}else openPop('list',html,'fixed',{label:'一覧'});
+  if(refresh&&Pop.kind==='list')setPageHTML(html);else openPop('list',html,'page',{label:'一覧'});
 }
 const monthKey=t=>ymd(t).slice(0,7);
 function attDay(d){const mk=monthKey(d);return (S.attendance[mk]||{})[ymd(d)]||{}}
@@ -1980,7 +1980,7 @@ function openStats(refresh){
   const html=`<div class="stat"><div><small>時間外（平日）</small><b>${h(ot)}<span>時間</span></b></div><div><small>休日出勤</small><b>${h(hol)}<span>時間</span></b></div><div><small>完了 / 遅延</small><b>${doneN}<span>件</span> / <span style="color:var(--late);font-size:21px;margin:0">${lateN}</span><span>件</span></b></div><div><small>時間外の作業（タスク）</small><b>${h(taskOT)}<span>時間</span></b></div></div>
 <div class="segm big">${[['est','見積もり精度'],['att','出退勤']].map(([k,l])=>`<button data-sstab="${k}" aria-pressed="${SST.tab===k}">${l}</button>`).join('')}</div>
 ${body}`;
-  if(refresh&&Pop.kind==='stats'){const st=popBody.scrollTop;popBody.innerHTML=html;popBody.scrollTop=st}else openPop('stats',html,'fixed',{label:'実績'});
+  if(refresh&&Pop.kind==='stats')setPageHTML(html);else openPop('stats',html,'page',{label:'実績'});
 }
 function estimateStats(){
   const by={};
@@ -2005,7 +2005,7 @@ function openSettings(refresh){
 <div class="f"><button class="btn sm" data-copyjson="1">全データをコピー（JSON）</button>${samples?`<button class="btn danger sm" data-rmsample="1">サンプル${samples}件を削除</button>`:''}</div></div>`;
   else body=`<div class="fg"><div class="f"><span>通常勤務</span><input type="time" id="s-ws" value="${st.workStart}" style="flex:1"><span style="width:auto">–</span><input type="time" id="s-we" value="${st.workEnd}" style="flex:1"></div>
 <label class="f"><span class="wide">休憩（勤務時間から引く）</span><input type="number" id="s-lunch" min="0" max="180" step="5" value="${st.lunch??60}" style="flex:none;width:80px;text-align:right"><span style="width:auto">分</span></label>
-<label class="f"><span class="wide">大日程の1年の始まり</span><select id="s-ys" style="flex:none;width:118px">${Array.from({length:12},(_,i)=>`<option value="${i+1}"${(+st.yearStart||4)===i+1?' selected':''}>${i+1}月${i+1===4?'（年度）':''}</option>`).join('')}</select></label></div>
+<label class="f"><span class="wide">大日程の1年の始まり</span><select id="s-ys" style="flex:none;width:140px">${Array.from({length:12},(_,i)=>`<option value="${i+1}"${(+st.yearStart||4)===i+1?' selected':''}>${i+1}月${i+1===4?'（年度）':''}</option>`).join('')}</select></label></div>
 <div class="sect">製造ラインが止まる時間</div>
 <div class="fg">${st.breaks.map((b,i)=>`<div class="f"><span>${i?'時間帯'+(i+1):'製造部門休憩'}</span><input type="time" data-bs="${i}" value="${b.s}" style="flex:1"><span style="width:auto">–</span><input type="time" data-be="${i}" value="${b.e}" style="flex:1"><button class="iconbtn" data-rmbreak="${i}" aria-label="この時間帯を削除">${ICON.x}</button></div>`).join('')}
 <div class="f"><button class="btn sm" data-addbreak="1">時間帯を追加</button></div>
@@ -2013,23 +2013,22 @@ function openSettings(refresh){
   pageTop({title:'設定',sub:'勤務・休日・表示・データ'});
   const html=`<div class="tabsbar"><div class="segm big tabs">${[['work','勤務'],['hol','休日'],['disp','表示'],['data','データ']].map(([k,l])=>`<button data-stab="${k}" aria-pressed="${STT.tab===k}">${l}</button>`).join('')}</div></div>
 ${body}`;
-  if(refresh&&Pop.kind==='settings'){const a=document.activeElement;if(a&&popBody.contains(a)&&a.tagName==='INPUT')return;const sc=popBody.scrollTop;popBody.innerHTML=html;popBody.scrollTop=sc}else openPop('settings',html,'fixed',{label:'設定'});
+  if(refresh&&Pop.kind==='settings'){const a=document.activeElement;if(a&&popBody.contains(a)&&/INPUT|SELECT/.test(a.tagName))return;setPageHTML(html)}else openPop('settings',html,'page',{label:'設定'});
 }
 let DAYC=null;
 function openDay(d){
   DAYC=sod(d);const m=dayMark(DAYC),hol=isHoliday(DAYC);
   const b=(k,sub,dis)=>`<button class="dbtn k-${k}" data-mark="${k}" aria-pressed="${m===k}"${dis?' disabled':''}><b>${MARKS[k].label}</b><small>${sub}</small></button>`;
-  const html=`<div class="dh"><b class="ttl">${fMDW(DAYC)}</b>${XBTN}</div>
-<p class="hint" style="margin:0 4px 10px">いまの区分：<b style="color:var(--ink)">${dayLabel(DAYC)}</b>${hol?'（工場の休日）':'（勤務日）'}。押すとすぐ登録されます。</p>
+  const html=`<p class="hint" style="margin:0 4px 10px">いまの区分：<b style="color:var(--ink)">${dayLabel(DAYC)}</b>${hol?'（工場の休日）':'（勤務日）'}。押すとすぐ登録されます。</p>
 <div class="dgrid">${b('off','有休・私用など。この日は仕事を入れません',hol)}${b('sub','振替出勤の代わりに休む日',hol)}${b('hw','休日に出勤（振替なし）',!hol)}${b('sw','休日に出勤し、あとで振替休日を取る',!hol)}</div>
 ${m?'<button class="btn wide" data-mark="clear" style="margin-top:8px">登録を外す</button>':''}
 <div class="sect">振替の状況</div>${furikaeHTML()}`;
-  openPop('day',html,'auto',{label:'休み・休日出勤の登録'});
+  openSheet('day',{title:fMDW(DAYC),sub:'休み・休日出勤の登録',fit:true,cancel:null,done:'閉じる',html,label:'休み・休日出勤の登録'});
 }
 function setDayMark(mark){
   const k=ymd(DAYC),prev=clone(S.settings.days||{});
   S.settings.days={...prev};if(mark==='clear'||S.settings.days[k]===mark)delete S.settings.days[k];else S.settings.days[k]=mark;
-  Store.saveSettings();closePop();render();
+  Store.saveSettings();closeSheet();render();refreshAnyPop();
   const f=furikae(),now=S.settings.days[k];
   const warn=f.need?`・振替休日があと${f.need}日必要です`:f.over?`・振替出勤のない振替休日が${f.over}日あります`:'';
   toast(`${fMDW(DAYC)}を${now?MARKS[now].label:'通常の日'}にしました${warn}`,'元に戻す',()=>{S.settings.days=prev;Store.saveSettings();render();refreshAnyPop()},6000);
@@ -2066,11 +2065,17 @@ function openMore(refresh){
   const html=`<div class="attpg">
 <div class="att"><label>出勤<input type="time" id="a-in" value="${hm(r.in)}"></label><button class="btn" data-att="in">今</button><label>退勤<input type="time" id="a-out" value="${hm(r.out)}"></label><button class="btn" data-att="out">今</button></div>
 <div class="tiles" id="attTiles">${p.tiles}</div>
-${f.need||f.over?`<div class="fkline">${f.need?`振替休日があと${f.need}日足りません`:`振替出勤のない振替休日が${f.over}日あります`}<small>週表示で日付を押して登録</small></div>`:''}
+<div id="attFk" style="flex:none">${f.need||f.over?`<div class="fkline">${f.need?`振替休日があと${f.need}日足りません`:`振替出勤のない振替休日が${f.over}日あります`}<small>週表示で日付を押して登録</small></div>`:''}</div>
 <div class="atab" id="attTab">${p.tab}</div>
 ${S.tasks.size?'':'<button class="btn wide" data-sample="1" style="flex:none">サンプル工程を入れる</button>'}
 </div>`;
-  if(refresh&&Pop.kind==='more'){const a=document.activeElement;if(a&&popBody.contains(a)&&a.tagName==='INPUT')return patchAtt();popBody.innerHTML=html}else openPop('more',html,'auto',{label:'勤怠'});
+  if(refresh&&Pop.kind==='more'&&$('#attTab')){
+    // already on screen: only the numbers, the table and today's times change (the page itself is not rebuilt)
+    patchAtt();for(const [id,v] of [['a-in',hm(r.in)],['a-out',hm(r.out)]]){const el=$('#'+id);if(el&&document.activeElement!==el&&el.value!==v)el.value=v}
+    const fk=$('#attFk'),fkh=f.need||f.over?`<div class="fkline">${f.need?`振替休日があと${f.need}日足りません`:`振替出勤のない振替休日が${f.over}日あります`}<small>週表示で日付を押して登録</small></div>`:'';if(fk&&fk._h!==fkh){fk.innerHTML=fkh;fk._h=fkh}
+    return;
+  }
+  openPop('more',html,'page',{label:'勤怠'});
 }
 let ATTD=null;
 function attDaySum(){
@@ -2079,31 +2084,54 @@ function attDaySum(){
   return `<div class="tiles" style="grid-template-columns:repeat(3,minmax(0,1fr))"><div><small>労働時間</small><b>${h(c.work)}<span>h</span></b></div><div class="ot"><small>残業</small><b>${h(c.ot)}<span>h</span></b></div><div class="ho"><small>休日出勤</small><b>${h(c.hol)}<span>h</span></b></div></div>
 <p class="hint" style="margin:6px 4px 0">${rec.in&&rec.out?`退勤−出勤から休憩${Math.round(lunchMs()/MIN)}分を引いて計算。標準${h(std)}時間（${S.settings.workStart}–${S.settings.workEnd}）を超えた分が残業です。`:'出勤と退勤の両方を入れると計算されます。'}</p>`;
 }
-function openAttDay(t,refresh){
-  ATTD=sod(t);const k=ymd(ATTD),rec=(S.attendance[monthKey(ATTD)]||{})[k]||{},m=dayMark(ATTD)||'';
-  const tm=v=>v?`${pad(new Date(v).getHours())}:${pad(new Date(v).getMinutes())}`:'';
-  pageTop({title:`${fMDW(ATTD)}の勤怠`,sub:dayLabel(ATTD),back:'more'});
-  const html=`<div class="fg" style="margin-top:6px"><div class="att"><label>出勤<input type="time" id="ad-in" value="${tm(rec.in)}"></label><span></span><label>退勤<input type="time" id="ad-out" value="${tm(rec.out)}"></label><span></span></div></div>
-<div id="adSum" style="margin-top:8px">${attDaySum()}</div>
+let ATTS=null;
+function openAttDay(t){
+  ATTD=sod(t);const k=ymd(ATTD);
+  ATTS={rec:clone((S.attendance[monthKey(ATTD)]||{})[k]||null),mark:(S.settings.days||{})[k]||null};
+  const tm=v=>v?`${pad(new Date(v).getHours())}:${pad(new Date(v).getMinutes())}`:'';const rec=ATTS.rec||{};
+  const html=`<div class="fg"><div class="att two"><label>出勤<input type="time" id="ad-in" value="${tm(rec.in)}"></label><label>退勤<input type="time" id="ad-out" value="${tm(rec.out)}"></label></div></div>
+<div id="adSum" style="margin-top:10px"></div>
 <div class="sect">この日の区分</div>
-<div class="chips">${['','off','sub','hw','sw'].map(x=>`<button class="chip" data-amark="${x||'clear'}" aria-pressed="${m===x}">${x?MARKS[x].label:isHoliday(ATTD)?'休日':'平日'}</button>`).join('')}</div>
-<div style="margin-top:14px"><button class="btn danger wide" id="adClear" data-attclear="1"${rec.in||rec.out?'':' hidden'}>この日の記録を消す</button></div>`;
-  if(refresh&&Pop.kind==='attday'){const a=document.activeElement;if(a&&popBody.contains(a)&&a.tagName==='INPUT')return;popBody.innerHTML=html}else openPop('attday',html,'auto',{label:'勤怠の編集'});
+<div class="chips" id="adMarks"></div>
+<div id="adFoot" style="margin-top:16px"></div>`;
+  openSheet('attday',{title:`${fMDW(ATTD)}の勤怠`,sub:dayLabel(ATTD),cancel:'キャンセル',done:'完了',onCancel:cancelAttDay,html,label:'勤怠の編集'});
+  refreshAttDay();
+}
+function refreshAttDay(){
+  if(Sh.kind!=='attday')return;
+  const k=ymd(ATTD),rec=(S.attendance[monthKey(ATTD)]||{})[k]||{},m=dayMark(ATTD)||'';
+  patchRegion('adSum',attDaySum());
+  patchRegion('adMarks',['','off','sub','hw','sw'].map(x=>`<button class="chip" data-amark="${x||'clear'}" aria-pressed="${m===x}">${x?MARKS[x].label:isHoliday(ATTD)?'休日':'平日'}</button>`).join(''));
+  patchRegion('adFoot',rec.in||rec.out?'<button class="btn danger wide" data-attclear="1">この日の記録を消す</button>':'');
+  const tm=v=>v?`${pad(new Date(v).getHours())}:${pad(new Date(v).getMinutes())}`:'';
+  for(const [id,v] of [['ad-in',tm(rec.in)],['ad-out',tm(rec.out)]]){const el=$('#'+id);if(el&&document.activeElement!==el&&el.value!==v)el.value=v}
+  $('#shSub').textContent=dayLabel(ATTD);
+}
+async function cancelAttDay(){
+  const k=ymd(ATTD),mk=monthKey(ATTD),cur=(S.attendance[mk]||{})[k]||null,curMark=(S.settings.days||{})[k]||null;
+  const changed=JSON.stringify(cur||{})!==JSON.stringify(ATTS.rec||{})||curMark!==ATTS.mark;
+  if(changed){
+    if(!await ask('この日の勤怠で変えた内容を取り消して閉じますか？','取り消して閉じる','編集を続ける'))return;
+    S.attendance[mk]={...(S.attendance[mk]||{})};if(ATTS.rec)S.attendance[mk][k]=ATTS.rec;else delete S.attendance[mk][k];Store.saveAttendance(mk);
+    if(curMark!==ATTS.mark){S.settings.days={...(S.settings.days||{})};if(ATTS.mark)S.settings.days[k]=ATTS.mark;else delete S.settings.days[k];Store.saveSettings();render()}
+    toast('変更を取り消しました');
+  }
+  closeSheet();refreshAnyPop();
 }
 async function otherClick(e,b){
-  if(b.dataset.act==='close')return closePop();
+  if(b.dataset.act==='close')return Sh.kind?closeSheet():closePop();
   if(b.dataset.act==='qaAdd')return quickAdd();
   if(b.dataset.qmk){const ms=b.dataset.qmk==='ms';if(ms===QA.mms)return;QA.mms=ms;QA.step=0;if(ms)QA.ee=QA.ed;document.querySelectorAll('#qtype button').forEach(x=>x.setAttribute('aria-pressed',String((x.dataset.qmk==='ms')===ms)));redrawQmp();updateQuickPreview();return}
-  if(b.dataset.mp!=null&&Pop.kind==='add'){const st={a:QA.ed,z:QA.ee,ms:QA.mms,step:QA.step};mpPick(st,+b.dataset.mp);QA.ed=st.a;QA.ee=st.z;QA.step=st.step;redrawQmp();updateQuickPreview();return}
-  if(b.dataset.mpy&&Pop.kind==='add'){QA.my=addMonths(QA.my,12*+b.dataset.mpy);redrawQmp();return}
+  if(b.dataset.mp!=null&&Sh.kind==='add'){const st={a:QA.ed,z:QA.ee,ms:QA.mms,step:QA.step};mpPick(st,+b.dataset.mp);QA.ed=st.a;QA.ee=st.z;QA.step=st.step;redrawQmp();updateQuickPreview();return}
+  if(b.dataset.mpy&&Sh.kind==='add'){QA.my=addMonths(QA.my,12*+b.dataset.mpy);redrawQmp();return}
   if(b.dataset.qmode){setAddMode(b.dataset.qmode);return}
   if(b.dataset.qwk){QA.wk=addDays(QA.wk,7*+b.dataset.qwk);const p=parseMaster($('#qa').value);if(p.wk!=null){$('#qa').value=$('#qa').value.replace(/W\d{1,2}(\s*[-~〜]\s*W?\d{1,2})?|\d{1,2}[\/月]\d{1,2}日?(の週)?(から|〜|~)?/i,'').trim()}updateQuickPreview();return}
   if(b.dataset.qwn){QA.wn=+b.dataset.qwn;const p=parseMaster($('#qa').value);if(p.wn!=null){$('#qa').value=$('#qa').value.replace(/\d{1,2}\s*週間?/,'').trim()}updateQuickPreview();return}
   if(b.dataset.gostats){openStats();return}
   if(b.dataset.attm){const d=new Date(ATT.m);ATT.m=new Date(d.getFullYear(),d.getMonth()+(+b.dataset.attm),1).getTime();openMore(true);return}
   if(b.dataset.attday){openAttDay(+b.dataset.attday);return}
-  if(b.dataset.amark){const k=ymd(ATTD),mk=b.dataset.amark;S.settings.days={...(S.settings.days||{})};if(mk==='clear')delete S.settings.days[k];else S.settings.days[k]=mk;Store.saveSettings();render();openAttDay(ATTD,true);const f=furikae();toast(`${fMDW(ATTD)}を${mk==='clear'?'通常の日':MARKS[mk].label}にしました${f.need?`・振替休日があと${f.need}日必要`:f.over?`・振替出勤のない振替休日が${f.over}日`:''}`);return}
-  if(b.dataset.attclear){const mk=monthKey(ATTD);if(S.attendance[mk]){S.attendance[mk]={...S.attendance[mk]};delete S.attendance[mk][ymd(ATTD)];Store.saveAttendance(mk)}openAttDay(ATTD,true);toast('記録を消しました');return}
+  if(b.dataset.amark){const k=ymd(ATTD),mk=b.dataset.amark;S.settings.days={...(S.settings.days||{})};if(mk==='clear')delete S.settings.days[k];else S.settings.days[k]=mk;Store.saveSettings();render();refreshAttDay();if(Pop.kind==='more')openMore(true);const f=furikae();toast(`${fMDW(ATTD)}を${mk==='clear'?'通常の日':MARKS[mk].label}にしました${f.need?`・振替休日があと${f.need}日必要`:f.over?`・振替出勤のない振替休日が${f.over}日`:''}`);return}
+  if(b.dataset.attclear){const mk=monthKey(ATTD);if(S.attendance[mk]){S.attendance[mk]={...S.attendance[mk]};delete S.attendance[mk][ymd(ATTD)];Store.saveAttendance(mk)}refreshAttDay();if(Pop.kind==='more')openMore(true);toast('記録を消しました');return}
   if(b.dataset.godisp){STT.tab='disp';openSettings();return}
   if(b.dataset.mark){setDayMark(b.dataset.mark);return}
   if(b.dataset.dayopen){openDay(+b.dataset.dayopen);return}
@@ -2115,7 +2143,7 @@ async function otherClick(e,b){
   if(b.dataset.qtm!=null){QA.tm=b.dataset.qtm?hm2min(b.dataset.qtm):null;QA.start=null;document.querySelectorAll('#qtm [data-qtm]').forEach(x=>x.setAttribute('aria-pressed',String(x===b)));updateQuickPreview();return}
   if(b.dataset.qdur){QA.dur=QA.dur===+b.dataset.qdur?null:+b.dataset.qdur;updateQuickPreview();return}
   if(b.dataset.qimp){QA.imp=!QA.imp;updateQuickPreview();return}
-  if(b.dataset.go){const id=b.dataset.go,t=S.tasks.get(id);if(t&&t.status==='done'){S.selected=id;openDetail(id,'list');return}closePop();goToTask(id);return}
+  if(b.dataset.go){openDetail(b.dataset.go);return}
   if(b.dataset.lck){toggleDone(b.dataset.lck);return}
   if(b.dataset.ltab){LT.tab=b.dataset.ltab;openList(true);popBody.scrollTop=0;return}
   if(b.dataset.stab){STT.tab=b.dataset.stab;openSettings(true);popBody.scrollTop=0;return}
@@ -2134,7 +2162,7 @@ async function otherClick(e,b){
 function otherInput(e){if(e.target.id==='qa'&&QA.mode==='master')syncMasterText();if(['qa','qproj'].includes(e.target.id))updateQuickPreview()}
 function otherChange(e){
   const t=e.target;
-  if(t.id==='ad-in'||t.id==='ad-out'){const v=t.value;setAtt(ATTD,t.id==='ad-in'?'in':'out',v?atMin(ATTD,hm2min(v)):null);const sm=$('#adSum');if(sm)sm.innerHTML=attDaySum();const rec=(S.attendance[monthKey(ATTD)]||{})[ymd(ATTD)]||{},cb=$('#adClear');if(cb)cb.hidden=!(rec.in||rec.out);return}
+  if(t.id==='ad-in'||t.id==='ad-out'){const v=t.value;setAtt(ATTD,t.id==='ad-in'?'in':'out',v?atMin(ATTD,hm2min(v)):null);refreshAttDay();if(Pop.kind==='more')openMore(true);return}
   if(t.id==='s-lunch'){S.settings.lunch=clamp(+t.value||0,0,180);Store.saveSettings();return}
   if(t.id==='a-in'||t.id==='a-out'){const v=t.value;const d=sod(Date.now());setAtt(d,t.id==='a-in'?'in':'out',v?atMin(d,hm2min(v)):null);patchAtt();return}
   if(t.id==='s-ws'||t.id==='s-we'){if(t.value){S.settings[t.id==='s-ws'?'workStart':'workEnd']=t.value;Store.saveSettings();render()}return}
@@ -2143,7 +2171,6 @@ function otherChange(e){
   if(t.id==='s-ys'){S.settings.yearStart=+t.value;Store.saveSettings();render();return}
   if(t.id==='s-hol'&&t.value){if(!S.settings.holidays.includes(t.value))S.settings.holidays.push(t.value);Store.saveSettings();render();openSettings(true)}
 }
-popBody.addEventListener('keydown',e=>{if(e.key==='Enter'&&e.target.id==='qa'&&!e.isComposing){e.preventDefault();quickAdd()}});
 
 /* ============ late tasks ============ */
 function lateTasks(now=Date.now()){return [...S.tasks.values()].filter(t=>scopeOk(t)&&t.status!=='done'&&!t.milestone&&now>t.end)}
@@ -2171,7 +2198,7 @@ function shift(n){
 $('#prevBtn').onclick=()=>shift(-1);$('#nextBtn').onclick=()=>shift(1);
 $('#datePick').addEventListener('change',e=>{const d=parseDT(e.target.value);if(d){S.anchor=sod(d);scroller.scrollLeft=0;render();scrollToFocus()}});
 document.querySelectorAll('.seg button').forEach(b=>b.onclick=()=>{if(S.view===b.dataset.view)return;S.view=b.dataset.view;S.pick=null;S.anchor=sod(Date.now());S.zoom=1;S.selected=null;scroller.scrollLeft=0;scroller.scrollTop=0;render();scrollToFocus();LS.set('view',S.view);grid.animate&&grid.animate([{opacity:.4},{opacity:1}],{duration:140,easing:'ease-out'})});
-$('#moreBtn').onclick=()=>['more','attday'].includes(Pop.kind)?closePop():openMore();
+$('#moreBtn').onclick=()=>Pop.kind==='more'?closePop():openMore();
 $('#setBtn').onclick=()=>Pop.kind==='settings'?closePop():openSettings();
 $('#todayBtn').onclick=()=>{if(Pop.kind)closePop();S.anchor=sod(Date.now());S.zoom=1;render();scroller.scrollTop=0;scrollToFocus()};
 $('#listBtn').onclick=()=>['list','stats'].includes(Pop.kind)?closePop():openList();
@@ -2181,10 +2208,32 @@ setInterval(()=>{if(G.mode!=='drag'&&document.visibilityState==='visible')render
 let hiddenAt=0;document.addEventListener('visibilitychange',()=>{if(document.visibilityState==='hidden'){hiddenAt=Date.now();return}
   // back in the app after a while (or on another day): show today again
   if(hiddenAt&&(Date.now()-hiddenAt>10*60000||sod(hiddenAt)!==sod(Date.now()))&&G.mode!=='drag'){S.anchor=sod(Date.now());S.zoom=1;scroller.scrollLeft=0;render();scrollToFocus()}else render()});
-// keyboard height (--kb) only sizes the sheets; it is applied once per frame and only when it really changes, so nothing shivers while the keyboard slides
-if(window.visualViewport){const vv=window.visualViewport;let kb0=-1,raf=0;const f=()=>{if(raf)return;raf=requestAnimationFrame(()=>{raf=0;const kb=Math.round(Math.max(0,innerHeight-vv.height-vv.offsetTop));if(Math.abs(kb-kb0)<2)return;kb0=kb;document.documentElement.style.setProperty('--kb',kb+'px')})};vv.addEventListener('resize',f);vv.addEventListener('scroll',f)}
-// iOS can scroll the whole page to show a focused field; once typing ends, put the page back so the app never stays shifted
-document.addEventListener('focusout',()=>setTimeout(()=>{const a=document.activeElement;if(a&&/INPUT|TEXTAREA|SELECT/.test(a.tagName))return;if(window.scrollY||document.documentElement.scrollTop||document.body.scrollTop){window.scrollTo(0,0);document.documentElement.scrollTop=0;document.body.scrollTop=0}},80));
+/* ============ keyboard: the editor makes room for it; the screen underneath never moves ============ */
+// --kb is the keyboard's height. Only the edit sheet and pages use it (their bottom edge rises above the keyboard);
+// the header, chart and tab bar never change size, so nothing behind the editor is pushed or laid out again.
+const KB={est:+LS.get('kbh',0)||0,until:0,timer:0,cur:-1};
+const VV=window.visualViewport;
+function measureKb(){return VV?Math.round(Math.max(0,innerHeight-VV.height-VV.offsetTop)):0}
+function setKb(px){const v=Math.round(px);if(Math.abs(v-KB.cur)<2)return;KB.cur=v;document.documentElement.style.setProperty('--kb',v+'px')}
+const isField=el=>!!el&&(el.tagName==='TEXTAREA'||el.tagName==='SELECT'||(el.tagName==='INPUT'&&!['checkbox','radio','button','range'].includes(el.type)));
+const touchDevice=matchMedia('(pointer:coarse)').matches;
+// bring the field into view inside its own scroll area (sheet or page), so iOS has no reason to push the whole page up
+function revealField(el){const host=el.closest('.shbody,.sc');if(!host)return;const r=el.getBoundingClientRect(),h=host.getBoundingClientRect(),m=14;
+  if(r.bottom>h.bottom-m)host.scrollTop+=r.bottom-(h.bottom-m);else if(r.top<h.top+m)host.scrollTop-=(h.top+m)-r.top}
+if(VV){let raf=0;const f=()=>{if(raf)return;raf=requestAnimationFrame(()=>{raf=0;const m=measureKb();
+  if(m>=80){KB.est=m;LS.set('kbh',m);setKb(m);KB.until=0;const a=document.activeElement;if(isField(a))revealField(a)}
+  else if(Date.now()>KB.until)setKb(m)})};VV.addEventListener('resize',f);VV.addEventListener('scroll',f)}
+document.addEventListener('focusin',e=>{
+  const el=e.target;if(!isField(el)||!el.closest('.sheet,.pop'))return;
+  document.documentElement.classList.toggle('kbp',!!el.closest('.pop'));
+  // the keyboard is about to cover the bottom: make room first (last measured height), then scroll the field into view
+  if(touchDevice&&measureKb()<80&&el.tagName!=='SELECT'){setKb(KB.est||Math.round(innerHeight*.42));KB.until=Date.now()+900;clearTimeout(KB.timer);KB.timer=setTimeout(()=>{if(measureKb()<80)setKb(measureKb())},950)}
+  requestAnimationFrame(()=>revealField(el));
+});
+document.addEventListener('focusout',()=>setTimeout(()=>{if(isField(document.activeElement))return;
+  KB.until=0;setKb(measureKb());document.documentElement.classList.remove('kbp');
+  // iOS may have scrolled the page to show the field: put it back so the app never stays shifted
+  if(window.scrollY||document.documentElement.scrollTop||document.body.scrollTop){window.scrollTo(0,0);document.documentElement.scrollTop=0;document.body.scrollTop=0}},80));
 
 /* ============ toast / dialog ============ */
 let toastTimer=null;const toastEl=$('#toast');
@@ -2192,8 +2241,7 @@ function toast(msg,actLabel,fn,ms=4500){
   $('#toastMsg').textContent=msg;const a=$('#toastAct');
   if(actLabel){a.hidden=false;a.textContent=actLabel;a.onclick=()=>{toastEl.classList.remove('on');fn&&fn()};toastEl.classList.remove('noact')}else{a.hidden=true;toastEl.classList.add('noact')}
 
-  // with a card open, show the toast at the top so it never covers the card's buttons
-  toastEl.classList.toggle('top',!!Pop.kind&&popEl.dataset.size!=='page');
+  toastEl.classList.toggle('insheet',!!Sh.kind);
   toastEl.classList.add('on');clearTimeout(toastTimer);toastTimer=setTimeout(()=>toastEl.classList.remove('on'),ms);
 }
 function toastOff(){clearTimeout(toastTimer);toastEl.classList.remove('on')}
