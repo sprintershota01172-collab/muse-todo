@@ -510,6 +510,9 @@ table.mini td{text-align:right;padding:8px 4px;border-top:1px solid var(--line-2
 .bar.evb .bl{top:0}
 .evx{position:absolute;z-index:3;top:calc((var(--row) - 22px) / 2);height:22px;display:block;padding:0 8px;line-height:22px;text-align:left;border-radius:7px;background:var(--surface-2);box-shadow:inset 0 0 0 1px var(--line-2);font-size:var(--fs);font-weight:700;color:var(--ink-2);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .cnl{font-size:var(--fs);font-weight:700;color:var(--ink-3);padding-left:4px}
+.ck.mk0{cursor:default}
+.ck.mk0::after{width:9px;height:9px;border-radius:2px;transform:rotate(45deg);background:var(--ink-3);box-shadow:none;grid-area:1/1}
+.ck.mk0:not(.ev)::after{width:12px;height:5px;border-radius:3px;transform:none}
 @media (prefers-reduced-motion: reduce){*{transition:none!important;animation:none!important}}
 </style>
 
@@ -647,7 +650,7 @@ function normTask(o){
   return t;
 }
 const isHoliday=t=>{const g=new Date(t).getDay();return g===0||g===6||S.settings.holidays.includes(ymd(t))};
-const isLate=(t,now=Date.now())=>!t.ghost&&t.status!=='done'&&(now>t.end||(!!t.deadline&&t.end>(t.scale==='week'&&!t.milestone?addDays(monday(t.deadline),7):t.deadline)));
+const isLate=(t,now=Date.now())=>!t.ghost&&t.scale!=='week'&&t.status!=='done'&&(now>t.end||(!!t.deadline&&t.end>(t.scale==='week'&&!t.milestone?addDays(monday(t.deadline),7):t.deadline)));
 const scopeOk=t=>S.scope==='all'||(S.scope==='private')===(t.kind==='private');
 const singleDay=(s,e)=>sod(s)===sod(e-1);
 const isMaster=t=>t&&t.scale==='week';
@@ -1165,8 +1168,7 @@ function rowHTML(t,now,conflicts,ghostMove){
   else if(t.status==='done')meta='完了 · '+meta;
   else if(isLate(t,now)){meta=(now>t.end?'遅延 ':'期限超過 ')+(AX.v==='day'||isMaster(t)?meta:fMD(t.start));mc='late'}
   else if(t.status==='doing'){meta='作業中 · '+meta;mc='run'}
-  else if(conflicts.has(t.id)){meta='重複 · '+meta;mc='warn'}
-  const ck=t.ghost?`<span class="ck gh" aria-hidden="true">✦</span>`:`<span class="ck s-${t.status}${isLate(t,now)?' late':''}${isMaster(t)?' mst':''}" data-ck="${t.id}" role="button" tabindex="0" aria-label="${t.status==='done'?'未完了に戻す':'完了にする'}">${ICON.check}</span>`;
+  const ck=t.ghost?`<span class="ck gh" aria-hidden="true">✦</span>`:isMaster(t)?`<span class="ck mk0${t.milestone?' ev':''}" aria-hidden="true"></span>`:`<span class="ck s-${t.status}${isLate(t,now)?' late':''}${isMaster(t)?' mst':''}" data-ck="${t.id}" role="button" tabindex="0" aria-label="${t.status==='done'?'未完了に戻す':'完了にする'}">${ICON.check}</span>`;
   return `<div class="row${sel?' sel':''}" data-row="${t.id}"><div class="nm" ${t.ghost?`data-pid="${t.pid}"`:`data-id="${t.id}"`}>${ck}<span class="nt"><b>${esc(t.name)}</b><small class="${mc}">${esc(meta)}</small></span></div><div class="trk" style="width:${AX.trackW}px">${inner}</div></div>`;
 }
 function mslHTML(t,x){
@@ -1419,7 +1421,7 @@ function goToTask(id){
   select(id);
 }
 function toggleDone(id){
-  const t=S.tasks.get(id);if(!t)return;
+  const t=S.tasks.get(id);if(!t||isMaster(t))return;
   const done=t.status!=='done';
   setStatus(id,done?'done':'reopen');
   if(done&&S.selected===id)S.selected=null;
@@ -1449,6 +1451,8 @@ function openPop(kind,html,size='auto',opts={}){
 }
 function closePop(){
   if(!Pop.kind)return;
+  // leaving 一覧・勤怠・設定・MUSE… returns the chart to today (a task's details keep your place)
+  if(['list','muse','more','settings','stats','attday'].includes(Pop.kind)){S.anchor=sod(Date.now());S.zoom=1;S.selected=null;scroller.scrollLeft=0;requestAnimationFrame(scrollToFocus)}
   Pop.kind=null;popEl.classList.remove('open');scrim.classList.remove('on');markNav();$('.top').classList.remove('pg');
   if(document.activeElement&&popEl.contains(document.activeElement))document.activeElement.blur();
   render();
@@ -1499,11 +1503,11 @@ function detailHTML(t){
   return `<div class="dh0">${mst?'<span class="kchip k-master">大日程</span>':`<span class="kchip k-${t.kind}">${KINDS[t.kind].label}</span>`}<span class="proj">${esc(t.project)}</span>${t.sample?'<span class="tag">サンプル</span>':''}</div>
 <input id="d-name" class="title-in" value="${esc(t.name)}" aria-label="名前" enterkeyhint="done" autocomplete="off">
 <div class="when"><b>${whenTxt}</b><span>${durTxt}</span>${late?'<span class="pill late">遅延</span>':''}${t.status==='doing'?'<span class="pill run">作業中</span>':''}${t.important?'<span class="pill imp">重要</span>':''}</div>
-<div class="acts">${sb}${t.status!=='done'&&!mst?'<button class="btn" data-act="ext" aria-label="終了を30分延ばす">+30分</button>':''}</div>
+${mst?'':`<div class="acts">${sb}${t.status!=='done'?'<button class="btn" data-act="ext" aria-label="終了を30分延ばす">+30分</button>':''}</div>
 <div class="prog"><input type="range" id="d-prog" min="0" max="100" step="5" value="${t.progress}" aria-label="進捗率"><output id="d-progv">${t.progress}%</output></div>
-<div class="actual">${actual}</div>
+<div class="actual">${actual}</div>`}
 <div class="segm big tabs">${tabs.map(([k,l])=>`<button data-dtab="${k}" aria-pressed="${DT.tab===k}">${l}${k==='hist'&&t.history.length?`<small>${t.history.length}</small>`:''}</button>`).join('')}</div>
-${body}`;
+${body}${mst?`<div style="margin-top:12px"><button class="btn danger wide" data-act="del">この${t.milestone?'節目':'大日程'}を削除</button></div><p class="hint" style="text-align:center;margin-top:6px">大日程は完了にせず、不要になったら削除します</p>`:''}`;
 }
 function histHTML(t,limit=15){
   const f=(k,v)=>v==null||v===''?'なし':(k==='start'||k==='end')?`${fMD(v)} ${fHM(v)}`:k==='deadline'?fMD(v):k==='progress'?v+'%':k==='kind'?KINDS[v].label:k==='deps'?(v.length+'件'):typeof v==='boolean'?(v?'あり':'なし'):String(v).slice(0,20);
@@ -1699,7 +1703,7 @@ function openList(refresh){
   const up=ts.filter(t=>open(t)&&!isMaster(t)&&t.start>=addDays(today,1)).sort(by);
   const mst=ts.filter(t=>open(t)&&isMaster(t)).sort(by);
   const doneAll=ts.filter(t=>t.status==='done').sort((a,b)=>b.updatedAt-a.updatedAt),done=doneAll.slice(0,80);
-  const li=t=>`<div class="li"><button class="ck s-${t.status}${isLate(t,now)?' late':''}${isMaster(t)?' mst':''}" data-lck="${t.id}" aria-label="${t.status==='done'?'未完了に戻す':'完了にする'}">${ICON.check}</button><button class="nt" data-go="${t.id}"><b>${esc(t.name)}</b><small>${t.status==='done'?`完了 ${fMDW(t.updatedAt)}`:isMaster(t)?masterRange(t)+`（${weeksOf(t)}週）`:fMDW(t.start)+' '+fHM(t.start)} · ${esc(t.project)}${t.deadline?` · 期限${fMD(t.deadline)}`:''}</small></button>${t.important?'<span class="pill imp">重要</span>':''}</div>`;
+  const li=t=>isMaster(t)?`<div class="li"><span class="ck mk0${t.milestone?' ev':''}" aria-hidden="true"></span><button class="nt" data-go="${t.id}"><b>${esc(t.name)}</b><small>${masterRange(t)} · ${esc(t.project)}</small></button></div>`:`<div class="li"><button class="ck s-${t.status}${isLate(t,now)?' late':''}${isMaster(t)?' mst':''}" data-lck="${t.id}" aria-label="${t.status==='done'?'未完了に戻す':'完了にする'}">${ICON.check}</button><button class="nt" data-go="${t.id}"><b>${esc(t.name)}</b><small>${t.status==='done'?`完了 ${fMDW(t.updatedAt)}`:isMaster(t)?masterRange(t)+`（${weeksOf(t)}週）`:fMDW(t.start)+' '+fHM(t.start)} · ${esc(t.project)}${t.deadline?` · 期限${fMD(t.deadline)}`:''}</small></button>${t.important?'<span class="pill imp">重要</span>':''}</div>`;
   const grp=(title,arr,extra='')=>arr.length?`<div class="list-h"><b>${title}</b>${extra||`<small>${arr.length}件</small>`}</div><div class="fg">${arr.map(li).join('')}</div>`:'';
   const cnt={today:late.length+doing.length+tod.length,up:up.length,mst:mst.length,done:doneAll.length};
   const none=m=>`<p class="hint" style="text-align:center;margin:28px 0">${m}</p>`;
@@ -2237,7 +2241,7 @@ function shift(n){
 }
 $('#prevBtn').onclick=()=>shift(-1);$('#nextBtn').onclick=()=>shift(1);
 $('#datePick').addEventListener('change',e=>{const d=parseDT(e.target.value);if(d){S.anchor=sod(d);scroller.scrollLeft=0;render();scrollToFocus()}});
-document.querySelectorAll('.seg button').forEach(b=>b.onclick=()=>{if(S.view===b.dataset.view)return;S.view=b.dataset.view;S.zoom=1;S.selected=null;scroller.scrollLeft=0;scroller.scrollTop=0;render();scrollToFocus();LS.set('view',S.view);grid.animate&&grid.animate([{opacity:.4},{opacity:1}],{duration:140,easing:'ease-out'})});
+document.querySelectorAll('.seg button').forEach(b=>b.onclick=()=>{if(S.view===b.dataset.view)return;S.view=b.dataset.view;S.anchor=sod(Date.now());S.zoom=1;S.selected=null;scroller.scrollLeft=0;scroller.scrollTop=0;render();scrollToFocus();LS.set('view',S.view);grid.animate&&grid.animate([{opacity:.4},{opacity:1}],{duration:140,easing:'ease-out'})});
 $('#museBtn').onclick=()=>Pop.kind==='muse'?closePop():openMuse();
 $('#moreBtn').onclick=()=>['more','attday'].includes(Pop.kind)?closePop():openMore();
 $('#setBtn').onclick=()=>Pop.kind==='settings'?closePop():openSettings();
@@ -2246,7 +2250,9 @@ $('#listBtn').onclick=()=>['list','muse','stats'].includes(Pop.kind)?closePop():
 $('#addBtn').onclick=()=>openAdd();
 let rz=0;window.addEventListener('resize',()=>{cancelAnimationFrame(rz);rz=requestAnimationFrame(render)});
 setInterval(()=>{if(G.mode!=='drag'&&document.visibilityState==='visible')render()},60000);
-document.addEventListener('visibilitychange',()=>{if(document.visibilityState==='visible')render()});
+let hiddenAt=0;document.addEventListener('visibilitychange',()=>{if(document.visibilityState==='hidden'){hiddenAt=Date.now();return}
+  // back in the app after a while (or on another day): show today again
+  if(hiddenAt&&(Date.now()-hiddenAt>10*60000||sod(hiddenAt)!==sod(Date.now()))&&G.mode!=='drag'){S.anchor=sod(Date.now());S.zoom=1;scroller.scrollLeft=0;render();scrollToFocus()}else render()});
 if(window.visualViewport){const vv=window.visualViewport;const f=()=>{const kb=Math.max(0,innerHeight-vv.height-vv.offsetTop);document.documentElement.style.setProperty('--kb',kb+'px')};vv.addEventListener('resize',f);vv.addEventListener('scroll',f)}
 
 /* ============ toast / dialog ============ */
