@@ -122,20 +122,20 @@ input,textarea,select{font:inherit;font-size:16px;color:var(--ink);-webkit-user-
 .tl.m{border-left:1.5px solid var(--ink-3)}
 .bg .off{background:var(--off)} .bg .wk{background:var(--wkend)} .bg .td,.bg .cm{background:var(--pink)}
 .bg .now{width:0;border-left:2px solid var(--late);z-index:1}
-.bg .now::before{content:"";position:absolute;top:-1px;left:-5px;width:8px;height:8px;border-radius:50%;background:var(--late)}
+.bg .now::before{content:"";position:absolute;top:-1px;left:-4px;width:6px;height:6px;border-radius:50%;background:var(--late)}
 .row{display:flex;height:var(--row);position:relative}
 .nm{position:sticky;left:0;z-index:4;width:var(--nw);flex:none;background:var(--surface);border-right:1px solid var(--line-3);border-bottom:1px solid var(--line-2);
   display:flex;align-items:center;gap:4px;padding:0 6px 0 max(2px,env(safe-area-inset-left,0px));min-width:0}
 .row.sel .nm{background:var(--surface-2)}
 .row.sel .nm::before{content:"";position:absolute;left:0;top:7px;bottom:7px;width:3px;border-radius:0 2px 2px 0;background:var(--ink)}
 .row.sel .trk{background:var(--today)}
-.nt{display:flex;flex-direction:column;min-width:0;flex:1;gap:1px}
-.nt b{font-size:var(--fs);font-weight:700;line-height:1.15;display:-webkit-box;-webkit-box-orient:vertical;-webkit-line-clamp:2;overflow:hidden;word-break:break-word;letter-spacing:-.01em;flex:none;max-height:calc(var(--fs) * 2.3)}
+.nt{display:flex;flex-direction:column;min-width:0;flex:1;gap:0}
+.nt b{font-size:var(--fs);font-weight:700;line-height:1.24;display:-webkit-box;-webkit-box-orient:vertical;-webkit-line-clamp:2;overflow:hidden;word-break:break-word;letter-spacing:-.01em;flex:none;max-height:calc(var(--fs) * 2.48)}
 .nt small{font-size:var(--fs);color:var(--ink-2);white-space:nowrap;overflow:hidden;text-overflow:clip;font-weight:500;line-height:1.2}
 .nt small.late{color:var(--late);font-weight:700} .nt small.run{color:var(--green);font-weight:700} .nt small.warn{color:var(--brass);font-weight:700} .nt small.gh{color:var(--green)}
 .ck{width:18px;height:var(--row);display:grid;place-items:center;flex:none}
-.ck::after{content:"";width:13px;height:13px;border-radius:50%;box-shadow:inset 0 0 0 1.6px var(--ink-3);grid-area:1/1}
-.ck svg{grid-area:1/1;width:8px;height:8px;stroke:var(--surface);stroke-width:2.8;fill:none;opacity:0;z-index:1}
+.ck::after{content:"";width:calc(var(--fs) + 1px);height:calc(var(--fs) + 1px);border-radius:50%;box-shadow:inset 0 0 0 1.6px var(--ink-3);grid-area:1/1}
+.ck svg{grid-area:1/1;width:calc(var(--fs) * .62);height:calc(var(--fs) * .62);stroke:var(--surface);stroke-width:2.8;fill:none;opacity:0;z-index:1}
 .ck.s-doing::after{box-shadow:inset 0 0 0 1.6px var(--green);background:radial-gradient(circle,var(--green) 0 4px,transparent 4.5px)}
 .ck.s-paused::after{box-shadow:inset 0 0 0 1.6px var(--brass)}
 .ck.late::after{box-shadow:inset 0 0 0 1.6px var(--late)}
@@ -165,18 +165,18 @@ input,textarea,select{font:inherit;font-size:16px;color:var(--ink);-webkit-user-
 .bar.narrow::before{content:"";position:absolute;inset:-6px -7px}
 .bar.narrow .hd{width:22px} .bar.narrow .hd.l{left:-24px} .bar.narrow .hd.r{right:-24px}
 .hd::after{content:"";width:7px;height:20px;border-radius:4px;background:var(--surface);box-shadow:0 0 0 1.6px var(--ink)}
-.ms{position:absolute;top:calc(var(--row) / 2 - 6px);width:12px;height:12px;margin-left:-6px;transform:rotate(45deg);background:var(--green);border-radius:2px;z-index:2}
+.ms{position:absolute;top:calc(var(--row) / 2 - var(--fs) * .36);width:calc(var(--fs) * .72);height:calc(var(--fs) * .72);margin-left:calc(var(--fs) * -.36);transform:rotate(45deg);background:var(--green);border-radius:2px;z-index:2}
 .ms.b-imp{background:var(--brass)} .ms.b-late{background:var(--late)} .ms.b-done{background:var(--done)} .ms.b-mst{background:var(--master)} .ms.sel{box-shadow:0 0 0 2px var(--surface),0 0 0 4px var(--ink)}
 .act{position:absolute;bottom:2px;height:4px;border-radius:2px;background:var(--ink);opacity:.7;z-index:1}
 .act.live{background:var(--green);opacity:1}
 .dl{position:absolute;top:5px;bottom:5px;width:0;border-left:2px solid var(--late);z-index:3}
-.dl::before{content:"";position:absolute;top:0;left:0;border-left:8px solid var(--late);border-bottom:6px solid transparent}
+.dl::before{content:"";position:absolute;top:0;left:0;border-left:6px solid var(--late);border-bottom:5px solid transparent}
 /* group rows stay see-through over the track so the day/week lines run unbroken from top to bottom */
 .grp{display:flex;min-height:30px;position:relative;border-bottom:1px solid var(--line-2)}
 .gn{position:sticky;left:0;z-index:4;width:var(--nw);flex:none;background:var(--surface-2);border-right:1px solid var(--line-3);display:flex;align-items:center;gap:4px;padding:4px 6px 4px max(4px,env(safe-area-inset-left,0px))}
 .gn b{font-size:var(--fs);font-weight:750;line-height:1.2;color:var(--ink);word-break:break-word;min-width:0}
 .gn b small{font-size:var(--fs);color:var(--ink-2);white-space:nowrap;font-weight:600;margin-left:4px}
-.gn .ic{width:14px;height:14px;stroke-width:2.4;color:var(--ink-2);transition:transform .2s}
+.gn .ic{width:calc(var(--fs) * 1.1);height:calc(var(--fs) * 1.1);stroke-width:2.4;color:var(--ink-2);transition:transform .2s}
 .grp.col .gn .ic{transform:rotate(-90deg)}
 .gt{position:absolute;top:0;bottom:0;left:var(--nw);background:var(--grp-tint)}
 .span{position:absolute;top:11px;height:8px;border-radius:4px;background:var(--line-3)}
@@ -196,10 +196,7 @@ input,textarea,select{font:inherit;font-size:16px;color:var(--ink);-webkit-user-
 .nav>button .ic{width:22px;height:22px}
 .nav .add{display:grid;place-items:center;width:56px;height:40px;border-radius:13px;background:var(--ink);color:var(--surface)}
 .nav .add .ic{width:22px;height:22px;stroke-width:2.3}
-.nav #museBtn{color:var(--green)}
-.nav #museBtn .ic{fill:currentColor;stroke:none}
 .badge{position:absolute;top:2px;left:calc(50% + 6px);min-width:18px;height:18px;padding:0 5px;border-radius:9px;background:var(--brass);color:#fff;font-size:10.5px;font-weight:800;display:grid;place-items:center}
-#museBtn.alert::after{content:"";position:absolute;top:5px;left:calc(50% + 8px);width:9px;height:9px;border-radius:50%;background:var(--late);box-shadow:0 0 0 2px var(--bg)}
 
 /* ---- centered card (details, add, MUSE, lists) ---- */
 .scrim{position:fixed;inset:0;z-index:40;background:var(--scrim);opacity:0;pointer-events:none;transition:opacity .18s}
@@ -220,11 +217,10 @@ input,textarea,select{font:inherit;font-size:16px;color:var(--ink);-webkit-user-
 .pop[data-size=page] .mh{background:var(--bg)}
 .nav>button.on{color:var(--ink)}
 .nav>button.on::after{content:"";position:absolute;bottom:1px;left:calc(50% - 10px);width:20px;height:3px;border-radius:2px;background:var(--ink)}
-.nav #museBtn.on{color:var(--green)} .nav #museBtn.on::after{background:var(--green)}
 .bar.mlab .pg{opacity:.2}
 .bar .bl.nmi{left:7px;right:7px;overflow:hidden;text-overflow:ellipsis;color:var(--ink);font-weight:700}
 .bar .bl.out{color:var(--ink);font-weight:700}
-.msl{position:absolute;top:calc(var(--row) / 2 - 7px);font-size:var(--fs);font-weight:700;color:var(--ink);white-space:nowrap;pointer-events:none;z-index:2}
+.msl{position:absolute;top:0;line-height:var(--row);font-size:var(--fs);font-weight:700;color:var(--ink);white-space:nowrap;pointer-events:none;z-index:2}
 .pop[data-size=fixed]{height:min(560px,calc(100% - env(safe-area-inset-top,0px) - env(safe-area-inset-bottom,0px) - var(--kb) - 20px))}
 .pop[data-size=tall]{height:calc(100% - env(safe-area-inset-top,0px) - env(safe-area-inset-bottom,0px) - var(--kb) - 20px)}
 .sc{flex:1;min-height:0;overflow:auto;overscroll-behavior:contain;padding:0 16px 18px}
@@ -264,7 +260,7 @@ input,textarea,select{font:inherit;font-size:16px;color:var(--ink);-webkit-user-
 .when span{color:var(--ink-2);font-weight:600}
 .pill{font-size:10.5px;font-weight:800;padding:2px 8px;border-radius:10px}
 .pill.late{background:var(--late-soft);color:var(--late)} .pill.imp{background:var(--brass-soft);color:var(--brass)} .pill.run{background:var(--green-soft);color:var(--green)}
-.acts{display:flex;gap:8px}
+.acts{display:flex;gap:8px;margin-bottom:10px}
 .acts .btn{flex:1;min-width:0}
 .prog{display:flex;align-items:center;gap:12px;margin:8px 0 0}
 .prog input{flex:1;accent-color:var(--green);height:30px}
@@ -517,16 +513,26 @@ table.mini td{text-align:right;padding:8px 4px;border-top:1px solid var(--line-2
 .mgrid button.warn small{color:var(--late)}
 .evl{position:absolute;font-size:var(--fs);font-weight:700;color:var(--ink);white-space:nowrap;z-index:2}
 .msl.cut{overflow:hidden;text-overflow:ellipsis}
-.gms{position:absolute;top:50%;width:9px;height:9px;margin:-4.5px 0 0 -4.5px;transform:rotate(45deg);border-radius:2px;background:var(--ink-2);pointer-events:none}
+.gms{position:absolute;top:50%;width:calc(var(--fs) * .6);height:calc(var(--fs) * .6);margin:calc(var(--fs) * -.3) 0 0 calc(var(--fs) * -.3);transform:rotate(45deg);border-radius:2px;background:var(--ink-2);pointer-events:none}
 .gms.late{background:var(--late)} .gms.imp{background:var(--brass)}
 .gbd{position:absolute;top:50%;height:6px;margin-top:-3px;border-radius:3px;background:var(--ink-3);opacity:.6;pointer-events:none}
-.gadd{margin-left:auto;flex:none;width:28px;height:28px;border-radius:8px;display:grid;place-items:center;color:var(--ink-2)} .gadd .ic{width:15px;height:15px}
+.gadd{margin-left:auto;flex:none;width:28px;height:28px;border-radius:8px;display:grid;place-items:center;color:var(--ink-2)} .gadd .ic{width:calc(var(--fs) * 1.2);height:calc(var(--fs) * 1.2)}
 .bar.evb .bl{top:0}
 .evx{position:absolute;z-index:3;top:calc((var(--row) - 22px) / 2);height:22px;display:block;padding:0 8px;line-height:22px;text-align:left;border-radius:7px;background:var(--surface-2);box-shadow:inset 0 0 0 1px var(--line-2);font-size:var(--fs);font-weight:700;color:var(--ink-2);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .cnl{font-size:var(--fs);font-weight:700;color:var(--ink-3);padding-left:4px}
 .ck.mk0{cursor:default}
-.ck.mk0::after{width:9px;height:9px;border-radius:2px;transform:rotate(45deg);background:var(--ink-3);box-shadow:none;grid-area:1/1}
-.ck.mk0:not(.ev)::after{width:12px;height:5px;border-radius:3px;transform:none}
+.ck.mk0::after{width:calc(var(--fs) * .62);height:calc(var(--fs) * .62);border-radius:2px;transform:rotate(45deg);background:var(--ink-3);box-shadow:none;grid-area:1/1}
+.ck.mk0:not(.ev)::after{width:calc(var(--fs) * .9);height:calc(var(--fs) * .4);border-radius:3px;transform:none}
+@media (max-height:600px){#popBody .f{min-height:39px} .acts{margin-bottom:8px}}
+/* detail: calmer, roomier form */
+.pop[data-kind=detail] .title-in,#popBody .title-in{display:block;resize:none;font-family:inherit;line-height:1.3;min-height:0;height:auto;max-height:2.7em;overflow:hidden;color:var(--ink)}
+.dt2{flex:1;min-width:0;display:grid;grid-template-columns:minmax(0,1.25fr) minmax(0,1fr);gap:6px}
+.dt2 input{width:100%;min-width:0;height:38px!important;border:0;background:var(--surface-2);border-radius:8px;padding:0 8px;font-size:16px;font-variant-numeric:tabular-nums}
+.f input[type=date],.f input[type=time]{font-size:16px;font-variant-numeric:tabular-nums}
+.f input::-webkit-calendar-picker-indicator{display:none}
+.f.ftop .chips{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:5px;padding:3px 0} .f.ftop .chip{min-height:30px;height:30px;padding:0 3px;font-size:11px;letter-spacing:-.02em;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;justify-content:center}
+.f.ftop{display:grid;grid-template-columns:72px minmax(0,1fr);align-items:start;padding:4px 0} .f.ftop>span:first-child{padding-top:10px;width:auto}
+.f .segm{flex:1}
 @media (prefers-reduced-motion: reduce){*{transition:none!important;animation:none!important}}
 </style>
 
@@ -555,7 +561,6 @@ table.mini td{text-align:right;padding:8px 4px;border-top:1px solid var(--line-2
     <button id="todayBtn"><svg class="ic" viewBox="0 0 24 24"><rect x="4" y="5" width="16" height="15" rx="3"/><path d="M4 10h16M9 3v4M15 3v4"/><circle cx="12" cy="15" r="1.6" fill="currentColor" stroke="none"/></svg>今日</button>
     <button id="listBtn"><svg class="ic" viewBox="0 0 24 24"><path d="M9 6h11M9 12h11M9 18h11"/><circle cx="4.5" cy="6" r="1" fill="currentColor"/><circle cx="4.5" cy="12" r="1" fill="currentColor"/><circle cx="4.5" cy="18" r="1" fill="currentColor"/></svg>一覧</button>
     <button id="addBtn" aria-label="追加"><span class="add"><svg class="ic" viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></svg></span></button>
-    <button id="museBtn" aria-label="MUSEを開く" hidden><svg class="ic" viewBox="0 0 24 24"><path d="M12 2.5l2 6.2 6.3 1.8-6.3 1.9L12 18.6l-2-6.2-6.3-1.9 6.3-1.8z"/><path d="M19 15.5l.8 2.2 2.2.8-2.2.8-.8 2.2-.8-2.2-2.2-.8 2.2-.8z"/></svg>MUSE<span class="badge" id="museBadge" hidden>0</span></button>
     <button id="moreBtn"><svg class="ic" viewBox="0 0 24 24"><circle cx="12" cy="12" r="8.5"/><path d="M12 7.5V12l3 2"/></svg>勤怠</button>
     <button id="setBtn"><svg class="ic" viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/><path d="M12 2.8v2.6M12 18.6v2.6M21.2 12h-2.6M5.4 12H2.8M18.5 5.5l-1.8 1.8M7.3 16.7l-1.8 1.8M18.5 18.5l-1.8-1.8M7.3 7.3L5.5 5.5"/></svg>設定</button>
   </nav>
@@ -660,7 +665,7 @@ function normTask(o){
   if(!isFinite(t.start))t.start=ceilTo(Date.now(),15*MIN);
   if(!(t.end>t.start))t.end=t.start+HOUR;
   // 大日程 items live on whole weeks (Monday 0:00 → Monday 0:00)
-  if(t.scale==='week'){if(t.milestone){t.start=sod(t.start);t.end=addDays(t.start,1)}else{t.start=monday(t.start);t.end=Math.max(addDays(t.start,7),addDays(monday(t.end-1),7))}}
+  if(t.scale==='week'){t.start=sod(t.start);t.end=t.milestone?addDays(t.start,1):Math.max(addDays(t.start,1),addDays(sod(t.end-1),1))}
   return t;
 }
 const isHoliday=t=>{const g=new Date(t).getDay();return g===0||g===6||S.settings.holidays.includes(ymd(t))};
@@ -838,7 +843,7 @@ const Store={
     db.collection('proposals').onSnapshot(snap=>{
       const m=new Map();for(const d of snap.docs){const p=d.data();if(p&&p.id)m.set(p.id,p)}
       for(const [id,p] of S.proposals)if(S.dirty.has('p:'+id))m.set(id,p);
-      S.proposals=m;cacheLocal();render();if(Pop.kind==='muse')renderMuse();
+      S.proposals=m;cacheLocal();render();
     },()=>{});
     db.doc('meta/settings').onSnapshot(snap=>{
       if(snap.exists&&!S.dirty.has('settings')){S.settings={...clone(DEFAULT_SETTINGS),...snap.data()};cacheLocal();render();if(Pop.kind==='settings')openSettings(true)}
@@ -1040,18 +1045,7 @@ function visibleTasks(){
   const {from,to}=rangeOfView();
   return [...S.tasks.values()].filter(t=>t.status!=='done'&&scopeOk(t)&&viewOk(t)&&t.end>from&&t.start<to);
 }
-function ghostData(){
-  const creates=[],moves=new Map();
-  for(const p of S.proposals.values()){
-    if(p.status!=='pending')continue;
-    p.ops.forEach((o,i)=>{
-      if(o.op==='create')creates.push(normTask({...o,id:'g-'+p.id+'-'+i,status:'todo',progress:0,history:[]}));
-      else if(o.op==='move'&&S.tasks.has(o.task_id))moves.set(o.task_id,{start:o.start,end:o.end,pid:p.id});
-    });
-  }
-  creates.forEach(c=>{c.ghost=true;c.pid=c.id.split('-')[1]});
-  return {creates,moves};
-}
+function ghostData(){return {creates:[],moves:new Map()}}
 function render(){
   applyFont();
   S.nw=Math.round(clamp(innerWidth*0.25,92,130));
@@ -1189,7 +1183,7 @@ function mslHTML(t,x){
   const W=AX.trackW,fs=parseFloat(getComputedStyle(document.documentElement).getPropertyValue('--fs'))||10;
   const cx=(mslHTML.c||(mslHTML.c=document.createElement('canvas').getContext('2d')));cx.font=`700 ${fs}px ${getComputedStyle(document.body).fontFamily}`;
   const w=cx.measureText(t.name).width+2;
-  if(x+11+w<=W-2)return `<span class="msl" style="left:${(x+11).toFixed(1)}px">${esc(t.name)}</span>`;
+  if(x+9+w<=W-2)return `<span class="msl" style="left:${(x+8).toFixed(1)}px">${esc(t.name)}</span>`;
   if(x-11-w>=0)return `<span class="msl" style="left:${(x-11-w).toFixed(1)}px">${esc(t.name)}</span>`;
   const right=W-x>x;return `<span class="msl cut" style="${right?`left:${(x+11).toFixed(1)}px;max-width:${(W-x-13).toFixed(0)}px`:`left:2px;max-width:${(x-13).toFixed(0)}px;text-align:right`}">${esc(t.name)}</span>`;
 }
@@ -1241,11 +1235,7 @@ function updateTop(){
   else{const ys=new Date(yearStartOf(S.anchor)),fy=ys.getMonth()===0;main=fy?`${ys.getFullYear()}年`:`${ys.getFullYear()}年度`;sub='大日程・1年'+(fy?'':`（${ys.getMonth()+1}月〜）`)}
   $('#dateLabel').textContent=main;$('#dateSub').textContent=sub;$('#datePick').value=ymd(S.anchor);
   document.querySelectorAll('.seg button').forEach(b=>b.setAttribute('aria-selected',String(b.dataset.view===S.view)));
-  const n=[...S.proposals.values()].filter(p=>p.status==='pending').length;
-  const bd=$('#museBadge');bd.hidden=!n;bd.textContent=n;
-  const fk=furikae(),mb2=$('#moreBtn');mb2.classList.toggle('alert',fk.need+fk.over>0);$('#listBtn').classList.toggle('alert',n>0);mb2.setAttribute('aria-label','勤怠'+(fk.need?`（振替休日があと${fk.need}日）`:fk.over?`（振替出勤のない振替休日${fk.over}日）`:''));
-  const nl=lateTasks().length;const mb=$('#museBtn');mb.classList.toggle('alert',!n&&nl>0);
-  mb.setAttribute('aria-label','MUSEを開く'+(n?`（承認待ち${n}件）`:'')+(nl?`（遅延${nl}件）`:''));
+  const fk=furikae(),mb2=$('#moreBtn');mb2.classList.toggle('alert',fk.need+fk.over>0);mb2.setAttribute('aria-label','勤怠'+(fk.need?`（振替休日があと${fk.need}日）`:fk.over?`（振替出勤のない振替休日${fk.over}日）`:''));
 }
 
 /* ============ gestures: tap / long-press drag / handle resize / pinch ============ */
@@ -1278,7 +1268,7 @@ function moveDrag(x,y){
   if(AX.cell){
     // week / month / 大日程: move and stretch by whole days (or whole weeks), keeping the time of day
     // 大日程 items always move by whole weeks; everything else by whole days
-    let k=Math.round(dx/AX.ppd);if(isMaster(d.task)&&!d.task.milestone)k=Math.round(k/7)*7;const min=isMaster(d.task)&&!d.task.milestone?7*DAY:15*MIN;
+    let k=Math.round(dx/AX.ppd);const min=isMaster(d.task)?DAY:15*MIN;
     if(d.type==='move'){s=addDays(start,k);e=addDays(end,k)}
     else if(d.type==='l'){s=addDays(start,k);if(e-s<min)s=d.cur.start}
     else{e=addDays(end,k);if(e-s<min)e=d.cur.end}
@@ -1298,7 +1288,7 @@ function moveDrag(x,y){
 function showTip(x,y){
   const d=G.drag;if(!d)return;const {start,end}=d.cur;
   const v=validatePlacement(d.task,start,end);
-  tip.textContent=(isMaster(d.task)&&d.task.milestone?`${fMDW(start)} ${esc(d.task.name)}`:isMaster(d.task)?`${fMDW(start)}〜${fMDW(end-1)}（${Math.round((end-start)/(7*DAY))}週）`:singleDay(start,end)?`${fMDW(start)} ${fHM(start)}–${fHM(end)}`:`${fMDW(start)} ${fHM(start)} → ${fMDW(end)} ${fHM(end)}`)+(v.blocking.length?' ・条件外':'');
+  tip.textContent=(isMaster(d.task)&&d.task.milestone?`◆ ${fMDW(start)} ${d.task.name}`:isMaster(d.task)?`${fMDW(start)}〜${fMDW(end-1)}（${Math.round((end-start)/DAY)}日間）`:singleDay(start,end)?`${fMDW(start)} ${fHM(start)}–${fHM(end)}`:`${fMDW(start)} ${fHM(start)} → ${fMDW(end)} ${fHM(end)}`)+(v.blocking.length?' ・条件外':'');
   tip.className='tip'+(v.blocking.length?' warn':'');tip.style.display='block';
   const hb=$('.top').getBoundingClientRect();tip.style.left=(innerWidth/2)+'px';tip.style.top=(hb.top+hb.height/2)+'px';
 }
@@ -1333,7 +1323,6 @@ function tap(target){
   const ms=target.closest('[data-mscale]');if(ms){if(S.mscale!==ms.dataset.mscale){S.mscale=ms.dataset.mscale;LS.set('mscale',S.mscale);S.zoom=1;render();scrollToFocus()}return}
   if(target.closest('[data-daily]')){S.showDaily=!S.showDaily;LS.set('showDaily',S.showDaily);render();toast(S.showDaily?'大日程に日ごとの予定も表示':'大日程は大日程の項目だけを表示');return}
   const ej=target.closest('[data-evjump]');if(ej){S.anchor=+ej.dataset.evjump;render();const r=rangeOfView();toast(`${new Date(r.from).getFullYear()}年度を表示`);return}
-  const gh=target.closest('[data-pid]');if(gh){openMuse();return}
   const el=target.closest('[data-id]');if(el&&S.tasks.has(el.dataset.id)){
     const id=el.dataset.id;
     // a bar you have not picked yet: just pick it so its ends can be dragged; tapping it again (or its name) opens the details
@@ -1449,8 +1438,8 @@ function toggleDone(id){
 const Pop={kind:null};
 const popEl=$('#pop'),popBody=$('#popBody'),scrim=$('#scrim');
 // every screen with tabs (and everything reached from the tab bar) opens as a page; only quick add stays a card
-const PAGES=['list','muse','more','settings','stats','detail','attday'];
-function markNav(){const k=Pop.kind,on={list:'listBtn',muse:'listBtn',more:'moreBtn',settings:'setBtn',stats:'listBtn',attday:'moreBtn'}[k]||(!k||k==='detail'||k==='add'?'todayBtn':'');
+const PAGES=['list','more','settings','stats','detail','attday'];
+function markNav(){const k=Pop.kind,on={list:'listBtn',more:'moreBtn',settings:'setBtn',stats:'listBtn',attday:'moreBtn'}[k]||(!k||k==='detail'||k==='add'?'todayBtn':'');
   document.querySelectorAll('.nav>button').forEach(b=>b.classList.toggle('on',b.id===on))}
 function pageTop(o){
   Pop.back=o.back||null;$('#pgTitle').textContent=o.title||'';$('#pgSub').textContent=o.sub||'';$('#pgAct').innerHTML=o.actions||'';$('#pgBack').hidden=!o.back;
@@ -1466,7 +1455,7 @@ function openPop(kind,html,size='auto',opts={}){
 function closePop(){
   if(!Pop.kind)return;
   // leaving 一覧・勤怠・設定・MUSE… returns the chart to today (a task's details keep your place)
-  if(['list','muse','more','settings','stats','attday'].includes(Pop.kind)){S.anchor=sod(Date.now());S.zoom=1;S.selected=null;scroller.scrollLeft=0;requestAnimationFrame(scrollToFocus)}
+  if(['list','more','settings','stats','attday'].includes(Pop.kind)){S.anchor=sod(Date.now());S.zoom=1;S.selected=null;scroller.scrollLeft=0;requestAnimationFrame(scrollToFocus)}
   Pop.kind=null;popEl.classList.remove('open');scrim.classList.remove('on');markNav();$('.top').classList.remove('pg');
   if(document.activeElement&&popEl.contains(document.activeElement))document.activeElement.blur();
   render();
@@ -1475,7 +1464,7 @@ scrim.addEventListener('click',closePop);
 document.addEventListener('keydown',e=>{if(e.key==='Escape'&&Pop.kind&&!document.querySelector('.dlg'))closePop()});
 function refreshAnyPop(){
   const k=Pop.kind;
-  if(k==='detail')refreshDetail();else if(k==='list')openList(true);else if(k==='stats')openStats(true);else if(k==='muse')renderMuse();else if(k==='more')openMore(true);else if(k==='attday')openAttDay(ATTD,true);else if(k==='settings')openSettings(true);
+  if(k==='detail')refreshDetail();else if(k==='list')openList(true);else if(k==='stats')openStats(true);else if(k==='more')openMore(true);else if(k==='attday')openAttDay(ATTD,true);else if(k==='settings')openSettings(true);
 }
 
 /* ---- detail ---- */
@@ -1497,29 +1486,30 @@ function detailHTML(t){
   const projects=[...new Set([...S.tasks.values()].map(x=>x.project))];
   const others=[...S.tasks.values()].filter(x=>x.id!==t.id&&!t.deps.includes(x.id)&&!x.deps.includes(t.id)&&isMaster(x)===mst).sort((a,b)=>a.start-b.start).slice(0,80);
   const ev=mst&&t.milestone;
-  const whenTxt=ev?fMDW(t.start):mst?`${fMDW(t.start)}〜${fMDW(t.end-1)}`:`${fMDW(t.start)} ${fHM(t.start)}–${same?fHM(t.end):fMDW(t.end)+' '+fHM(t.end)}`;
-  const durTxt=ev?'節目':mst?`${weeksOf(t)}週 ・ ${wLabel(t.start)}${weeksOf(t)>1?'–'+wLabel(t.end-1):''}`:fDur(t.end-t.start);
-  const sched=ev?`<label class="f"><span>日付</span><input type="date" id="d-evd" value="${ymd(t.start)}"></label>`:mst?`<div class="f"><span>開始週</span><div class="step"><button data-wk="-1" aria-label="1週早める">${ICON.l}</button><b>${fMD(t.start)}の週<small>${wLabel(t.start)}</small></b><button data-wk="1" aria-label="1週遅らせる">${ICON.r}</button></div></div>
-<div class="f"><span>期間</span><div class="step"><button data-wn="-1" aria-label="1週短く">${ICON.minus}</button><b>${weeksOf(t)}週<small>${fMD(t.end-1)}まで</small></b><button data-wn="1" aria-label="1週長く">${ICON.plus}</button></div></div>`
-    :`<label class="f"><span>開始</span><input type="datetime-local" id="d-st" value="${dtl(t.start)}"></label>
-<label class="f"><span>終了</span><input type="datetime-local" id="d-et" value="${dtl(t.end)}"></label>`;
+  const whenTxt=ev?'◆ '+fMDW(t.start):mst?`${fMDW(t.start)}〜${fMDW(t.end-1)}`:`${fMDW(t.start)} ${fHM(t.start)}–${same?fHM(t.end):fMDW(t.end)+' '+fHM(t.end)}`;
+  const durTxt=ev?'マイルストーン':mst?`${Math.round((t.end-t.start)/DAY)}日間`:false?`${weeksOf(t)}週 ・ ${wLabel(t.start)}${weeksOf(t)>1?'–'+wLabel(t.end-1):''}`:fDur(t.end-t.start);
+  const hm=v=>`${pad(new Date(v).getHours())}:${pad(new Date(v).getMinutes())}`;
+  const mtype=mst?`<div class="f"><span>種類</span><div class="segm"><button data-mstype="span" aria-pressed="${!t.milestone}">期間（帯）</button><button data-mstype="ms" aria-pressed="${t.milestone}">マイルストーン（◆）</button></div></div>`:'';
+  const sched=ev?`${mtype}<label class="f"><span>日付</span><input type="date" id="d-evd" value="${ymd(t.start)}"></label>`
+    :mst?`${mtype}<label class="f"><span>開始</span><input type="date" id="d-mss" value="${ymd(t.start)}"></label><label class="f"><span>終了</span><input type="date" id="d-mse" value="${ymd(t.end-1)}"></label>`
+    :`<div class="f"><span>開始</span><div class="dt2"><input type="date" id="d-sd" value="${ymd(t.start)}" aria-label="開始日"><input type="time" id="d-stt" value="${hm(t.start)}" aria-label="開始時刻"></div></div>
+<div class="f"><span>終了</span><div class="dt2"><input type="date" id="d-ed" value="${ymd(t.end)}" aria-label="終了日"><input type="time" id="d-ett" value="${hm(t.end)}" aria-label="終了時刻"></div></div>`;
   const deps=`<div class="f"><span>前工程</span><div class="chips row">${t.deps.filter(d=>S.tasks.has(d)).map(d=>`<button class="chip x" data-undep="${d}" aria-label="依存を外す">${esc(S.tasks.get(d).name)}</button>`).join('')}<select id="d-dep" style="flex:none;width:auto;max-width:160px"><option value="">＋ 追加</option>${others.map(o=>`<option value="${o.id}">${fMD(o.start)} ${esc(o.name)}</option>`).join('')}</select></div></div>`;
   const tabs=[['plan','予定'],['info','内容'],['memo','メモ'],['hist','履歴']];
   let body;
-  if(DT.tab==='info')body=`<div class="fg">${mst?'':`<div class="f"><span>分類</span><div class="chips row">${Object.entries(KINDS).map(([k,v])=>`<button class="chip" data-kind="${k}" aria-pressed="${t.kind===k}">${v.label}</button>`).join('')}</div></div>`}
-<div class="f"><span>優先度</span><div class="segm">${[['high','高'],['mid','中'],['low','低']].map(([k,l])=>`<button data-pri="${k}" aria-pressed="${t.priority===k}">${l}</button>`).join('')}</div><button class="chip" data-act="imp" aria-pressed="${t.important}" style="margin-left:auto">重要</button></div>
+  if(DT.tab==='info')body=`<div class="fg">${mst?'':`<div class="f ftop"><span>分類</span><div class="chips">${Object.entries(KINDS).map(([k,v])=>`<button class="chip" data-kind="${k}" aria-pressed="${t.kind===k}">${v.label}</button>`).join('')}</div></div>`}
+<div class="f"><span>優先度</span><div class="segm">${[['high','高'],['mid','中'],['low','低']].map(([k,l])=>`<button data-pri="${k}" aria-pressed="${t.priority===k}">${l}</button>`).join('')}</div><button class="chip" data-act="imp" aria-pressed="${t.important}" style="margin-left:auto">重要</button>${mst?'':`<button class="chip" data-act="msk" aria-pressed="${t.milestone}" aria-label="マイルストーン（◆で表示）">◆</button>`}</div>
 <label class="f"><span>プロジェクト</span><input id="d-proj" list="projlist" value="${esc(t.project)}" autocomplete="off"><datalist id="projlist">${projects.map(p=>`<option value="${esc(p)}">`).join('')}</datalist></label>
-<label class="f"><span>担当</span><input id="d-asg" value="${esc(t.assignee)}" placeholder="自分" autocomplete="off"></label>
-<label class="f"><span class="wide">マイルストーン（節目）</span><input type="checkbox" id="d-ms" ${t.milestone?'checked':''}></label></div>`;
+<label class="f"><span>担当</span><input id="d-asg" value="${esc(t.assignee)}" placeholder="自分" autocomplete="off"></label></div>`;
   else if(DT.tab==='memo')body=`<div class="fg"><div class="f col"><textarea id="d-memo" rows="6" placeholder="段取り、注意点など">${esc(t.memo)}</textarea></div></div>`;
   else if(DT.tab==='hist')body=`<div class="fg"><ol class="hist">${histHTML(t,6)}</ol></div>${t.history.length>6?`<p class="hint" style="text-align:center">最新6件を表示（全${t.history.length}件）</p>`:''}`;
-  else body=`<div class="fg">${sched}<label class="f"><span>期限</span><input type="date" id="d-dl" value="${t.deadline?ymd(t.deadline):''}"></label>${deps}</div>`;
+  else body=`${mst?'':`<div class="prog"><input type="range" id="d-prog" min="0" max="100" step="5" value="${t.progress}" aria-label="進捗率"><output id="d-progv">${t.progress}%</output></div>
+<div class="actual">${actual}</div>`}<div class="fg">${sched}<label class="f"><span>期限</span><input type="date" id="d-dl" value="${t.deadline?ymd(t.deadline):''}"></label>${deps}</div>`;
   return `<div class="dh0">${mst?'<span class="kchip k-master">大日程</span>':`<span class="kchip k-${t.kind}">${KINDS[t.kind].label}</span>`}<span class="proj">${esc(t.project)}</span>${t.sample?'<span class="tag">サンプル</span>':''}</div>
-<input id="d-name" class="title-in" value="${esc(t.name)}" aria-label="名前" enterkeyhint="done" autocomplete="off">
+<textarea id="d-name" class="title-in" rows="2" aria-label="名前" enterkeyhint="done" autocomplete="off">${esc(t.name)}</textarea>
 <div class="when"><b>${whenTxt}</b><span>${durTxt}</span>${late?'<span class="pill late">遅延</span>':''}${t.status==='doing'?'<span class="pill run">作業中</span>':''}${t.important?'<span class="pill imp">重要</span>':''}</div>
 ${mst?'':`<div class="acts">${sb}${t.status!=='done'?'<button class="btn" data-act="ext" aria-label="終了を30分延ばす">+30分</button>':''}</div>
-<div class="prog"><input type="range" id="d-prog" min="0" max="100" step="5" value="${t.progress}" aria-label="進捗率"><output id="d-progv">${t.progress}%</output></div>
-<div class="actual">${actual}</div>`}
+`}
 <div class="segm big tabs">${tabs.map(([k,l])=>`<button data-dtab="${k}" aria-pressed="${DT.tab===k}">${l}${k==='hist'&&t.history.length?`<small>${t.history.length}</small>`:''}</button>`).join('')}</div>
 ${body}${mst?`<div style="margin-top:12px"><button class="btn danger wide" data-act="del">この${t.milestone?'節目':'大日程'}を削除</button></div><p class="hint" style="text-align:center;margin-top:6px">大日程は完了にせず、不要になったら削除します</p>`:''}`;
 }
@@ -1528,13 +1518,12 @@ function histHTML(t,limit=15){
   const L={start:'開始',end:'終了',deadline:'期限',progress:'進捗',status:'状態',name:'名称',project:'PJ',kind:'分類',priority:'優先度',important:'重要',assignee:'担当',deps:'前工程',milestone:'MS',memo:'メモ'};
   return t.history.slice().reverse().slice(0,limit).map(h=>{
     let diff='';if(h.after){const ks=Object.keys(h.after).filter(k=>k!=='status'&&k!=='memo');diff=ks.slice(0,3).map(k=>`${L[k]||k} ${f(k,h.before?.[k])}→${f(k,h.after[k])}`).join(' / ')}
-    return `<li><time>${fMD(h.at)} ${fHM(h.at)}</time><span class="by ${h.by}">${h.by==='muse'?'MUSE':'自分'}</span>${esc(h.action)}${diff?` <span style="color:var(--ink-2)">${esc(diff)}</span>`:''}${h.reason?`<em>${esc(h.reason)}</em>`:''}</li>`;
+    return `<li><time>${fMD(h.at)} ${fHM(h.at)}</time><span class="by ${h.by}">${h.by==='muse'?'自動':'自分'}</span>${esc(h.action)}${diff?` <span style="color:var(--ink-2)">${esc(diff)}</span>`:''}${h.reason?`<em>${esc(h.reason)}</em>`:''}</li>`;
   }).join('')||'<li>履歴はありません</li>';
 }
 let nameTimer=null;
 async function popClick(e){
   const b=e.target.closest('button');if(!b)return;
-  if(Pop.kind==='muse')return museClick(e,b);
   if(['list','stats','settings','add','more','day','attday'].includes(Pop.kind))return otherClick(e,b);
   const t=S.tasks.get(S.selected);if(!t)return;
   if(b.dataset.dtab){DT.tab=b.dataset.dtab;refreshDetail();return}
@@ -1543,10 +1532,12 @@ async function popClick(e){
   if(['start','pause','resume','done','reopen'].includes(act)){setStatus(t.id,act);render();refreshDetail();toast({start:'作業を開始しました',pause:'中断しました',resume:'再開しました',done:'完了にしました・チャートから外れ、一覧の「完了」へ移ります',reopen:'未完了に戻しました・チャートに戻ります'}[act],'元に戻す',doUndo);return}
   if(act==='ext'){applyTimeChange(t.id,t.start,t.end+30*MIN,'延長（+30分）');return}
   if(act==='imp'){commit(t.id,{important:!t.important});render();refreshDetail();return}
+  if(act==='msk'){commit(t.id,{milestone:!t.milestone},{action:t.milestone?'マイルストーンを解除':'マイルストーンに設定'});render();refreshDetail();return}
   if(act==='del'){if(await ask(`「${t.name}」を削除しますか？`,'削除','やめる')){S.undo={items:snapshotFor([t.id])};removeTask(t.id);closePop();toast('削除しました','元に戻す',doUndo)}return}
   if(b.dataset.kind){const k=b.dataset.kind;const v=validatePlacement({...t,kind:k},t.start,t.end);commit(t.id,{kind:k},{action:'分類を変更'});render();refreshDetail();if(v.blocking.length)toast(v.blocking[0]+'。時刻を見直してください');return}
   if(b.dataset.pri){commit(t.id,{priority:b.dataset.pri},{action:'優先度を変更'});render();refreshDetail();return}
   if(b.dataset.undep){commit(t.id,{deps:t.deps.filter(d=>d!==b.dataset.undep)},{action:'前工程を外す'});render();refreshDetail();return}
+  if(b.dataset.mstype){const ms=b.dataset.mstype==='ms';if(ms===t.milestone)return;commit(t.id,ms?{milestone:true,end:addDays(sod(t.start),1)}:{milestone:false,end:addDays(sod(t.start),14)},{action:ms?'マイルストーンに変更':'期間に変更'});render();refreshDetail();return}
   if(b.dataset.wk){const k=+b.dataset.wk;applyTimeChange(t.id,addDays(t.start,7*k),addDays(t.end,7*k),k<0?'1週早める':'1週遅らせる');return}
   if(b.dataset.wn){const k=+b.dataset.wn,ne=addDays(t.end,7*k);if(ne-t.start<7*DAY)return;applyTimeChange(t.id,t.start,ne,k<0?'期間を1週短く':'期間を1週長く');return}
 }
@@ -1563,8 +1554,11 @@ popBody.addEventListener('change',e=>{
   if(Pop.kind!=='detail')return otherChange(e);
   const t=S.tasks.get(S.selected);if(!t)return;const id=e.target.id,val=e.target.value;
   if(id==='d-prog'){const p=+val;const patch={progress:p};if(p===100&&t.status!=='done'){setStatus(t.id,'done')}else{if(p>0&&t.status==='todo')patch.status='paused';commit(t.id,patch,{action:'進捗を更新'})}render();refreshDetail();return}
-  if(id==='d-st'||id==='d-et'){const s=parseDT($('#d-st').value),en=parseDT($('#d-et').value);if(!s||!en)return;
-    if(id==='d-st'&&s!==t.start){applyTimeChange(t.id,s,s+(t.end-t.start),'開始を変更')}else if(en>s){applyTimeChange(t.id,s,en,'終了を変更')}else toast('終了は開始より後にしてください');return}
+  if(['d-sd','d-stt','d-ed','d-ett'].includes(id)){const sd=parseDT($('#d-sd').value),ed=parseDT($('#d-ed').value),st=$('#d-stt').value,et=$('#d-ett').value;if(!sd||!ed||!st||!et)return;
+    const s=atMin(sd,hm2min(st)),en=atMin(ed,hm2min(et));
+    if((id==='d-sd'||id==='d-stt')&&s!==t.start){applyTimeChange(t.id,s,s+(t.end-t.start),'開始を変更')}else if(en>s){applyTimeChange(t.id,s,en,'終了を変更')}else{toast('終了は開始より後にしてください');refreshDetail()}return}
+  if(id==='d-mss'||id==='d-mse'){const a=parseDT($('#d-mss').value),z=parseDT($('#d-mse').value);if(!a||!z)return;
+    if(id==='d-mss'){applyTimeChange(t.id,a,a+(t.end-t.start),'開始を変更')}else if(z>=a){applyTimeChange(t.id,a,addDays(z,1),'終了を変更')}else{toast('終了は開始以降にしてください');refreshDetail()}return}
   if(id==='d-dl'){const d=parseDT(val);commit(t.id,{deadline:d?atMin(d,hm2min(S.settings.workEnd)):null},{action:'期限を変更'});render();refreshDetail();return}
   if(id==='d-proj'){const v=val.trim()||'未分類';commit(t.id,{project:v},{action:'プロジェクトを変更'});render();return}
   if(id==='d-asg'){commit(t.id,{assignee:val.trim()},{action:'担当を変更'});return}
@@ -1583,7 +1577,7 @@ function openAdd(o={}){
   QA.kind=null;QA.dur=null;QA.imp=false;QA.start=o.start||null;QA.day=o.day||null;QA.wn=2;QA.project=o.project||null;
   QA.mode=o.mode||(S.view==='master'?'master':'task');
   QA.wk=o.week||monday(S.view==='master'?Math.max(Date.now(),rangeOfView().from):Date.now());
-  QA.ed=o.day||(S.view==='master'?sod(Math.max(Date.now(),rangeOfView().from)):sod(Date.now()));
+  QA.ed=o.day||(S.view==='master'?sod(Math.max(Date.now(),rangeOfView().from)):sod(Date.now()));QA.ee=null;QA.eeSet=false;if(o.mms!=null)QA.mms=o.mms;
   openPop('add',addHTML(),'auto',{label:'追加'});
   updateQuickPreview();
   setTimeout(()=>{const i=$('#qa');i&&i.focus()},260);
@@ -1597,14 +1591,14 @@ function addHTML(){
 <div class="segm big"><button data-qmode="task" aria-pressed="${!m}">タスク（日・時刻）</button><button data-qmode="master" aria-pressed="${m}">大日程の節目</button></div>
 <div class="addrow"><input id="qa" placeholder="${m?'例）号試 / 正式図面発行 ターゲット':'例）明日 治具調整 45分'}" enterkeyhint="done" autocomplete="off" aria-label="内容"><button class="btn pri" data-act="qaAdd">追加</button></div>
 <div class="qprev" id="qprev"></div>
-${m?`<div class="fg">${mproj}
-<label class="f"><span>日付</span><input type="date" id="qdate" value="${ymd(QA.ed)}"></label>
-<label class="f"><span>終わり</span><input type="date" id="qend" value=""><small style="flex:none;font-size:11px;color:var(--ink-3)">期間のときだけ</small></label></div>
+${m?`<div class="segm" style="margin:8px 0"><button data-qmk="span" aria-pressed="${!QA.mms}">期間（帯）</button><button data-qmk="ms" aria-pressed="${!!QA.mms}">マイルストーン（◆）</button></div>
+<div class="fg">${mproj}
+${QA.mms?`<label class="f"><span>日付</span><input type="date" id="qdate" value="${ymd(QA.ed)}"></label>`
+:`<label class="f"><span>開始</span><input type="date" id="qdate" value="${ymd(QA.ed)}"></label><label class="f"><span>終了</span><input type="date" id="qend" value="${ymd(QA.ee||addDays(QA.ed,13))}"></label>`}</div>
 <p class="hint" style="margin:8px 4px 0">大日程には日々のタスクは出ません。号試・図面発行・SOPなどの節目を、車種・プロジェクトごとに1行で並べます。</p>`
 :`<div class="fg"><div class="f"><span>分類</span><div class="chips row" id="qkind">${Object.entries(KINDS).map(([k,v])=>`<button class="chip" data-qkind="${k}" aria-pressed="false">${v.label}</button>`).join('')}</div></div>
 <div class="f"><span>時間</span><div class="chips row" id="qdur">${[15,30,45,60,120,240].map(n=>`<button class="chip" data-qdur="${n}" aria-pressed="false">${fDur(n*MIN)}</button>`).join('')}<button class="chip" data-qimp="1" aria-pressed="false">重要</button></div></div>
-${proj}</div>
-<div class="chips" style="justify-content:center;padding-top:10px"><button class="btn sm" data-act="qaMuse">MUSEに計画してもらう</button></div>`}`;
+${proj}</div>`}`;
 }
 function parseMaster(raw){
   let s=' '+String(raw||'').normalize('NFKC')+' ';const r={wk:null,wn:null,name:''};
@@ -1669,7 +1663,7 @@ function updateQuickPreview(){
   const el=$('#qprev');if(!el)return;
   if(QA.mode==='master'){
     const ev=masterInput();
-    el.textContent=`→ ${ev.proj} ・ ${ev.end?`${fMDW(ev.d)}〜${fMDW(ev.end)}（期間）`:`${fMDW(ev.d)} の節目`}${ev.name?' ・'+ev.name:''}`;el.className='qprev'+(ev.end&&ev.end<ev.d?' warn':'');return;
+    el.textContent=`→ ${ev.proj} ・ ${ev.end?`${fMDW(ev.d)}〜${fMDW(ev.end)}（${Math.round((ev.end-ev.d)/DAY)+1}日間）`:`◆ ${fMDW(ev.d)}`}${ev.name?' ・'+ev.name:''}`;el.className='qprev';return;
   }
   const {p,pl,v}=quickState();
   document.querySelectorAll('[data-qkind]').forEach(b=>b.setAttribute('aria-pressed',String(b.dataset.qkind===pl.kind)));
@@ -1680,9 +1674,11 @@ function updateQuickPreview(){
 }
 function masterInput(){
   const p=parseMaster(($('#qa')||{}).value||''),di=($('#qdate')||{}).value,ei=($('#qend')||{}).value;
-  // 「W47-W49 据付」: a period by weeks; 「6/10 量産開始」: one day
-  const d=p.d!=null?sod(p.d):p.wk!=null?p.wk:di?parseDT(di):QA.ed,end=ei?parseDT(ei):p.d==null&&p.wk!=null&&p.wn?addDays(d,7*p.wn-1):null;
-  return {name:p.name,d,end:end&&end>d?end:null,proj:(($('#qproj')||{}).value||'').trim()||'未分類'};
+  // 「W47-W49 据付」: weeks; 「6/10 量産開始」: from that day (◆ = that day)
+  const d=p.d!=null?sod(p.d):p.wk!=null?p.wk:di?parseDT(di):QA.ed;
+  let end=null;
+  if(!QA.mms){end=QA.eeSet&&ei?parseDT(ei):p.d==null&&p.wk!=null&&p.wn?addDays(d,7*p.wn-1):p.d!=null||p.wk!=null?addDays(d,13):ei?parseDT(ei):addDays(d,13);if(!end||end<d)end=d}
+  return {name:p.name,d,end,proj:(($('#qproj')||{}).value||'').trim()||'未分類'};
 }
 function quickAdd(){
   const raw=($('#qa')||{}).value||'';
@@ -1694,7 +1690,7 @@ function quickAdd(){
     if(S.view!=='master'){S.view='master';LS.set('view','master')}
     const r=rangeOfView();if(!(ev.d>=r.from&&ev.d<r.to))S.anchor=ev.d;
     S.selected=id;render();
-    toast(`大日程「${ev.proj}」に ${fMD(ev.d)} ${ev.name} を追加`,'元に戻す',doUndo);return;
+    toast(`大日程「${ev.proj}」に${ev.end?`${fMD(ev.d)}〜${fMD(ev.end)}`:`◆${fMD(ev.d)}`} ${ev.name} を追加`,'元に戻す',doUndo);return;
   }
   const {p,pl}=quickState();
   if(!p.name&&!raw.trim()){toast('タスク名を入力してください');$('#qa').focus();return}
@@ -1725,8 +1721,8 @@ function openList(refresh){
   if(LT.tab==='up')body=up.length?`<div class="fg" style="margin-top:6px">${up.slice(0,60).map(li).join('')}</div>`:none('これからの予定はありません');
   else if(LT.tab==='mst')body=mst.length?`<div class="fg" style="margin-top:6px">${mst.map(li).join('')}</div>`:none('大日程はまだありません');
   else if(LT.tab==='done')body=done.length?`<p class="hint" style="margin:8px 4px 4px">チャートには出ません・丸を押すと未完了に戻ります</p><div class="fg">${done.map(li).join('')}</div>`:none('完了したタスクはまだありません');
-  else body=(grp(`<span style="color:var(--late)">遅延 ${late.length}件</span>`,late,'<button class="btn sm" data-replan="1">再計画を提案</button>')+grp('作業中',doing)+grp('今日の予定',tod))||none('今日の残りの予定はありません');
-  pageTop({title:'一覧',sub:`遅延 ${late.length}件・今日 ${tod.length+doing.length}件`,actions:`<button class="chip-s" data-gomuse="1">MUSE</button><button class="chip-s" data-gostats="1">実績</button><button class="chip-s" data-lscope="1">${{all:'すべて',work:'仕事だけ',private:'私用だけ'}[S.scope]}</button>`});
+  else body=(grp(`<span style="color:var(--late)">遅延 ${late.length}件</span>`,late)+grp('作業中',doing)+grp('今日の予定',tod))||none('今日の残りの予定はありません');
+  pageTop({title:'一覧',sub:`遅延 ${late.length}件・今日 ${tod.length+doing.length}件`,actions:`<button class="chip-s" data-gostats="1">実績</button><button class="chip-s" data-lscope="1">${{all:'すべて',work:'仕事だけ',private:'私用だけ'}[S.scope]}</button>`});
   const html=`<div class="tabsbar"><div class="segm big tabs">${[['today','今日'],['up','これから'],['mst','大日程'],['done','完了']].map(([k,l])=>`<button data-ltab="${k}" aria-pressed="${LT.tab===k}">${l}${cnt[k]?`<small>${cnt[k]}</small>`:''}</button>`).join('')}</div></div>
 ${body}`;
   if(refresh&&Pop.kind==='list'){const st=popBody.scrollTop;popBody.innerHTML=html;popBody.scrollTop=st}else openPop('list',html,'fixed',{label:'一覧'});
@@ -1759,7 +1755,7 @@ function openStats(refresh){
   const recent=rows.slice().reverse().slice(0,7);
   const body=SST.tab==='att'
     ?(recent.length?`<div class="fg tbl-wrap"><table class="mini"><tr><th>日付</th><th>出勤</th><th>退勤</th><th>時間外</th></tr>${recent.map(([k,v,o])=>`<tr><td>${fMDW(parseDT(k))}</td><td>${tm(v.in)}</td><td>${tm(v.out)}</td><td>${o.hol?'休日 '+h(o.hol):h(o.ot)}h</td></tr>`).join('')}</table></div>${rows.length>7?`<p class="hint" style="text-align:center">最新7日を表示（今月${rows.length}日）</p>`:''}`:'<p class="hint" style="text-align:center;margin:20px 0">まだ記録がありません。「その他」の出勤・退勤から記録できます。</p>')
-    :(ratio.length?`<div class="fg tbl-wrap"><table class="mini"><tr><th>分類</th><th>件数</th><th>予定</th><th>実績</th><th>実績/予定</th></tr>${ratio.map(x=>`<tr><td>${KINDS[x.kind].label}</td><td>${x.n}</td><td>${h(x.plan)}h</td><td>${h(x.act)}h</td><td class="ratio ${x.r>1.15?'hi':x.r<0.9?'':'ok'}">${x.r.toFixed(2)}</td></tr>`).join('')}</table></div><p class="hint">1.15を超える分類は、MUSEが次の計画で所要時間を長めに見積もります。</p>`:'<p class="hint" style="text-align:center;margin:20px 0">開始・完了を記録したタスクが増えると、分類ごとの見積もり精度がここに出ます。</p>');
+    :(ratio.length?`<div class="fg tbl-wrap"><table class="mini"><tr><th>分類</th><th>件数</th><th>予定</th><th>実績</th><th>実績/予定</th></tr>${ratio.map(x=>`<tr><td>${KINDS[x.kind].label}</td><td>${x.n}</td><td>${h(x.plan)}h</td><td>${h(x.act)}h</td><td class="ratio ${x.r>1.15?'hi':x.r<0.9?'':'ok'}">${x.r.toFixed(2)}</td></tr>`).join('')}</table></div><p class="hint">1.15を超える分類は、次からは所要時間を長めに見積もると安全です。</p>`:'<p class="hint" style="text-align:center;margin:20px 0">開始・完了を記録したタスクが増えると、分類ごとの見積もり精度がここに出ます。</p>');
   pageTop({title:`実績・${new Date(now).getMonth()+1}月`,sub:'時間外・見積もり精度・出退勤',back:'list'});
   const html=`<div class="stat"><div><small>時間外（平日）</small><b>${h(ot)}<span>時間</span></b></div><div><small>休日出勤</small><b>${h(hol)}<span>時間</span></b></div><div><small>完了 / 遅延</small><b>${doneN}<span>件</span> / <span style="color:var(--late);font-size:21px;margin:0">${lateN}</span><span>件</span></b></div><div><small>時間外の作業（タスク）</small><b>${h(taskOT)}<span>時間</span></b></div></div>
 <div class="segm big">${[['est','見積もり精度'],['att','出退勤']].map(([k,l])=>`<button data-sstab="${k}" aria-pressed="${SST.tab===k}">${l}</button>`).join('')}</div>
@@ -1877,11 +1873,11 @@ function openAttDay(t,refresh){
 async function otherClick(e,b){
   if(b.dataset.act==='close')return closePop();
   if(b.dataset.act==='qaAdd')return quickAdd();
+  if(b.dataset.qmk){const v=($('#qa')||{}).value||'',pj=($('#qproj')||{}).value||'',dv=($('#qdate')||{}).value;QA.mms=b.dataset.qmk==='ms';QA.project=pj;if(dv)QA.ed=parseDT(dv);popBody.innerHTML=addHTML();$('#qa').value=v;updateQuickPreview();return}
   if(b.dataset.qmode){if(QA.mode!==b.dataset.qmode){const v=($('#qa')||{}).value||'';QA.mode=b.dataset.qmode;popBody.innerHTML=addHTML();const i=$('#qa');i.value=v;updateQuickPreview();i.focus()}return}
   if(b.dataset.qwk){QA.wk=addDays(QA.wk,7*+b.dataset.qwk);const p=parseMaster($('#qa').value);if(p.wk!=null){$('#qa').value=$('#qa').value.replace(/W\d{1,2}(\s*[-~〜]\s*W?\d{1,2})?|\d{1,2}[\/月]\d{1,2}日?(の週)?(から|〜|~)?/i,'').trim()}updateQuickPreview();return}
   if(b.dataset.qwn){QA.wn=+b.dataset.qwn;const p=parseMaster($('#qa').value);if(p.wn!=null){$('#qa').value=$('#qa').value.replace(/\d{1,2}\s*週間?/,'').trim()}updateQuickPreview();return}
   if(b.dataset.gostats){openStats();return}
-  if(b.dataset.gomuse){openMuse();return}
   if(b.dataset.attm){const d=new Date(ATT.m);ATT.m=new Date(d.getFullYear(),d.getMonth()+(+b.dataset.attm),1).getTime();openMore(true);return}
   if(b.dataset.attday){openAttDay(+b.dataset.attday);return}
   if(b.dataset.amark){const k=ymd(ATTD),mk=b.dataset.amark;S.settings.days={...(S.settings.days||{})};if(mk==='clear')delete S.settings.days[k];else S.settings.days[k]=mk;Store.saveSettings();render();openAttDay(ATTD,true);const f=furikae();toast(`${fMDW(ATTD)}を${mk==='clear'?'通常の日':MARKS[mk].label}にしました${f.need?`・振替休日があと${f.need}日必要`:f.over?`・振替出勤のない振替休日が${f.over}日`:''}`);return}
@@ -1892,12 +1888,10 @@ async function otherClick(e,b){
   if(b.dataset.calmark){closePop();S.view='week';S.zoom=1;LS.set('view','week');render();scrollToFocus();toast('日付をタップすると休み・休日出勤を登録できます');return}
   if(b.dataset.goset){openSettings();return}
   if(b.dataset.sample){closePop();insertSamples();return}
-  if(b.dataset.act==='qaMuse'){const v=($('#qa').value||'').trim();closePop();openMuse();if(v)museSend(v+'（作業可能な時間帯に配置して提案して）');return}
   if(b.dataset.qkind){QA.kind=QA.kind===b.dataset.qkind?null:b.dataset.qkind;updateQuickPreview();return}
   if(b.dataset.qdur){QA.dur=QA.dur===+b.dataset.qdur?null:+b.dataset.qdur;updateQuickPreview();return}
   if(b.dataset.qimp){QA.imp=!QA.imp;updateQuickPreview();return}
   if(b.dataset.go){const id=b.dataset.go,t=S.tasks.get(id);if(t&&t.status==='done'){S.selected=id;openDetail(id,'list');return}closePop();goToTask(id);return}
-  if(b.dataset.replan){closePop();runReplan();return}
   if(b.dataset.lck){toggleDone(b.dataset.lck);return}
   if(b.dataset.ltab){LT.tab=b.dataset.ltab;openList(true);popBody.scrollTop=0;return}
   if(b.dataset.stab){STT.tab=b.dataset.stab;openSettings(true);popBody.scrollTop=0;return}
@@ -1913,7 +1907,7 @@ async function otherClick(e,b){
   if(b.dataset.copyjson){const data=JSON.stringify({tasks:[...S.tasks.values()],settings:S.settings,attendance:S.attendance,proposals:[...S.proposals.values()]},null,1);
     try{await navigator.clipboard.writeText(data);toast('全データをコピーしました')}catch{const ta=document.createElement('textarea');ta.value=data;ta.style.cssText='width:100%;height:160px;margin-top:8px';b.after(ta);ta.select();toast('選択した内容をコピーしてください')}return}
 }
-function otherInput(e){if(['qa','qdate','qend','qproj'].includes(e.target.id))updateQuickPreview()}
+function otherInput(e){if(e.target.id==='qend'){QA.eeSet=true;QA.ee=parseDT(e.target.value)||null}if(['qa','qdate','qend','qproj'].includes(e.target.id))updateQuickPreview()}
 function otherChange(e){
   const t=e.target;
   if(t.id==='ad-in'||t.id==='ad-out'){const v=t.value;setAtt(ATTD,t.id==='ad-in'?'in':'out',v?atMin(ATTD,hm2min(v)):null);const sm=$('#adSum');if(sm)sm.innerHTML=attDaySum();const rec=(S.attendance[monthKey(ATTD)]||{})[ymd(ATTD)]||{},cb=$('#adClear');if(cb)cb.hidden=!(rec.in||rec.out);return}
@@ -1927,311 +1921,8 @@ function otherChange(e){
 }
 popBody.addEventListener('keydown',e=>{if(e.key==='Enter'&&e.target.id==='qa'&&!e.isComposing){e.preventDefault();quickAdd()}});
 
-/* ============ MUSE agent ============ */
-const Muse={sample:null,tools:false,ready:false,running:null,log:LS.get('chat',[]),cur:null,disabled:''};
-async function initMuse(){
-  if(!window.claude||typeof window.claude.use!=='function'){
-    // GitHub / home-screen version: no paid AI. MUSE offers its built-in planning tools only.
-    Muse.ready=true;Muse.noAI=true;Muse.sample=null;Muse.tools=false;Muse.disabled='';
-    if(Pop.kind==='muse')renderMuse();return}
-  try{Muse.sample=await window.claude.use('sample')}catch{}
-  if(Muse.sample){try{const lim=await Muse.sample.limits();Muse.tools=!!(lim&&lim.tools&&lim.tools.maxCount>=4)}catch{Muse.tools=false}}
-  else Muse.disabled='この画面ではMUSEを使えません';
-  Muse.ready=true;if(Pop.kind==='muse')renderMuse();
-}
-function saveChat(){LS.set('chat',Muse.log.slice(-30))}
-function museContext(){
-  const now=Date.now(),st=S.settings;
-  const from=addDays(sod(now),-14),to=addDays(sod(now),60);
-  const list=[...S.tasks.values()].filter(t=>(t.end>from&&t.start<to)||t.status!=='done').sort((a,b)=>a.start-b.start).slice(0,160);
-  const line=t=>[t.id,t.name,t.project,isMaster(t)?'大日程':t.kind,`${fISO(t.start)}~${fISO(t.end)}`,t.segs.length?`実績${fDur(workedMs(t,now))}`:'-',t.progress+'%',t.status+(isLate(t,now)?'(遅延)':''),t.important?'重要':t.priority,t.deadline?ymd(t.deadline):'-',t.deps.join(',')||'-',t.assignee||'-'].join('|');
-  const est=estimateStats().map(x=>`${x.kind} 実績/予定=${x.r.toFixed(2)}(${x.n}件)`).join(', ')||'データなし';
-  const pend=[...S.proposals.values()].filter(p=>p.status==='pending').map(p=>`${p.id}: ${p.summary}`).join(' / ')||'なし';
-  return `あなたは「MUSE」。生産技術者の仕事とプライベートの計画を管理するエージェントです。下のツールでユーザーのガントチャートの実データを読み書きします。
-
-現在: ${fISO(now)}（${DOW[new Date(now).getDay()]}曜、Asia/Tokyo）
-勤務条件: 平日 ${st.workStart}–${st.workEnd}。製造部門の休憩 ${st.breaks.map(b=>`${b.s}–${b.e}`).join('、')||'なし'}。土日${st.holidays.length?'と '+st.holidays.join(','):''}は休日。
-大日程: 分類が「大日程」の項目は週単位の長期計画（開始=月曜0:00、終了=翌週以降の月曜0:00）。作成するときは propose_plan の create に scale:"week" と月曜の日付を渡す。
-作業可能時間: desk(通常業務)/witness(工程立ち会い)=平日の勤務時間。line(工程調整・改造)/stop(設備停止)=${st.lineRule?'平日は製造部門の休憩中だけ、休日は勤務時間帯':'平日の勤務時間'}。holiday(休日作業)=休日の勤務時間帯。private(プライベート)=勤務時間外（平日18:00–22:00、休日9:00–21:00）。
-日の区分（休み・休日出勤・振替）: ${Object.entries(S.settings.days||{}).filter(([k])=>{const t=parseDT(k);return t>=addDays(sod(now),-14)&&t<addDays(sod(now),90)}).sort().map(([k,v])=>`${k} ${MARKS[v]?MARKS[v].label:v}`).join(', ')||'なし'}。休み・振替休日には仕事を入れない。休日出勤・振替出勤の日は勤務時間に仕事を入れてよい。
-見積もり精度: ${est}
-承認待ちの提案: ${pend}
-
-守ること:
-- タスクの作成・削除、日時・期限・担当の変更は必ず propose_plan で提案する。保存はユーザーの承認後。自分で反映したと言わない。
-- 配置する時刻は必ず find_slots の結果から選ぶ。作業可能時間に合わない時刻や、既存の予定と重なる時刻を提案しない。1枠に収まらない作業は分割して提案する。
-- 遅延や延長の影響を聞かれたら simulate_change で後続と期限への影響を計算してから答える。
-- 進捗・状態・メモ・優先度・名称は update_task で直接更新してよい。
-- 見積もり精度が1.15を超える分類は、所要時間をその比率で長めに取る。
-- 優先順位は 遅延 > 期限が近い > 重要 > 後続が多い > 短時間で終わる の順で考え、理由を一言添える。
-- 回答は日本語、スマホ向けに短く。結論を先に、箇条書きは5行まで。タスクIDは書かず名称で呼ぶ。提案した場合は最後に「承認すると反映されます」と書く。
-
-タスク一覧（id|名称|プロジェクト|分類|予定|実績|進捗|状態|優先度|期限|前工程|担当）:
-${list.map(line).join('\n')||'（なし）'}`;
-}
-function museTools(b){
-  const act=s=>{b.acts.push(s);patchMuseCur()};
-  const KIND_ENUM=Object.keys(KINDS);
-  return [
-    {name:'find_slots',description:'作業可能条件（勤務時間・製造部門休憩・休日・既存の予定）を満たす空き時間帯を返す。配置する時刻は必ずこの結果から選ぶ。',
-      inputSchema:{type:'object',properties:{duration_min:{type:'number',description:'所要時間（分）'},kind:{type:'string',enum:KIND_ENUM},from:{type:'string',description:'検索開始 "YYYY-MM-DD HH:MM"（省略時は今）'},to:{type:'string',description:'検索終了 "YYYY-MM-DD HH:MM"'},count:{type:'number',description:'最大件数（既定5）'},exclude_task_id:{type:'string',description:'動かすタスク自身のID'}},required:['duration_min','kind']},
-      execute(i){const k=KINDS[i.kind]?String(i.kind):'desk';const d=Number(i.duration_min)||60;act(`空き時間を検索（${KINDS[k].label}・${fDur(d*MIN)}）`);
-        const sl=findSlots(d,k,parseDT(i.from)||Date.now(),parseDT(i.to)||null,{count:clamp(Number(i.count)||5,1,10),self:i.exclude_task_id?String(i.exclude_task_id):null});
-        return sl.length?sl.map(s=>({start:fISO(s.start),end:fISO(s.end),weekday:DOW[new Date(s.start).getDay()]})):{slots:[],note:'条件を満たす空きがありません。期間を広げるか分割してください'}}},
-    {name:'simulate_change',description:'あるタスクの日時変更または延長（extend_min）を仮定し、前工程に依存する後続タスクのずれと期限超過を計算して返す。保存はしない。',
-      inputSchema:{type:'object',properties:{task_id:{type:'string'},new_start:{type:'string',description:'"YYYY-MM-DD HH:MM"'},new_end:{type:'string'},extend_min:{type:'number',description:'終了を何分延ばすか'}},required:['task_id']},
-      execute(i){const t=S.tasks.get(String(i.task_id));if(!t)throw new Error('そのIDのタスクはありません');act(`影響を計算（${t.name}）`);
-        let s=parseDT(i.new_start)??t.start,e=parseDT(i.new_end)??(t.end+(s-t.start));if(i.extend_min)e=e+Number(i.extend_min)*MIN;
-        const mv=cascade(t.id,{start:s,end:e});
-        return {task:t.name,new:{start:fISO(s),end:fISO(e)},deadline:t.deadline?fISO(t.deadline):null,deadline_miss:!!(t.deadline&&e>t.deadline),
-          affected:mv.map(m=>({task_id:m.id,name:m.name,from:fISO(m.from.start),to_start:fISO(m.to.start),to_end:fISO(m.to.end),deadline:m.deadline?fISO(m.deadline):null,deadline_miss:m.deadlineMiss}))}}},
-    {name:'propose_plan',description:'タスクの作成・日時移動・期限/担当などの変更・削除を1つの提案にまとめる。保存はされず、ユーザーが承認すると反映される。条件違反・重複・前工程との矛盾があると Error を返すので、find_slots で取り直して再提案する。',
-      inputSchema:{type:'object',properties:{summary:{type:'string',description:'提案の要約（20字程度）'},reason:{type:'string',description:'判断理由（1〜2文）'},
-        ops:{type:'array',items:{type:'object',properties:{op:{type:'string',enum:['create','move','update','delete']},task_id:{type:'string'},name:{type:'string'},project:{type:'string'},kind:{type:'string',enum:KIND_ENUM},start:{type:'string',description:'"YYYY-MM-DD HH:MM"'},end:{type:'string'},deadline:{type:'string',description:'"YYYY-MM-DD"'},assignee:{type:'string'},important:{type:'boolean'},priority:{type:'string',enum:['high','mid','low']},deps:{type:'array',items:{type:'string'},description:'前工程のtask_id。同じ提案内の作成は "new:0" のように添字で指定'},scale:{type:'string',enum:['time','week'],description:'week=大日程（週単位の長期計画）。start/end は "YYYY-MM-DD"（月曜）'},memo:{type:'string'},allow_overlap:{type:'boolean'}},required:['op']}}},required:['summary','ops']},
-      execute(i){const p=buildProposal(i);b.props.push(p.id);act(`提案を作成（${p.ops.length}件の変更）`);render();return {proposal_id:p.id,status:'pending',warnings:p.warnings,note:'ユーザーの承認待ち。まだ保存されていません'}}},
-    {name:'update_task',description:'進捗・状態・メモ・優先度・名称・プロジェクトを直接更新する（承認不要）。日時・期限・担当は変えられない（propose_plan を使う）。',
-      inputSchema:{type:'object',properties:{task_id:{type:'string'},progress:{type:'number'},status:{type:'string',enum:['todo','doing','paused','done']},memo:{type:'string'},priority:{type:'string',enum:['high','mid','low']},important:{type:'boolean'},name:{type:'string'},project:{type:'string'}},required:['task_id']},
-      execute(i){const t=S.tasks.get(String(i.task_id));if(!t)throw new Error('そのIDのタスクはありません');act(`更新（${t.name}）`);
-        if(i.status&&i.status!==t.status){const map={doing:t.segs.length?'resume':'start',paused:'pause',done:'done',todo:'reopen'};setStatus(t.id,map[i.status]||'reopen','muse')}
-        const patch={};for(const k of ['progress','memo','priority','important','name','project'])if(i[k]!=null)patch[k]=k==='progress'?clamp(Number(i[k]),0,100):i[k];
-        if(Object.keys(patch).length)commit(t.id,patch,{by:'muse',action:'MUSEが更新'});render();return {ok:true}}}
-  ];
-}
-function buildProposal(input){
-  const ops=Array.isArray(input.ops)?input.ops:[];if(!ops.length)throw new Error('ops が空です');if(ops.length>20)throw new Error('一度に20件までにしてください');
-  const errs=[],warnings=[],out=[],overrides=new Map(),moving=new Set();
-  ops.forEach(o=>{if((o.op==='move'||o.op==='delete')&&o.task_id)moving.add(String(o.task_id))});
-  ops.forEach((o,i)=>{
-    const op=String(o.op);
-    if(op==='create'){
-      const sc=o.scale==='week'?'week':'time';
-      let s=parseDT(o.start),e=parseDT(o.end);if(!s||(!e&&sc!=='week')){errs.push(`#${i} create: start/end が必要です`);return}
-      if(sc==='week'){s=monday(s);e=e?Math.max(addDays(s,7),addDays(monday(e-1),7)):addDays(s,7)}
-      const tmp={id:'new:'+i,name:String(o.name||'無題'),kind:KINDS[o.kind]?o.kind:'desk',scale:sc,deps:(o.deps||[]).map(String),deadline:o.deadline?atMin(parseDT(o.deadline),hm2min(S.settings.workEnd)):null};
-      const v=validatePlacement(tmp,s,e,{checkOverlap:!o.allow_overlap,overlapIsError:true,overrides,exclude:moving,noPast:sc!=='week'});
-      v.blocking.forEach(m=>errs.push(`#${i}「${tmp.name}」: ${m}`));v.warnings.forEach(m=>warnings.push(`「${tmp.name}」: ${m}`));
-      overrides.set('new:'+i,{start:s,end:e,name:tmp.name});
-      out.push({op,name:tmp.name,project:String(o.project||'未分類'),kind:tmp.kind,scale:sc,start:s,end:e,deadline:tmp.deadline,important:!!o.important,priority:o.priority||'mid',deps:tmp.deps,memo:String(o.memo||''),assignee:String(o.assignee||'')});
-    }else if(op==='move'){
-      const t=S.tasks.get(String(o.task_id));if(!t){errs.push(`#${i} move: task_id が見つかりません`);return}
-      const s=parseDT(o.start),e=parseDT(o.end)||(s?s+(t.end-t.start):null);if(!s){errs.push(`#${i} move: start が必要です`);return}
-      const v=validatePlacement(t,s,e,{checkOverlap:!o.allow_overlap,overlapIsError:true,overrides,exclude:moving,noPast:true});
-      v.blocking.forEach(m=>errs.push(`#${i}「${t.name}」: ${m}`));v.warnings.forEach(m=>warnings.push(`「${t.name}」: ${m}`));
-      overrides.set(t.id,{start:s,end:e,name:t.name});
-      out.push({op,task_id:t.id,name:t.name,start:s,end:e,before:{start:t.start,end:t.end},rev:t.rev});
-    }else if(op==='update'){
-      const t=S.tasks.get(String(o.task_id));if(!t){errs.push(`#${i} update: task_id が見つかりません`);return}
-      const f={};if(o.deadline!==undefined)f.deadline=o.deadline?atMin(parseDT(o.deadline),hm2min(S.settings.workEnd)):null;
-      for(const k of ['assignee','name','project','kind','important','priority','memo','deps'])if(o[k]!==undefined)f[k]=o[k];
-      if(!Object.keys(f).length){errs.push(`#${i} update: 変更項目がありません`);return}
-      const before={};for(const k of Object.keys(f))before[k]=t[k];
-      out.push({op,task_id:t.id,name:t.name,fields:f,before,rev:t.rev});
-    }else if(op==='delete'){
-      const t=S.tasks.get(String(o.task_id));if(!t){errs.push(`#${i} delete: task_id が見つかりません`);return}
-      out.push({op,task_id:t.id,name:t.name,rev:t.rev});
-    }else errs.push(`#${i}: 不明な op`);
-  });
-  if(errs.length)throw new Error('提案に問題があります。直して再提案してください:\n'+errs.join('\n'));
-  const p={id:uid(),createdAt:Date.now(),status:'pending',summary:String(input.summary||'計画の変更').slice(0,60),reason:String(input.reason||'').slice(0,300),ops:out,warnings};
-  S.proposals.set(p.id,p);Store.saveProposal(p);pruneProposals();updateTop();
-  return p;
-}
-/* delay detection -> re-plan (deterministic; works without the AI and goes through the same proposal/approval path) */
+/* ============ late tasks ============ */
 function lateTasks(now=Date.now()){return [...S.tasks.values()].filter(t=>scopeOk(t)&&t.status!=='done'&&!t.milestone&&now>t.end)}
-function replanLate(){
-  const now=Date.now();
-  const late=lateTasks(now).filter(t=>singleDay(t.start,t.end)&&t.end-t.start<=DAY)
-    .sort((a,b)=>(b.important-a.important)||((a.deadline||Infinity)-(b.deadline||Infinity))||a.start-b.start);
-  const longOnes=lateTasks(now).filter(t=>!late.includes(t)).map(t=>t.name);
-  if(!late.length)return {err:longOnes.length?`複数日にまたがる遅延（${longOnes.join('、')}）は詳細から日付を直してください`:'遅延しているタスクはありません'};
-  const overrides=new Map(),exclude=new Set(late.map(t=>t.id)),ops=[],skipped=[],moved=[];
-  for(const t of late){
-    const plan=(t.end-t.start)/MIN, remain=t.progress>0?Math.max(15,Math.ceil(plan*(1-t.progress/100)/15)*15):plan;
-    const sl=findSlots(remain,t.kind,now,addDays(now,21),{count:1,self:t.id,overrides,exclude})[0];
-    if(!sl){skipped.push(t.name);continue}
-    overrides.set(t.id,{start:sl.start,end:sl.end,name:t.name});moved.push(t.id);
-    ops.push({op:'move',task_id:t.id,start:fISO(sl.start),end:fISO(sl.end)});
-  }
-  // successors that would now start before their predecessor ends follow to the next workable slot
-  const q=moved.slice();let guard=0;
-  while(q.length&&guard++<200){
-    const pid=q.shift(),p=overrides.get(pid);
-    for(const s of [...S.tasks.values()].filter(x=>x.deps.includes(pid)&&x.status!=='done').sort((a,b)=>a.start-b.start)){
-      const cur=overrides.get(s.id)||s;if(cur.start>=p.end||!singleDay(cur.start,cur.end))continue;
-      exclude.add(s.id);
-      const sl=findSlots((cur.end-cur.start)/MIN,s.kind,p.end,addDays(p.end,21),{count:1,self:s.id,overrides,exclude})[0];
-      if(!sl){skipped.push(s.name);continue}
-      overrides.set(s.id,{start:sl.start,end:sl.end,name:s.name});
-      const i=ops.findIndex(o=>o.task_id===s.id);const op={op:'move',task_id:s.id,start:fISO(sl.start),end:fISO(sl.end)};
-      if(i>=0)ops[i]=op;else ops.push(op);
-      q.push(s.id);
-    }
-  }
-  if(!ops.length)return {err:`作業可能な空き時間が3週間以内に見つかりません（${skipped.join('、')}）`};
-  const part=late.filter(t=>t.progress>0&&moved.includes(t.id)).length;
-  const reason=`遅延${moved.length}件を、作業可能条件（勤務時間・製造部門休憩・休日）と既存の予定を満たす直近の枠へ移します。`+(part?`途中まで進んだ${part}件は残りの作業時間で配置。`:'')+(ops.length>moved.length?`後続${ops.length-moved.length}件も前工程の後ろへずらします。`:'')+(skipped.length?`空きがない: ${skipped.join('、')}。`:'')+(longOnes.length?`複数日の遅延は対象外: ${longOnes.join('、')}。`:'');
-  try{return {p:buildProposal({summary:`遅延${moved.length}件を再計画`,reason,ops})}}catch(e){return {err:String(e.message||e)}}
-}
-const pendingReplan=()=>[...S.proposals.values()].find(p=>p.status==='pending'&&p.source==='replan');
-function runReplan(){
-  if(pendingReplan()){openMuse();toast('承認待ちの再計画があります');return}
-  const r=replanLate();
-  if(r.err){toast(r.err);return}
-  r.p.source='replan';Store.saveProposal(r.p);
-  render();openMuse();
-}
-function seeProposal(pid){
-  const p=S.proposals.get(pid);if(!p)return;
-  const o=p.ops.find(x=>x.start!=null);if(!o){toast('この提案には日時の変更がありません');return}
-  const multi=p.ops.some(x=>x.start!=null&&sod(x.start)!==sod(o.start));
-  const wk=p.ops.some(x=>x.scale==='week'||isMaster(S.tasks.get(x.task_id)));
-  S.scope='all';S.zoom=1;scroller.scrollLeft=0;
-  if(wk)S.view='master';else if(multi&&S.view==='day')S.view='week';else if(S.view==='master')S.view='day';
-  S.anchor=sod(o.start);closePop();render();
-  requestAnimationFrame(()=>{const g=grid.querySelector('.b-ghost');if(g){const r=g.getBoundingClientRect(),sr=scroller.getBoundingClientRect();if(r.top<sr.top+34||r.bottom>sr.bottom)scroller.scrollTop+=r.top-sr.top-80}});
-  toast('破線は未保存の提案です','MUSEで承認',openMuse,6000);
-}
-function pruneProposals(){
-  const done=[...S.proposals.values()].filter(p=>p.status!=='pending').sort((a,b)=>b.createdAt-a.createdAt);
-  for(const p of done.slice(30)){S.proposals.delete(p.id);Store.deleteProposal(p.id)}
-}
-async function approveProposal(pid){
-  const p=S.proposals.get(pid);if(!p||p.status!=='pending')return;
-  const stale=p.ops.filter(o=>o.task_id&&(!S.tasks.has(o.task_id)||S.tasks.get(o.task_id).rev!==o.rev));
-  if(stale.length&&!(await ask(`提案のあとに「${stale.map(o=>o.name).join('」「')}」が変更・削除されています。このまま反映しますか？`,'反映する','やめる')))return;
-  const newIds=p.ops.map(o=>o.op==='create'?uid():null);
-  const resolveDep=d=>{const m=String(d).match(/^new:(\d+)$/);return m?newIds[+m[1]]:d};
-  const touched=p.ops.map((o,i)=>o.op==='create'?newIds[i]:o.task_id).filter(Boolean);
-  S.undo={items:snapshotFor(touched)};
-  const meta={by:'muse',reason:p.reason||p.summary};
-  p.ops.forEach((o,i)=>{
-    if(o.op==='create')commit(newIds[i],{name:o.name,project:o.project,kind:o.kind,scale:o.scale||'time',start:o.start,end:o.end,deadline:o.deadline,important:o.important,priority:o.priority,deps:o.deps.map(resolveDep).filter(d=>d&&S.tasks.has(d)||newIds.includes(d)),memo:o.memo,assignee:o.assignee},{...meta,action:'作成（MUSE提案を承認）'});
-    else if(o.op==='move'&&S.tasks.has(o.task_id))commit(o.task_id,{start:o.start,end:o.end},{...meta,action:'日時変更（MUSE提案を承認）'});
-    else if(o.op==='update'&&S.tasks.has(o.task_id)){const f={...o.fields};if(f.deps)f.deps=f.deps.map(resolveDep);commit(o.task_id,f,{...meta,action:'変更（MUSE提案を承認）'})}
-    else if(o.op==='delete'&&S.tasks.has(o.task_id))removeTask(o.task_id,meta);
-  });
-  p.status='approved';p.decidedAt=Date.now();Store.saveProposal(p);
-  render();renderMuse();toast('提案を反映しました','元に戻す',doUndo);
-}
-function rejectProposal(pid){const p=S.proposals.get(pid);if(!p||p.status!=='pending')return;p.status='rejected';p.decidedAt=Date.now();Store.saveProposal(p);render();renderMuse()}
-function opLine(o){
-  const r=(s,e)=>singleDay(s,e)?`${fMDW(s)} ${fHM(s)}–${fHM(e)}`:`${fMDW(s)} ${fHM(s)} → ${fMDW(e)} ${fHM(e)}`;
-  if(o.op==='create'&&o.scale==='week')return `<li>＋ <b>${esc(o.name)}</b><br><i>大日程 ${fMDW(o.start)}〜${fMDW(o.end-1)}（${Math.round((o.end-o.start)/(7*DAY))}週）</i></li>`;
-  if(o.op==='create')return `<li>＋ <b>${esc(o.name)}</b><br><i>${r(o.start,o.end)} ・ ${KINDS[o.kind].label}${o.deadline?` ・ 期限${fMD(o.deadline)}`:''}</i></li>`;
-  if(o.op==='move')return `<li>⇢ <b>${esc(o.name)}</b><br><i>${r(o.before.start,o.before.end)}</i><br>→ ${r(o.start,o.end)}</li>`;
-  if(o.op==='update')return `<li>✎ <b>${esc(o.name)}</b><br><i>${Object.keys(o.fields).map(k=>k==='deadline'?`期限 ${o.before.deadline?fMD(o.before.deadline):'なし'}→${o.fields.deadline?fMD(o.fields.deadline):'なし'}`:k==='assignee'?`担当 ${esc(o.before.assignee||'自分')}→${esc(o.fields.assignee||'自分')}`:esc(k)).join(' ・ ')}</i></li>`;
-  return `<li>− <b>${esc(o.name)}</b> を削除</li>`;
-}
-function propHTML(p){
-  if(!p)return '';
-  const lbl={pending:'承認待ち',approved:'反映済み',rejected:'却下'}[p.status];
-  return `<div class="prop ${p.status}"><div class="ph"><b>提案</b><span>${esc(p.summary)}</span><em>${lbl}</em></div><ul>${p.ops.map(opLine).join('')}</ul>${p.warnings&&p.warnings.length?`<p class="wn">${p.warnings.map(esc).join('<br>')}</p>`:''}${p.reason?`<p class="why">${esc(p.reason)}</p>`:''}${p.status==='pending'?`<div class="pa">${p.ops.some(o=>o.start!=null)?`<button class="btn ghost see" data-see="${p.id}" aria-label="チャートで提案を見る">チャート</button>`:''}<button class="btn" data-rej="${p.id}">却下</button><button class="btn pri" data-apr="${p.id}">承認して反映</button></div>`:''}</div>`;
-}
-function fmtMsg(s){return esc(s).replace(/\*\*(.+?)\*\*/g,'<b>$1</b>').replace(/^#+\s*/gm,'')}
-function msgHTML(m){
-  if(m.role==='user')return `<div class="msg u">${esc(m.content)}</div>`;
-  const acts=m.acts&&m.acts.length?`<div class="acts-log">${m.acts.map(a=>'・'+esc(a)).join('<br>')}</div>`:'';
-  const body=m.pending&&!m.content?'<span class="think">考えています…</span>':fmtMsg(m.content||'');
-  return `<div class="msg a">${acts}${body}${m.err?`<span class="err">${esc(m.err)}</span>`:''}</div>${(m.props||[]).map(id=>propHTML(S.proposals.get(id))).join('')}`;
-}
-function openMuse(){
-  pageTop({title:'MUSE',sub:'計画アシスタント',back:'list',actions:'<button class="chip-s" data-mclear="1">履歴を消す</button>'});
-  openPop('muse',`<div class="msgs" id="msgs"></div>
-<div class="mchips" id="mchips"></div>
-${Muse.noAI?'':'<form class="composer" id="mform"><textarea id="min" rows="1" placeholder="例）この作業が2時間延びた" aria-label="MUSEへのメッセージ"></textarea><button class="btn pri" id="msend" type="submit">送信</button></form>'}`,'tall',{chat:true,label:'MUSE'});
-  renderMuse();
-}
-// MUSE home: what the assistant can do right now, with real data (works without AI); chat below
-function museHome(){
-  const now=Date.now(),today=sod(now);
-  const ts=[...S.tasks.values()].filter(t=>scopeOk(t)&&t.status!=='done'&&!t.milestone&&!isMaster(t)&&t.start<addDays(today,1));
-  ts.sort((a,b)=>(isLate(b,now)-isLate(a,now))||((a.deadline||9e15)-(b.deadline||9e15))||((b.important||b.priority==='high')-(a.important||a.priority==='high'))||a.start-b.start);
-  const why=t=>isLate(t,now)?'<span class="mtag late">遅延</span>':t.deadline&&t.deadline<addDays(today,3)?`<span class="mtag">期限${fMD(t.deadline)}</span>`:t.important?'<span class="mtag imp">重要</span>':`<span class="mtag">${fHM(t.start)}</span>`;
-  const order=ts.slice(0,5).map((t,i)=>`<button class="mrow" data-mgo="${t.id}"><i>${i+1}</i><span>${esc(t.name)}</span>${why(t)}</button>`).join('');
-  const nl=lateTasks().length;
-  const slot=(m,k)=>findSlots(m,k,now,addDays(today,3),{count:2}).map(x=>`<button class="chip" data-mslot="${x.start}" data-mkind="${k}" data-mdur="${m}">${fMDW(x.start)} ${fHM(x.start)}–${fHM(x.end)}<small style="opacity:.6;margin-left:4px">${KINDS[k].label}</small></button>`).join('');
-  const ai=Muse.sample&&!Muse.disabled;
-  return `<div class="mcard"><div class="mct"><b>今日やる順番</b><small>遅延 → 期限が近い → 重要 → 開始が早い</small></div>${order||'<p class="hint" style="margin:4px 0 0">今日の残りの予定はありません</p>'}</div>
-<div class="mcard"><div class="mct"><b>遅れの立て直し</b><small>作業できる時間へ移す案を作り、承認したら反映</small></div>${nl?`<button class="btn pri sm" data-replan="1">遅延${nl}件の再計画を提案</button>`:'<p class="hint" style="margin:4px 0 0">遅れているタスクはありません</p>'}</div>
-<div class="mcard"><div class="mct"><b>次の空き時間</b><small>勤務時間・ライン停止時間・予定から計算。押すとその時間で追加</small></div><div class="chips" style="padding:0">${slot(60,'desk')}${slot(45,'line')}</div></div>
-${Muse.noAI?'':`<div class="mcard"><div class="mct"><b>AIに相談</b><small>${ai?'下の入力欄か候補から。日時の変更は提案として出し、承認するまで保存しません':'未接続'}</small></div>${ai?'':`<p class="hint" style="margin:4px 0 6px">${esc(Muse.disabled||'接続を確認しています')}</p>`}</div>`}`;
-}
-function renderMuse(){
-  const box=$('#msgs');if(!box||Pop.kind!=='muse')return;
-  const pend=[...S.proposals.values()].filter(p=>p.status==='pending');
-  const inLog=new Set(Muse.log.flatMap(m=>m.props||[]).concat(Muse.cur?Muse.cur.props:[]));
-  const orphan=pend.filter(p=>!inLog.has(p.id));
-  let h='';
-  if(!Muse.log.length&&!Muse.cur)h+=museHome();
-  if(orphan.length)h+=`<div class="intro"><b>承認待ちの提案</b></div>`+orphan.map(propHTML).join('');
-  h+=Muse.log.map(msgHTML).join('');
-  if(Muse.cur)h+=`<div id="mcur">${msgHTML(Muse.cur)}</div>`;
-  const atBottom=box.scrollHeight-box.scrollTop-box.clientHeight<40;
-  box.innerHTML=h;if(!Muse.log.length&&!Muse.cur)box.scrollTop=0;else if(atBottom||Muse.cur)box.scrollTop=box.scrollHeight;
-  const send=$('#msend');if(send){send.textContent=Muse.running?'停止':'送信';send.classList.toggle('pri',!Muse.running);send.classList.toggle('ink',!!Muse.running);send.disabled=!Muse.running&&(!Muse.sample||!!Muse.disabled)}
-  if(Pop.kind==='muse')$('#pgSub').textContent=Muse.running?'作業中…':Muse.sample?(Muse.via==='api'?'計画エージェント・API接続':Muse.tools?'計画エージェント・実データに接続':'計画エージェント（会話のみ）'):Muse.ready?'未接続':'接続中…';
-  const mc=$('#mchips');
-  const nl=lateTasks().length, ai=Muse.sample&&!Muse.disabled;
-  mc.innerHTML=(nl&&!pendingReplan()&&Muse.log.length?`<button class="chip alert" data-replan="1">遅延${nl}件を再計画</button>`:'')+(ai?['今日何を優先すべき？','遅れているタスクの影響は？','空き時間にできることは？','明日の計画を立てて','今週の重複と矛盾をチェック'].map(q=>`<button class="chip" data-mq="${q}">${q}</button>`).join(''):'');
-  mc.hidden=!!Muse.running||!mc.innerHTML;
-}
-function patchMuseCur(){const el=$('#mcur');if(!el){renderMuse();return}el.innerHTML=msgHTML(Muse.cur);const box=$('#msgs');box.scrollTop=box.scrollHeight}
-const ERR={not_granted:'MUSEの利用が許可されませんでした',sampling_disabled:'このアカウントではMUSEを使えません',rate_limited:'混み合っています。少し待ってからもう一度送ってください',session_expired:'サインインし直してください',refused:'この内容にはお答えできません。言い方を変えてください',empty_completion:'応答がありませんでした。短くして送り直してください',prompt_too_large:'データが多すぎます。期間を絞って聞いてください',upstream_error:'通信が途切れました。もう一度送ってください',tools_unavailable:'この画面ではMUSEがデータを操作できません',bad_key:'APIキーが使えません。設定で確認してください',bad_model:'モデル名が使えません。設定で確認してください',offline:'ネットに接続できません。オンラインでもう一度送ってください',api_error:'APIエラーが起きました'};
-async function museSend(text){
-  text=String(text||'').trim();if(!text||Muse.running)return;
-  if(!Muse.sample){toast(Muse.disabled||'MUSEに接続しています');return}
-  Muse.log.push({role:'user',content:text});
-  const b={role:'assistant',content:'',pending:true,props:[],acts:[]};Muse.cur=b;
-  const ctl=new AbortController();Muse.running=ctl;renderMuse();
-  const turns=[{role:'user',content:museContext()}];
-  for(const m of Muse.log.slice(-12)){if(m.content)turns.push({role:m.role,content:m.role==='assistant'?m.content+(m.props&&m.props.length?`\n[提案ID: ${m.props.join(', ')}]`:''):m.content})}
-  try{
-    const opts={signal:ctl.signal,cache:false,onText:({text})=>{b.content=text;patchMuseCur()}};
-    if(Muse.tools)opts.tools=museTools(b);
-    const res=await Muse.sample(turns,opts);
-    b.content=res.text;if(res.truncated)b.err='回答が途中で切れました。範囲を絞ってもう一度聞いてください';
-  }catch(e){
-    b.content=(e&&e.text)||'';
-    if(e&&e.code!=='cancelled')b.err=(ERR[e&&e.code]||'うまく応答できませんでした。もう一度送ってください')+(e&&e.detail&&e.code==='api_error'?`（${String(e.detail).slice(0,120)}）`:'');
-    if(e&&['not_granted','sampling_disabled','not_declared','capability_disabled','capability_removed'].includes(e.code))Muse.disabled=ERR[e.code]||'MUSEを使えません';
-    if(e&&e.code==='tools_unavailable')Muse.tools=false;
-  }
-  b.pending=false;Muse.log.push({role:'assistant',content:b.content||(b.props.length?'提案を作成しました。':''),props:b.props,acts:b.acts,err:b.err});
-  Muse.cur=null;Muse.running=null;saveChat();renderMuse();render();
-}
-async function museClick(e,b){
-  if(b.dataset.act==='close')return closePop();
-  if(b.dataset.mgo){const id=b.dataset.mgo;closePop();goToTask(id);return}
-  if(b.dataset.mslot){const st=+b.dataset.mslot,k=b.dataset.mkind,d=+b.dataset.mdur;closePop();openAdd({start:st});QA.kind=k;QA.dur=d;updateQuickPreview();return}
-  if(b.dataset.apr)return approveProposal(b.dataset.apr);
-  if(b.dataset.rej)return rejectProposal(b.dataset.rej);
-  if(b.dataset.see)return seeProposal(b.dataset.see);
-  if(b.dataset.replan)return runReplan();
-  
-  if(b.dataset.mq)return museSend(b.dataset.mq);
-  if(b.dataset.mclear){if(await ask('MUSEとの会話を消しますか？（提案と変更履歴は残ります）','消す','やめる')){Muse.log=[];saveChat();renderMuse()}return}
-}
-popBody.addEventListener('submit',e=>{
-  if(e.target.id!=='mform')return;e.preventDefault();
-  if(Muse.running){Muse.running.abort();return}
-  const i=$('#min');const v=i.value;i.value='';i.style.height='';museSend(v);
-});
-popBody.addEventListener('input',e=>{if(e.target.id==='min'){e.target.style.height='auto';e.target.style.height=Math.min(120,e.target.scrollHeight)+'px'}});
-popBody.addEventListener('keydown',e=>{if(e.target.id==='min'&&e.key==='Enter'&&(e.metaKey||e.ctrlKey)){e.preventDefault();$('#mform').requestSubmit()}});
-
-/* integration interface for external agents (same functions MUSE uses) */
-window.MUSE=Object.freeze({
-  version:'1.1',
-  replanLate:()=>{if(pendingReplan())throw new Error('承認待ちの再計画があります');const r=replanLate();if(r.err)throw new Error(r.err);r.p.source='replan';Store.saveProposal(r.p);render();return clone(r.p)},
-  listTasks:()=>[...S.tasks.values()].map(clone),
-  getSettings:()=>clone(S.settings),
-  findSlots:(durationMin,kind,from,to,count=5)=>findSlots(durationMin,kind,parseDT(from)||Date.now(),parseDT(to),{count}).map(s=>({start:fISO(s.start),end:fISO(s.end)})),
-  simulateChange:(taskId,patch={})=>{const t=S.tasks.get(taskId);if(!t)throw new Error('not found');const s=parseDT(patch.start)??t.start;const e=(parseDT(patch.end)??(t.end+(s-t.start)))+(patch.extendMin||0)*MIN;return cascade(taskId,{start:s,end:e})},
-  proposePlan:input=>clone(buildProposal(input)),
-  approve:pid=>approveProposal(pid), reject:pid=>rejectProposal(pid),
-  updateTask:(taskId,fields)=>{const f={};for(const k of ['progress','memo','priority','important','name','project'])if(fields[k]!=null)f[k]=fields[k];const t=commit(taskId,f,{by:'muse',action:'外部エージェントが更新'});render();return clone(t)}
-});
-
 /* ============ top bar / nav ============ */
 function scrollToFocus(){
   requestAnimationFrame(()=>{
@@ -2256,11 +1947,10 @@ function shift(n){
 $('#prevBtn').onclick=()=>shift(-1);$('#nextBtn').onclick=()=>shift(1);
 $('#datePick').addEventListener('change',e=>{const d=parseDT(e.target.value);if(d){S.anchor=sod(d);scroller.scrollLeft=0;render();scrollToFocus()}});
 document.querySelectorAll('.seg button').forEach(b=>b.onclick=()=>{if(S.view===b.dataset.view)return;S.view=b.dataset.view;S.anchor=sod(Date.now());S.zoom=1;S.selected=null;scroller.scrollLeft=0;scroller.scrollTop=0;render();scrollToFocus();LS.set('view',S.view);grid.animate&&grid.animate([{opacity:.4},{opacity:1}],{duration:140,easing:'ease-out'})});
-$('#museBtn').onclick=()=>Pop.kind==='muse'?closePop():openMuse();
 $('#moreBtn').onclick=()=>['more','attday'].includes(Pop.kind)?closePop():openMore();
 $('#setBtn').onclick=()=>Pop.kind==='settings'?closePop():openSettings();
 $('#todayBtn').onclick=()=>{if(Pop.kind)closePop();S.anchor=sod(Date.now());S.zoom=1;render();scroller.scrollTop=0;scrollToFocus()};
-$('#listBtn').onclick=()=>['list','muse','stats'].includes(Pop.kind)?closePop():openList();
+$('#listBtn').onclick=()=>['list','stats'].includes(Pop.kind)?closePop():openList();
 $('#addBtn').onclick=()=>openAdd();
 let rz=0;window.addEventListener('resize',()=>{cancelAnimationFrame(rz);rz=requestAnimationFrame(render)});
 setInterval(()=>{if(G.mode!=='drag'&&document.visibilityState==='visible')render()},60000);
@@ -2349,7 +2039,7 @@ const MUSE_SEED_TASKS=[{"id":"successfactors-eval","name":"SuccessFactors年間�
   const now=new Date();
   // evening: open on the next day so the plan you need next is what you see first
   if(now.getHours()>=20)S.anchor=addDays(sod(now.getTime()),1);
-  Store.init();initMuse();scrollToFocus();markNav();
+  Store.init();scrollToFocus();markNav();
 })();
 </script>
 
