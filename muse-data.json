@@ -1,9 +1,9 @@
 {
-  "version": 21,
+  "version": 22,
   "updatedAt": "2026-11-07",
   "note": "MUSE（秘書）が更新するタスクデータ。GitHub Pages 版（index.html）だけが読み込みます。書き方は CLAUDE.md を参照。",
   "days": {"2026-11-05": "off", "2026-11-07": "sw", "2026-11-08": "hw", "2026-11-13": "sub"},
-  "attendance": {"2026-11": {"2026-11-06": {"in": 1793919600000, "out": 1793959320000}}},
+  "attendance": {"2026-11": {"2026-11-06": {"in": 1793919600000, "out": 1793959320000}, "2026-11-07": {"in": 1794006000000, "out": 1794038400000}}},
   "tasks": [
     {"id": "successfactors-eval", "name": "SuccessFactors年間評価（能力発揮時期評価）の提出", "project": "生産技術", "kind": "desk", "scale": "time", "start": 1794180600000, "end": 1794213000000, "deadline": 1794558600000, "milestone": false, "important": false, "priority": "mid", "status": "todo", "progress": 0, "segs": [], "deps": [], "memo": "本人目標は11/10まで。11/10は東京出張のため実質11/9夜まで", "assignee": "", "sample": false, "history": [], "createdAt": 1793915366156, "updatedAt": 1793915366156, "rev": 1},
     {"id": "cooler-sheet", "name": "クーラー管理シートの貼り付けと課内への周知", "project": "生産技術", "kind": "desk", "scale": "time", "start": 1794353400000, "end": 1794385800000, "deadline": 1794385800000, "milestone": false, "important": false, "priority": "mid", "status": "todo", "progress": 0, "segs": [], "deps": [], "memo": "福岡出張から帰った最初の出社日（想定11/11）", "assignee": "", "sample": false, "history": [], "createdAt": 1793915366156, "updatedAt": 1793915366156, "rev": 1},
